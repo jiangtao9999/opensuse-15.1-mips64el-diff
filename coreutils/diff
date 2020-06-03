@@ -1,0 +1,113 @@
+Index: coreutils-testsuite.spec
+===================================================================
+--- coreutils-testsuite.spec	(revision 1)
++++ coreutils-testsuite.spec	(working copy)
+@@ -1,7 +1,7 @@
+ #
+ # spec file for package coreutils-testsuite
+ #
+-# Copyright (c) 2018 SUSE LINUX GmbH, Nuernberg, Germany.
++# Copyright (c) 2020 SUSE LINUX GmbH, Nuernberg, Germany.
+ #
+ # All modifications and additions to the file contributed by third parties
+ # remain the property of their copyright owners, unless otherwise agreed
+@@ -12,13 +12,13 @@
+ # license that conforms to the Open Source Definition (Version 1.9)
+ # published by the Open Source Initiative.
+ 
+-# Please submit bugfixes or comments via http://bugs.opensuse.org/
++# Please submit bugfixes or comments via https://bugs.opensuse.org/
+ #
+ 
+ 
+ Name:           coreutils-testsuite
+ Summary:        GNU Core Utilities
+-License:        GPL-3.0+
++License:        GPL-3.0-or-later
+ Group:          System/Base
+ Url:            http://www.gnu.org/software/coreutils/
+ Version:        8.29
+@@ -135,6 +135,8 @@
+ Patch500:       coreutils-disable_tests.patch
+ Patch501:       coreutils-test_without_valgrind.patch
+ 
++Patch600:       coreutils-skip-test-mips.patch
++
+ # ================================================
+ %description
+ These are the GNU core utilities.  This package is the union of
+@@ -175,6 +177,8 @@
+ %patch303
+ %patch500
+ %patch501
++
++%patch600 -p1
+ 
+ #???## We need to statically link to gmp, otherwise we have a build loop
+ #???#sed -i s,'$(LIB_GMP)',%%{_libdir}/libgmp.a,g Makefile.in
+Index: coreutils.spec
+===================================================================
+--- coreutils.spec	(revision 1)
++++ coreutils.spec	(working copy)
+@@ -1,7 +1,7 @@
+ #
+ # spec file for package coreutils
+ #
+-# Copyright (c) 2018 SUSE LINUX GmbH, Nuernberg, Germany.
++# Copyright (c) 2020 SUSE LINUX GmbH, Nuernberg, Germany.
+ #
+ # All modifications and additions to the file contributed by third parties
+ # remain the property of their copyright owners, unless otherwise agreed
+@@ -12,13 +12,13 @@
+ # license that conforms to the Open Source Definition (Version 1.9)
+ # published by the Open Source Initiative.
+ 
+-# Please submit bugfixes or comments via http://bugs.opensuse.org/
++# Please submit bugfixes or comments via https://bugs.opensuse.org/
+ #
+ 
+ 
+ Name:           coreutils
+ Summary:        GNU Core Utilities
+-License:        GPL-3.0+
++License:        GPL-3.0-or-later
+ Group:          System/Base
+ Url:            http://www.gnu.org/software/coreutils/
+ Version:        8.29
+@@ -135,6 +135,8 @@
+ Patch500:       coreutils-disable_tests.patch
+ Patch501:       coreutils-test_without_valgrind.patch
+ 
++Patch600:       coreutils-skip-test-mips.patch
++
+ # ================================================
+ %description
+ These are the GNU core utilities.  This package is the union of
+@@ -175,6 +177,8 @@
+ %patch303
+ %patch500
+ %patch501
++
++%patch600 -p1
+ 
+ #???## We need to statically link to gmp, otherwise we have a build loop
+ #???#sed -i s,'$(LIB_GMP)',%%{_libdir}/libgmp.a,g Makefile.in
+Index: coreutils-skip-test-mips.patch
+===================================================================
+--- coreutils-skip-test-mips.patch	(revision 0)
++++ coreutils-skip-test-mips.patch	(working copy)
+@@ -0,0 +1,14 @@
++diff -Nrui coreutils-8.29-orig/tests/rm/many-dir-entries-vs-OOM.sh coreutils-8.29/tests/rm/many-dir-entries-vs-OOM.sh
++--- coreutils-8.29-orig/tests/rm/many-dir-entries-vs-OOM.sh	2020-04-30 22:15:04.053709944 +0800
+++++ coreutils-8.29/tests/rm/many-dir-entries-vs-OOM.sh	2020-04-30 22:25:16.845459853 +0800
++@@ -21,6 +21,10 @@
++ print_ver_ rm du chmod
++ expensive_
++ 
+++case "$( uname -m )" in
+++  mips | mips64) skip_ "SKIP: du: fts_read failed: d: Cannot allocate memory";;
+++esac
+++
++ mkdir d2 \
++   && touch d2/f || framework_failure_
++ 

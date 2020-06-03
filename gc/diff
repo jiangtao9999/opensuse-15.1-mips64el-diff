@@ -1,0 +1,14 @@
+Index: gc.spec
+===================================================================
+--- gc.spec	(revision 1)
++++ gc.spec	(working copy)
+@@ -103,7 +103,9 @@
+ 
+ %check
+ %if !0%{?qemu_user_space_build}
++%ifnarch %mips
+ make check
++%endif
+ %endif
+ 
+ %post -n libgc1 -p /sbin/ldconfig

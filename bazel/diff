@@ -1,0 +1,13 @@
+Index: bazel.spec
+===================================================================
+--- bazel.spec	(revision 1)
++++ bazel.spec	(working copy)
+@@ -35,7 +35,7 @@
+ BuildRequires:  pkgconfig(bash-completion)
+ BuildRequires:  pkgconfig(zlib)
+ Requires:       java-1_8_0-openjdk-devel
+-%ifarch armv7l
++%ifarch armv7l %mips
+ ExclusiveArch:  do_not_build
+ %endif
+ 

@@ -1,0 +1,62 @@
+Index: seamonkey.spec
+===================================================================
+--- seamonkey.spec	(revision 1)
++++ seamonkey.spec	(working copy)
+@@ -91,6 +91,7 @@
+ Patch7:         mozilla-reduce-files-per-UnifiedBindings.patch
+ Patch8:         mozilla-bmo1338655.patch
+ Patch100:       seamonkey-ua-locale.patch
++Patch200:       seamonkey-2.49.4-fix-mips64el.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ PreReq:         /bin/sh coreutils
+ Provides:       seamonkey-mail = %{version}
+@@ -209,6 +210,7 @@
+ popd
+ # comm patches
+ %patch100 -p1
++%patch200 -p1
+ 
+ %build
+ # no need to add build time to binaries
+Index: seamonkey-2.49.4-fix-mips64el.patch
+===================================================================
+--- seamonkey-2.49.4-fix-mips64el.patch	(revision 0)
++++ seamonkey-2.49.4-fix-mips64el.patch	(working copy)
+@@ -0,0 +1,10 @@
++--- seamonkey/mozilla/dom/bindings/Codegen.py.orig	2018-07-13 14:31:17.449541575 +0800
+++++ seamonkey/mozilla/dom/bindings/Codegen.py	2020-05-19 00:38:01.986993854 +0800
++@@ -13650,6 +13650,7 @@
++     def __init__(self, config, prefix, webIDLFile):
++         bindingHeaders = dict.fromkeys((
++             'mozilla/dom/NonRefcountedDOMObject.h',
+++            'mozilla/dom/PrimitiveConversions.h',
++             ),
++             True)
++         bindingDeclareHeaders = dict.fromkeys((
+Index: _constraints
+===================================================================
+--- _constraints	(revision 1)
++++ _constraints	(working copy)
+@@ -1,22 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<constraints>
+-  <hardware>
+-    <disk>
+-      <size unit="G">13</size>
+-    </disk>
+-    <memory>
+-      <size unit="M">6000</size>
+-    </memory>
+-  </hardware>
+-  <overwrite>
+-    <conditions>
+-      <arch>armv6l</arch>
+-      <arch>armv7l</arch>
+-    </conditions>
+-    <hardware>
+-      <memory>
+-        <size unit="M">2600</size>
+-      </memory>
+-    </hardware>
+-  </overwrite>
+-</constraints>

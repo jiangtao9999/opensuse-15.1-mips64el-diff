@@ -1,0 +1,13 @@
+Index: knotes.spec
+===================================================================
+--- knotes.spec	(revision 1)
++++ knotes.spec	(working copy)
+@@ -77,7 +77,7 @@
+ Obsoletes:      knotes5 < %{version}
+ Provides:       knotes5 = %{version}
+ # It can only build on the same platforms as Qt Webengine
+-ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 mips mips64
++ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 %mips
+ %if 0%{?suse_version} > 1325
+ BuildRequires:  libboost_headers-devel
+ %else

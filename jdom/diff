@@ -1,0 +1,16 @@
+Index: jdom.spec
+===================================================================
+--- jdom.spec	(revision 1)
++++ jdom.spec	(working copy)
+@@ -156,9 +156,9 @@
+ %patch2
+ 
+ %build
+-export JAVA_OPTS="-source 1.6 -target 1.6 -encoding UTF-8 -J-Xss4m"
++export JAVA_OPTS="-source 1.6 -target 1.6 -encoding UTF-8 -J-Xss8m"
+ export JAVAC="javac ${JAVA_OPTS} "
+-export ANT_OPTS="-Xss4m"
++export ANT_OPTS="-Xss8m"
+ i=0
+ export CLASSPATH="%{stage1_build_dir}:$(build-classpath $LIBGCJ xerces-j2 xalan-j2 xalan-j2-serializer junit relaxngDatatype servletapi5 xpp2 xpp3):%{jaxen_dir}/src/java/main/:%{jdom_dir}/src/java/:%{saxpath_dir}/src/java/main/:%{xom_dir}/src/:%{dom4j_dir}/src/java"
+ SOURCE_DIRS="%{jaxen_dir}/src/java/main/ %{jdom_dir}/src/java/ %{saxpath_dir}/src/java/main/ %{xom_dir}/src/ %{dom4j_dir}/src/java"

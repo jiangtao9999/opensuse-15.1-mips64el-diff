@@ -1,0 +1,49 @@
+Index: poedit.spec
+===================================================================
+--- poedit.spec	(revision 1)
++++ poedit.spec	(working copy)
+@@ -27,6 +27,7 @@
+ Group:          Development/Tools/Other
+ URL:            http://www.poedit.net/
+ Source:         https://github.com/vslavik/poedit/releases/download/v%{version}-oss/%{name}-%{version}.tar.gz
++Patch1:         poedit-2.2.1-fix-mips64.patch
+ BuildRequires:  fdupes
+ BuildRequires:  gcc-c++
+ BuildRequires:  libboost_iostreams-devel >= 1.60
+@@ -63,6 +64,7 @@
+ 
+ %prep
+ %setup -q
++%patch1 -p1
+ %if !%{with bundled_deps}
+ # Remove bundled dependencies, use the ones provided by the distribution
+ rm -r deps
+Index: poedit-2.2.1-fix-mips64.patch
+===================================================================
+--- poedit-2.2.1-fix-mips64.patch	(revision 0)
++++ poedit-2.2.1-fix-mips64.patch	(working copy)
+@@ -0,0 +1,12 @@
++diff -Nrui poedit-2.2.1-orig/configure poedit-2.2.1/configure
++--- poedit-2.2.1-orig/configure	2020-05-16 19:18:54.563147890 +0800
+++++ poedit-2.2.1/configure	2020-05-16 19:21:13.031044664 +0800
++@@ -5852,7 +5852,7 @@
++                         case ${host_cpu} in #(
++   x86_64) :
++     libsubdirs="lib64 libx32 lib lib64" ;; #(
++-  ppc64|powerpc64|s390x|sparc64|aarch64|ppc64le|powerpc64le|riscv64) :
+++  ppc64|powerpc64|s390x|sparc64|aarch64|ppc64le|powerpc64le|riscv64|mips64*) :
++     libsubdirs="lib64 lib lib64" ;; #(
++   *) :
++     libsubdirs="lib"
+Index: _constraints
+===================================================================
+--- _constraints	(revision 1)
++++ _constraints	(working copy)
+@@ -1,7 +0,0 @@
+-<constraints>
+-  <hardware>
+-    <memory>
+-      <size unit="M">4096</size>
+-    </memory>
+-  </hardware>
+-</constraints> 

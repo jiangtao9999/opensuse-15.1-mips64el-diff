@@ -1,0 +1,13 @@
+Index: kontact.spec
+===================================================================
+--- kontact.spec	(revision 1)
++++ kontact.spec	(working copy)
+@@ -56,7 +56,7 @@
+ Provides:       kontact5 = %{version}
+ Obsoletes:      kontact5 < %{version}
+ # It can only build on the same platforms as Qt Webengine
+-ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 mips mips64
++ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 %mips
+ %if %{with lang}
+ Recommends:     %{name}-lang
+ %endif

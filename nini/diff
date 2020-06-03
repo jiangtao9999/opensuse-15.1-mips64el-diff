@@ -1,0 +1,12 @@
+Index: nini.spec
+===================================================================
+--- nini.spec	(revision 1)
++++ nini.spec	(working copy)
+@@ -29,6 +29,7 @@
+ BuildRequires:  unzip
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ BuildArch:      noarch
++ExcludeArch:    %mips64
+ 
+ %description
+ Nini is an uncommonly powerful .NET configuration library designed to

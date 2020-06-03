@@ -1,0 +1,12 @@
+Index: mono-addins.spec
+===================================================================
+--- mono-addins.spec	(revision 1)
++++ mono-addins.spec	(working copy)
+@@ -31,6 +31,7 @@
+ BuildRequires:  pkgconfig(mono)
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ BuildArch:      noarch
++ExcludeArch:    %mips64
+ 
+ %description
+ Mono.Addins is a generic framework for creating extensible

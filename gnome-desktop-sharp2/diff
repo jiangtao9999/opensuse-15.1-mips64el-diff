@@ -1,0 +1,12 @@
+Index: gnome-desktop-sharp2.spec
+===================================================================
+--- gnome-desktop-sharp2.spec	(revision 1)
++++ gnome-desktop-sharp2.spec	(working copy)
+@@ -42,6 +42,7 @@
+ BuildRequires:  pkgconfig(vte)
+ Requires:       libgnome-desktop-2-17
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
++ExcludeArch:    %mips
+ 
+ %description
+ Mono bindings for libgnome-desktop

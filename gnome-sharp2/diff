@@ -1,0 +1,12 @@
+Index: gnome-sharp2.spec
+===================================================================
+--- gnome-sharp2.spec	(revision 1)
++++ gnome-sharp2.spec	(working copy)
+@@ -41,6 +41,7 @@
+ BuildRequires:  pkgconfig(mono)
+ BuildRequires:  pkgconfig(mono-cairo)
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
++ExcludeArch:    %mips
+ 
+ %description
+ This package contains Mono bindings for GNOME.

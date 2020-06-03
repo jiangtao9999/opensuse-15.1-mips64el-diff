@@ -1,0 +1,20 @@
+Index: ffmpeg-4.spec
+===================================================================
+--- ffmpeg-4.spec	(revision 1)
++++ ffmpeg-4.spec	(working copy)
+@@ -587,6 +587,15 @@
+ 	--disable-cuda \
+ 	--disable-cuvid \
+ %endif
++%ifarch %mips
++	--disable-mipsdsp \
++	--disable-mipsdspr2 \
++	--disable-msa \
++	--disable-mmi \
++%endif
++%ifarch %mips32
++	--disable-mipsfpu \
++%endif
+ %if %{with libaom}
+ 	--enable-libaom \
+ %endif

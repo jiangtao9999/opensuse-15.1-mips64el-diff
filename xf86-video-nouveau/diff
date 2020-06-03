@@ -1,0 +1,13 @@
+Index: xf86-video-nouveau.spec
+===================================================================
+--- xf86-video-nouveau.spec	(revision 1)
++++ xf86-video-nouveau.spec	(working copy)
+@@ -34,7 +34,7 @@
+ Requires:       xorg-x11-server
+ Provides:       xorg-x11-driver-video-nouveau  = %{version}
+ Obsoletes:      xorg-x11-driver-video-nouveau  < %{version}
+-ExclusiveArch:  %ix86 x86_64 ppc ppc64 ppc64le %arm aarch64
++ExclusiveArch:  %ix86 x86_64 ppc ppc64 ppc64le %arm aarch64 %mips
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ Source0:        http://xorg.freedesktop.org/releases/individual/driver/%{name}-%{version}.tar.bz2
+ Patch0:         N_xf86-video-nouveau_nva3-noaccel-info.patch

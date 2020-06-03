@@ -1,0 +1,12 @@
+Index: dbus-sharp.spec
+===================================================================
+--- dbus-sharp.spec	(revision 1)
++++ dbus-sharp.spec	(working copy)
+@@ -39,6 +39,7 @@
+ %else
+ BuildRequires:  mono-devel
+ %endif
++ExcludeArch:    %mips
+ 
+ %description
+ This is DBus-Sharp, a fork of ndesk-dbus or simply a C# implementation

@@ -1,0 +1,41 @@
+Index: golang-github-kr-pty.spec
+===================================================================
+--- golang-github-kr-pty.spec	(revision 1)
++++ golang-github-kr-pty.spec	(working copy)
+@@ -32,6 +32,7 @@
+ Url:            https://%{provider_prefix}
+ Source0:        %{repo}-%{version}.tar.xz
+ Source1:        rpmlintrc
++Patch1:         pty-fix-mips.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ 
+ BuildRequires:  golang-packaging
+@@ -45,6 +46,7 @@
+ 
+ %prep
+ %setup -q -n %{repo}-%{version}
++%patch1 -p1
+ 
+ %build
+ %goprep %{import_path}
+Index: pty-fix-mips.patch
+===================================================================
+--- pty-fix-mips.patch	(revision 0)
++++ pty-fix-mips.patch	(working copy)
+@@ -0,0 +1,16 @@
++diff -Nrui pty-0.0.0+git20160716.ce7fa45-orig/ztypes_mipsx.go pty-0.0.0+git20160716.ce7fa45/ztypes_mipsx.go
++--- pty-0.0.0+git20160716.ce7fa45-orig/ztypes_mipsx.go	1970-01-01 08:00:00.000000000 +0800
+++++ pty-0.0.0+git20160716.ce7fa45/ztypes_mipsx.go	2020-05-04 13:02:10.798331448 +0800
++@@ -0,0 +1,12 @@
+++// Created by cgo -godefs - DO NOT EDIT
+++// cgo -godefs types.go
+++
+++// +build linux
+++// +build mips mipsle mips64 mips64le
+++
+++package pty
+++
+++type (
+++	_C_int  int32
+++	_C_uint uint32
+++)

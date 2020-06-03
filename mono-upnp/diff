@@ -1,0 +1,12 @@
+Index: mono-upnp.spec
+===================================================================
+--- mono-upnp.spec	(revision 1)
++++ mono-upnp.spec	(working copy)
+@@ -43,6 +43,7 @@
+ BuildRequires:  pkgconfig(mono-addins)
+ BuildRequires:  pkgconfig(mono-nunit)
+ BuildRequires:  pkgconfig(taglib-sharp)
++ExcludeArch:    %mips64
+ 
+ %description
+ Mono.Upnp is a set of client/server libraries for the Universal Plug

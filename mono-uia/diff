@@ -1,0 +1,12 @@
+Index: mono-uia.spec
+===================================================================
+--- mono-uia.spec	(revision 1)
++++ mono-uia.spec	(working copy)
+@@ -46,6 +46,7 @@
+ Summary:        Implementations of members and interfaces based on MS UIA API
+ License:        MIT
+ Group:          System/Libraries
++ExcludeArch:    %mips64
+ 
+ %description
+ User Interface Automation (UIA) is a new accessibility standard

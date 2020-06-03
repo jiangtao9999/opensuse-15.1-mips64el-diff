@@ -1,0 +1,12 @@
+Index: kicad.spec
+===================================================================
+--- kicad.spec	(revision 1)
++++ kicad.spec	(working copy)
+@@ -80,6 +80,7 @@
+ Recommends:     %{name}-library-install = %{version}
+ Recommends:     %{name}-footprints = %{version}
+ Obsoletes:      kicad = 20140120
++ExcludeArch:    %mips
+ 
+ %description
+ Kicad is an open source (GPL) software for the creation of electronic schematic

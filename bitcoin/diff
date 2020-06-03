@@ -1,0 +1,49 @@
+Index: bitcoin.spec
+===================================================================
+--- bitcoin.spec	(revision 1)
++++ bitcoin.spec	(working copy)
+@@ -34,6 +34,7 @@
+ Source1:        %{base}d.service
+ Source2:        %{base}d.firewall
+ Source3:        %{base}d.conf
++Patch1:         bitcoin-fix-boost.patch
+ BuildRequires:  autoconf
+ BuildRequires:  automake
+ BuildRequires:  gcc-c++
+@@ -170,6 +171,7 @@
+ 
+ %prep
+ %setup -q
++%patch1 -p1
+ # remove 128 resolution from Icon= line
+ sed -i s/128// contrib/debian/%{name}-qt.desktop
+ 
+Index: bitcoin-fix-boost.patch
+===================================================================
+--- bitcoin-fix-boost.patch	(revision 0)
++++ bitcoin-fix-boost.patch	(working copy)
+@@ -0,0 +1,12 @@
++diff -Nuir bitcoin-0.16.3-orig/build-aux/m4/ax_boost_base.m4 bitcoin-0.16.3/build-aux/m4/ax_boost_base.m4
++--- bitcoin-0.16.3-orig/build-aux/m4/ax_boost_base.m4	2020-04-28 22:28:58.989138413 +0800
+++++ bitcoin-0.16.3/build-aux/m4/ax_boost_base.m4	2020-04-28 22:29:43.377585309 +0800
++@@ -95,7 +95,7 @@
++       x86_64)
++         libsubdirs="lib64 libx32 lib lib64"
++         ;;
++-      ppc64|s390x|sparc64|aarch64|ppc64le)
+++      ppc64|s390x|sparc64|aarch64|ppc64le|mips64)
++         libsubdirs="lib64 lib lib64"
++         ;;
++     esac
+Index: _constraints
+===================================================================
+--- _constraints	(revision 1)
++++ _constraints	(working copy)
+@@ -1,7 +0,0 @@
+-<constraints>
+-  <hardware>
+-    <memory>
+-      <size unit="M">4086</size>
+-    </memory>
+-  </hardware>
+-</constraints>

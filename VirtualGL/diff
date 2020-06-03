@@ -1,0 +1,13 @@
+Index: VirtualGL.spec
+===================================================================
+--- VirtualGL.spec	(revision 1)
++++ VirtualGL.spec	(working copy)
+@@ -117,7 +117,7 @@
+ %install
+ %cmake_install
+ # Fix placement of 64b glxspheres
+-%ifarch x86_64 s390x ppc64 ppc64le aarch64
++%ifarch x86_64 s390x ppc64 ppc64le aarch64 %mips64
+ mv %{buildroot}%{_bindir}/glxspheres* %{buildroot}%{_bindir}/glxspheres
+ %endif
+ # Fix fakelib placement

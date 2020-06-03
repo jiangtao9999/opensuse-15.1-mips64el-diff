@@ -1,0 +1,13 @@
+Index: kgpg.spec
+===================================================================
+--- kgpg.spec	(revision 1)
++++ kgpg.spec	(working copy)
+@@ -52,7 +52,7 @@
+ BuildRequires:  pkgconfig(Qt5Widgets)
+ Requires:       gpg2
+ # It can only build on the same platforms as Qt Webengine
+-ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 mips mips64
++ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 %mips
+ %if 0%{?suse_version} > 1325
+ BuildRequires:  libboost_headers-devel
+ %else

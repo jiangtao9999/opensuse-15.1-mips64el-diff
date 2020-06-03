@@ -1,0 +1,14 @@
+Index: flint.spec
+===================================================================
+--- flint.spec	(revision 1)
++++ flint.spec	(working copy)
+@@ -83,6 +83,9 @@
+ export CFLAGS="$CFLAGS -mno-popcnt"
+ export CXXFLAGS="$CXXFLAGS -mno-popcnt"
+ %endif
++%ifarch %mips
++export CFLAGS="$CFLAGS -std=c99"
++%endif
+ %configure --disable-static --with-ntl --enable-reentrant
+ make %{?_smp_mflags} V=0
+ 

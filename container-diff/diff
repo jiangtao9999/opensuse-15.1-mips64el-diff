@@ -1,0 +1,49 @@
+Index: container-diff.spec
+===================================================================
+--- container-diff.spec	(revision 1)
++++ container-diff.spec	(working copy)
+@@ -25,6 +25,7 @@
+ Group:          System/Management
+ Url:            https://github.com/GoogleCloudPlatform/container-diff
+ Source0:        %{name}-%{version}.tar.xz
++Patch1:         container-diff-fix-mips.patch
+ BuildRequires:  fdupes
+ BuildRequires:  golang-packaging
+ BuildRequires:  golang(API) >= 1.7
+@@ -47,6 +48,7 @@
+ 
+ %prep
+ %setup -q
++%patch1 -p1
+ 
+ %build
+ # We can't use symlinks here because go-list gets confused by symlinks, so we
+@@ -61,7 +63,11 @@
+ # Build container-diff
+ export BUILDTAGS=""
+ go build -tags "$BUILDTAGS" \
++%ifnarch %mips
+          -buildmode=pie \
++%else
++         -buildmode=exe \
++%endif
+          -ldflags '-s -w -X %{project}/version.version=v%{version}' \
+          -o bin/container-diff \
+          %{project}
+Index: container-diff-fix-mips.patch
+===================================================================
+--- container-diff-fix-mips.patch	(revision 0)
++++ container-diff-fix-mips.patch	(working copy)
+@@ -0,0 +1,12 @@
++diff -Nrui container-diff-0.9.0-orig/vendor/github.com/docker/docker/pkg/system/stat_linux.go container-diff-0.9.0/vendor/github.com/docker/docker/pkg/system/stat_linux.go
++--- container-diff-0.9.0-orig/vendor/github.com/docker/docker/pkg/system/stat_linux.go	2020-04-30 19:44:21.479208251 +0800
+++++ container-diff-0.9.0/vendor/github.com/docker/docker/pkg/system/stat_linux.go	2020-04-30 19:44:43.065600030 +0800
++@@ -8,7 +8,7 @@
++ 		mode: s.Mode,
++ 		uid:  s.Uid,
++ 		gid:  s.Gid,
++-		rdev: s.Rdev,
+++		rdev: uint64(s.Rdev),
++ 		mtim: s.Mtim}, nil
++ }
++ 

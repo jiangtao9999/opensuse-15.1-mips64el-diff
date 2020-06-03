@@ -1,0 +1,40 @@
+Index: QtDMM.spec
+===================================================================
+--- QtDMM.spec	(revision 1)
++++ QtDMM.spec	(working copy)
+@@ -26,7 +26,10 @@
+ Source:         https://github.com/tuxmaster/QtDMM/archive/%{version}.tar.gz#/%{name}-%{version}.tar.gz
+ # PATCH-FIX-UPSTREAM QtDMM-0.9.2-newmodels.patch
+ Patch0:         QtDMM-0.9.2-newmodels.patch
++Patch1:         QtDMM-0.9.8-remove-ld.gold.patch
++%ifnarch %mips
+ BuildRequires:  binutils-gold
++%endif
+ BuildRequires:  libqt5-linguist
+ BuildRequires:  pkgconfig
+ BuildRequires:  update-desktop-files
+@@ -50,6 +53,9 @@
+ %prep
+ %setup -q
+ %patch0 -p1
++%ifarch %mips
++%patch1 -p1
++%endif
+ 
+ %build
+ %qmake5
+Index: QtDMM-0.9.8-remove-ld.gold.patch
+===================================================================
+--- QtDMM-0.9.8-remove-ld.gold.patch	(revision 0)
++++ QtDMM-0.9.8-remove-ld.gold.patch	(working copy)
+@@ -0,0 +1,10 @@
++diff -Nrui QtDMM-0.9.8-orig/src/src.pro QtDMM-0.9.8/src/src.pro
++--- QtDMM-0.9.8-orig/src/src.pro	2020-05-17 23:21:39.435894134 +0800
+++++ QtDMM-0.9.8/src/src.pro	2020-05-17 23:21:59.676974046 +0800
++@@ -1,6 +1,5 @@
++ QT       += core gui widgets printsupport serialport
++ CONFIG   += c++14 no_keywords
++-QMAKE_LFLAGS += -fuse-ld=gold
++ 
++ TEMPLATE        = app
++ 

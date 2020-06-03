@@ -1,0 +1,13 @@
+Index: kaddressbook.spec
+===================================================================
+--- kaddressbook.spec	(revision 1)
++++ kaddressbook.spec	(working copy)
+@@ -57,7 +57,7 @@
+ Provides:       kaddressbook5 = %{version}
+ Obsoletes:      kaddressbook5 < %{version}
+ # It can only build on the same platforms as Qt Webengine
+-ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 mips mips64
++ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 %mips
+ 
+ %description
+ The KDE Address Book

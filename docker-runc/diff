@@ -1,0 +1,72 @@
+Index: docker-runc.spec
+===================================================================
+--- docker-runc.spec	(revision 1)
++++ docker-runc.spec	(working copy)
+@@ -55,6 +55,7 @@
+ Patch1:         CVE-2019-5736.patch
+ # SUSE-FIX: Backport of various upstream patches. bsc#1131314 bsc#1131553
+ Patch2:         bsc1131553-0001-nsenter-cloned_binary-various-cleanups.patch
++Patch3:         docker-runc-remove-pie.patch
+ BuildRequires:  fdupes
+ BuildRequires:  go-go-md2man
+ BuildRequires:  libapparmor-devel
+@@ -121,6 +122,7 @@
+ %patch1 -p1
+ # bsc#1131314 bsc#1131553
+ %patch2 -p1
++%patch3 -p1
+ 
+ %build
+ # Do not use symlinks. If you want to run the unit tests for this package at
+@@ -134,7 +136,11 @@
+ 
+ # Build all features.
+ export BUILDTAGS="apparmor selinux seccomp"
++%ifnarch %mips
+ export BUILDFLAGS="-buildmode=pie -gccgoflags='-Wl,--add-needed -Wl,--no-as-needed -static-libgo -ldl -lselinux -lapparmor -lseccomp'"
++%else
++export BUILDFLAGS="-gccgoflags='-Wl,--add-needed -Wl,--no-as-needed -static-libgo -ldl -lselinux -lapparmor -lseccomp'"
++%endif
+ 
+ (cat <<EOF
+ export GOPATH="$GOPATH"
+Index: docker-runc-remove-pie.patch
+===================================================================
+--- docker-runc-remove-pie.patch	(revision 0)
++++ docker-runc-remove-pie.patch	(working copy)
+@@ -0,0 +1,35 @@
++diff -Nrui docker-runc-git.96ec2177ae841256168fcf76954f7177af9446eb-orig/Makefile docker-runc-git.96ec2177ae841256168fcf76954f7177af9446eb/Makefile
++--- docker-runc-git.96ec2177ae841256168fcf76954f7177af9446eb-orig/Makefile	2020-03-20 18:53:50.369493960 +0800
+++++ docker-runc-git.96ec2177ae841256168fcf76954f7177af9446eb/Makefile	2020-03-20 18:56:07.469053237 +0800
++@@ -30,14 +30,14 @@
++ .DEFAULT: runc
++ 
++ runc: $(SOURCES)
++-	$(GO) build -buildmode=pie $(EXTRA_FLAGS) -ldflags "-X main.gitCommit=${COMMIT} -X main.version=${VERSION} $(EXTRA_LDFLAGS)" -tags "$(BUILDTAGS)" -o runc .
+++	$(GO) build $(EXTRA_FLAGS) -ldflags "-X main.gitCommit=${COMMIT} -X main.version=${VERSION} $(EXTRA_LDFLAGS)" -tags "$(BUILDTAGS)" -o runc .
++ 
++ all: runc recvtty
++ 
++ recvtty: contrib/cmd/recvtty/recvtty
++ 
++ contrib/cmd/recvtty/recvtty: $(SOURCES)
++-	$(GO) build -buildmode=pie $(EXTRA_FLAGS) -ldflags "-X main.gitCommit=${COMMIT} -X main.version=${VERSION} $(EXTRA_LDFLAGS)" -tags "$(BUILDTAGS)" -o contrib/cmd/recvtty/recvtty ./contrib/cmd/recvtty
+++	$(GO) build $(EXTRA_FLAGS) -ldflags "-X main.gitCommit=${COMMIT} -X main.version=${VERSION} $(EXTRA_LDFLAGS)" -tags "$(BUILDTAGS)" -o contrib/cmd/recvtty/recvtty ./contrib/cmd/recvtty
++ 
++ static: $(SOURCES)
++ 	CGO_ENABLED=1 $(GO) build $(EXTRA_FLAGS) -tags "$(BUILDTAGS) netgo osusergo static_build" -installsuffix netgo -ldflags "-w -extldflags -static -X main.gitCommit=${COMMIT} -X main.version=${VERSION} $(EXTRA_LDFLAGS)" -o runc .
++@@ -122,10 +122,10 @@
++ 	docker run ${DOCKER_RUN_PROXY} -e BUILDTAGS="$(BUILDTAGS)" --rm -v $(CURDIR):/go/src/$(PROJECT) $(RUNC_IMAGE) make localcross
++ 
++ localcross:
++-	CGO_ENABLED=1 GOARCH=arm GOARM=6 CC=arm-linux-gnueabi-gcc $(GO) build -buildmode=pie $(EXTRA_FLAGS) -ldflags "-X main.gitCommit=${COMMIT} -X main.version=${VERSION} $(EXTRA_LDFLAGS)" -tags "$(BUILDTAGS)" -o runc-armel .
++-	CGO_ENABLED=1 GOARCH=arm GOARM=7 CC=arm-linux-gnueabihf-gcc $(GO) build -buildmode=pie $(EXTRA_FLAGS) -ldflags "-X main.gitCommit=${COMMIT} -X main.version=${VERSION} $(EXTRA_LDFLAGS)" -tags "$(BUILDTAGS)" -o runc-armhf .
++-	CGO_ENABLED=1 GOARCH=arm64 CC=aarch64-linux-gnu-gcc $(GO) build -buildmode=pie $(EXTRA_FLAGS) -ldflags "-X main.gitCommit=${COMMIT} -X main.version=${VERSION} $(EXTRA_LDFLAGS)" -tags "$(BUILDTAGS)" -o runc-arm64 .
++-	CGO_ENABLED=1 GOARCH=ppc64le CC=powerpc64le-linux-gnu-gcc $(GO) build -buildmode=pie $(EXTRA_FLAGS) -ldflags "-X main.gitCommit=${COMMIT} -X main.version=${VERSION} $(EXTRA_LDFLAGS)" -tags "$(BUILDTAGS)" -o runc-ppc64le .
+++	CGO_ENABLED=1 GOARCH=arm GOARM=6 CC=arm-linux-gnueabi-gcc $(GO) build $(EXTRA_FLAGS) -ldflags "-X main.gitCommit=${COMMIT} -X main.version=${VERSION} $(EXTRA_LDFLAGS)" -tags "$(BUILDTAGS)" -o runc-armel .
+++	CGO_ENABLED=1 GOARCH=arm GOARM=7 CC=arm-linux-gnueabihf-gcc $(GO) build $(EXTRA_FLAGS) -ldflags "-X main.gitCommit=${COMMIT} -X main.version=${VERSION} $(EXTRA_LDFLAGS)" -tags "$(BUILDTAGS)" -o runc-armhf .
+++	CGO_ENABLED=1 GOARCH=arm64 CC=aarch64-linux-gnu-gcc $(GO) build $(EXTRA_FLAGS) -ldflags "-X main.gitCommit=${COMMIT} -X main.version=${VERSION} $(EXTRA_LDFLAGS)" -tags "$(BUILDTAGS)" -o runc-arm64 .
+++	CGO_ENABLED=1 GOARCH=ppc64le CC=powerpc64le-linux-gnu-gcc $(GO) build $(EXTRA_FLAGS) -ldflags "-X main.gitCommit=${COMMIT} -X main.version=${VERSION} $(EXTRA_LDFLAGS)" -tags "$(BUILDTAGS)" -o runc-ppc64le .
++ 
++ # memoize allpackages, so that it's executed only once and only if used
++ _allpackages = $(shell $(GO) list ./... | grep -v vendor)

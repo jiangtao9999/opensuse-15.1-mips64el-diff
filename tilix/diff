@@ -1,0 +1,12 @@
+Index: tilix.spec
+===================================================================
+--- tilix.spec	(revision 1)
++++ tilix.spec	(working copy)
+@@ -58,6 +58,7 @@
+ BuildRequires:  ldc
+ BuildRequires:  ldc-phobos-devel
+ %endif
++ExcludeArch:    %mips
+ 
+ %description
+ A tiling terminal emulator for Linux using GTK+ 3

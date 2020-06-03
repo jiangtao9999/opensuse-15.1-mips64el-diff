@@ -1,0 +1,37 @@
+Index: golang-github-prometheus-prometheus.spec
+===================================================================
+--- golang-github-prometheus-prometheus.spec	(revision 1)
++++ golang-github-prometheus-prometheus.spec	(working copy)
+@@ -32,6 +32,7 @@
+ Patch1:         0001-Do-not-force-the-pure-Go-name-resolver.patch
+ # Lifted from Debian's prometheus package
+ Patch2:         0002-Default-settings.patch
++Patch3:         prometheus-2.7.1-fix-mips64le.patch
+ %ifarch aarch64
+ # For some reason the aarch64 build fails with:
+ #   + promu build
+@@ -69,6 +70,7 @@
+ %setup -q -n prometheus-%{version}
+ %patch1 -p 1
+ %patch2 -p 1
++%patch3 -p 1
+ 
+ %build
+ %goprep github.com/prometheus/prometheus
+Index: prometheus-2.7.1-fix-mips64le.patch
+===================================================================
+--- prometheus-2.7.1-fix-mips64le.patch	(revision 0)
++++ prometheus-2.7.1-fix-mips64le.patch	(working copy)
+@@ -0,0 +1,12 @@
++diff -Nuir prometheus-2.7.1-orig/vendor/golang.org/x/sys/unix/zsyscall_linux_mips64le.go prometheus-2.7.1/vendor/golang.org/x/sys/unix/zsyscall_linux_mips64le.go
++--- prometheus-2.7.1-orig/vendor/golang.org/x/sys/unix/zsyscall_linux_mips64le.go	2020-05-04 13:18:05.235318577 +0800
+++++ prometheus-2.7.1/vendor/golang.org/x/sys/unix/zsyscall_linux_mips64le.go	2020-05-04 13:26:22.853943516 +0800
++@@ -2331,3 +2331,8 @@
++ 	}
++ 	return
++ }
+++
+++func InotifyInit() (fd int, err error) {
+++        return InotifyInit1(0)
+++}
+++

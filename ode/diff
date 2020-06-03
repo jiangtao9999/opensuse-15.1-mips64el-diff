@@ -1,0 +1,54 @@
+Index: ode.spec
+===================================================================
+--- ode.spec	(revision 1)
++++ ode.spec	(working copy)
+@@ -28,6 +28,7 @@
+ Source0:        https://bitbucket.org/odedevs/ode/downloads/%{name}-%{version}.tar.gz
+ Source1:        ode-config.1
+ Patch0:         ode-iso-cpp.patch
++Patch1:         ode-0.15.2-uintptr_t-replace-uintptr.patch
+ BuildRequires:  Mesa-devel
+ BuildRequires:  freeglut-devel
+ BuildRequires:  gcc-c++
+@@ -73,6 +74,7 @@
+ %prep
+ %setup -q -n ode-%{version}
+ %patch0 -p1
++%patch1 -p1
+ 
+ %build
+ #autoreconf -fi
+@@ -89,7 +91,7 @@
+ gzip -c9 %{SOURCE1} | tee -a %{buildroot}%{_mandir}/man1/ode-config.1.gz
+ find %{buildroot} -type f -name "*.la" -delete -print
+ 
+-%ifarch %{ix86}
++%ifarch %{ix86} %mips
+ # Fail.
+ %else
+ %check
+Index: ode-0.15.2-uintptr_t-replace-uintptr.patch
+===================================================================
+--- ode-0.15.2-uintptr_t-replace-uintptr.patch	(revision 0)
++++ ode-0.15.2-uintptr_t-replace-uintptr.patch	(working copy)
+@@ -0,0 +1,20 @@
++diff -Nrui ode-0.15.2-orig/ode/src/util.h ode-0.15.2/ode/src/util.h
++--- ode-0.15.2-orig/ode/src/util.h	2020-05-14 22:12:34.928144302 +0800
+++++ ode-0.15.2/ode/src/util.h	2020-05-14 22:44:54.779413620 +0800
++@@ -47,12 +47,12 @@
++ /* round something up to be a multiple of the EFFICIENT_ALIGNMENT */
++ 
++ #define dEFFICIENT_SIZE(x) (((x) + (EFFICIENT_ALIGNMENT - 1)) & (int)(~(EFFICIENT_ALIGNMENT - 1))) // Casting the mask to int ensures sign-extension to larger integer sizes
++-#define dEFFICIENT_PTR(p) ((void *)dEFFICIENT_SIZE((uintptr)(p)))
++-#define dOFFSET_EFFICIENTLY(p, b) ((void *)((uintptr)(p) + dEFFICIENT_SIZE(b)))
+++#define dEFFICIENT_PTR(p) ((void *)dEFFICIENT_SIZE((uintptr_t)(p)))
+++#define dOFFSET_EFFICIENTLY(p, b) ((void *)((uintptr_t)(p) + dEFFICIENT_SIZE(b)))
++ 
++ #define dOVERALIGNED_SIZE(size, alignment) dEFFICIENT_SIZE((size) + ((alignment) - EFFICIENT_ALIGNMENT))
++-#define dOVERALIGNED_PTR(buf_ptr, alignment) ((void *)(((uintptr)(buf_ptr) + ((alignment) - 1)) & (int)(~(alignment - 1)))) // Casting the mask to int ensures sign-extension to larger integer sizes
++-#define dOFFSET_OVERALIGNEDLY(buf_ptr, size, alignment) ((void *)((uintptr)(buf_ptr) + dOVERALIGNED_SIZE(size, alignment)))
+++#define dOVERALIGNED_PTR(buf_ptr, alignment) ((void *)(((uintptr_t)(buf_ptr) + ((alignment) - 1)) & (int)(~(alignment - 1)))) // Casting the mask to int ensures sign-extension to larger integer sizes
+++#define dOFFSET_OVERALIGNEDLY(buf_ptr, size, alignment) ((void *)((uintptr_t)(buf_ptr) + dOVERALIGNED_SIZE(size, alignment)))
++ 
++ /* alloca aligned to the EFFICIENT_ALIGNMENT. note that this can waste
++  * up to 15 bytes per allocation, depending on what alloca() returns.

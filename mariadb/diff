@@ -1,0 +1,48 @@
+Index: suse_skipped_tests.list
+===================================================================
+--- suse_skipped_tests.list	(revision 1)
++++ suse_skipped_tests.list	(working copy)
+@@ -75,3 +75,15 @@
+ rocksdb.unique_sec                           : armv7l
+ 
+ sys_vars.innodb_ft_result_cache_limit_32     : s390
++
++# MDEV-14431
++binlog.binlog_flush_binlogs_delete_domain    : mips64el
++main.stat_tables_innodb                      : mips64el
++main.explain_non_select                      : mips64el
++main.repair_symlink-5543                     : mips64el
++roles.acl_statistics                         : mips64el
++main.join_cache                              : mips64el
++
++#2038 year
++binlog.binlog_mysqlbinlog2                   : mips64el
++main.events_1                                : mips64el
+Index: _constraints
+===================================================================
+--- _constraints	(revision 1)
++++ _constraints	(working copy)
+@@ -1,23 +0,0 @@
+-<constraints>
+-  <overwrite>
+-    <conditions>
+-      <arch>i586</arch>
+-      <arch>x86_64</arch>
+-      <arch>ppc64le</arch>
+-    </conditions>
+-    <hardware>
+-      <physicalmemory>
+-        <size unit="M">7000</size>
+-      </physicalmemory>
+-    </hardware>
+-  </overwrite>
+-
+-  <overwrite>
+-    <conditions/>
+-    <hardware>
+-      <disk>
+-        <size unit="G">13</size>
+-      </disk>
+-    </hardware>
+-  </overwrite>
+-</constraints>

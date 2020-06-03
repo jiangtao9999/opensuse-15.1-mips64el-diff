@@ -1,0 +1,24 @@
+Index: kiwi-boot-descriptions.spec
+===================================================================
+--- kiwi-boot-descriptions.spec	(revision 1)
++++ kiwi-boot-descriptions.spec	(working copy)
+@@ -224,6 +224,7 @@
+ 
+ %prep
+ %setup -q -n custom_boot
++ln -sv ppc arch/mips64
+ 
+ %build
+ 
+Index: kiwi-boot-packages
+===================================================================
+--- kiwi-boot-packages	(revision 1)
++++ kiwi-boot-packages	(working copy)
+@@ -75,6 +75,7 @@
+ ppc:suse-leap15.1:no_boot_descriptions_for_suse-leap15.1_on_ppc_available
+ ppc64:suse-leap15.1:no_boot_descriptions_for_suse-leap15.1_on_ppc64_available
+ ppc64le:suse-leap15.1:no_boot_descriptions_for_suse-leap15.1_on_ppc64le_available
++mips64el:suse-leap15.1:no_boot_descriptions_for_suse-leap15.1_on_mips64el_available
+ s390:suse-leap15.1:no_boot_descriptions_for_suse-leap15.1_on_s390_available
+ s390x:suse-leap15.1:no_boot_descriptions_for_suse-leap15.1_on_s390x_available
+ x86_64:suse-leap15.1:adaptec-firmware atftp bc bind-libs bind-utils btrfsprogs busybox ca-certificates cryptsetup curl dialog dmraid e2fsprogs fbiterm filesystem gettext-runtime glibc-locale hwinfo ifplugd iproute2 iputils kbd kernel-default kernel-firmware kiwi-tools lvm2 make mdadm nbd netcfg nfs-client openSUSE-release parted plymouth plymouth-scripts psmisc rsync tar timezone udev which wicked xfsprogs

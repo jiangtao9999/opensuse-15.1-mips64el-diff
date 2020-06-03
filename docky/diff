@@ -1,0 +1,12 @@
+Index: docky.spec
+===================================================================
+--- docky.spec	(revision 1)
++++ docky.spec	(working copy)
+@@ -58,6 +58,7 @@
+ Recommends:     %{name}-lang
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ %{gconf_schemas_prereq}
++ExcludeArch:    %mips
+ 
+ %description
+ Docky is a full fledged dock application that makes opening common applications and managing windows easier and quicker. Docky is fully integrated into the GNOME Desktop and features a no non-sense approach to configuration and usage. It just works.

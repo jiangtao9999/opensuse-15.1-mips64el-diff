@@ -1,0 +1,12 @@
+Index: alacritty.spec
+===================================================================
+--- alacritty.spec	(revision 1)
++++ alacritty.spec	(working copy)
+@@ -33,6 +33,7 @@
+ BuildRequires:  rust
+ BuildRequires:  rust-std
+ BuildRequires:  xclip
++ExcludeArch:    %mips
+ 
+ %description
+ Alacritty is a terminal emulator written in Rust that leverages the GPU for

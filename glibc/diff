@@ -1,0 +1,13 @@
+Index: glibc.spec
+===================================================================
+--- glibc.spec	(revision 1)
++++ glibc.spec	(working copy)
+@@ -1276,7 +1276,7 @@
+ %ifarch ia64
+ /%{_lib}/ld-linux-ia64.so.2
+ %endif
+-%ifarch ppc s390 mips hppa m68k
++%ifarch ppc s390 %mips hppa m68k
+ /%{_lib}/ld.so.1
+ %endif
+ %ifarch ppc64

@@ -1,0 +1,20 @@
+Index: openarena.spec
+===================================================================
+--- openarena.spec	(revision 1)
++++ openarena.spec	(working copy)
+@@ -26,7 +26,15 @@
+ %ifarch armv7l armv7hl
+ %define postfix armv7l
+ %else
++%ifarch %mips64
++%define postfix mips64
++%else
++%ifarch %mips32
++%define postfix mips
++%else
+ %define postfix %{_target_cpu}
++%endif
++%endif
+ %endif
+ %endif
+ %endif

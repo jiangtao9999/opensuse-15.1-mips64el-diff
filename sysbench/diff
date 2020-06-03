@@ -1,0 +1,12 @@
+Index: sysbench.spec
+===================================================================
+--- sysbench.spec	(revision 1)
++++ sysbench.spec	(working copy)
+@@ -39,6 +39,7 @@
+ BuildRequires:  vim
+ BuildRequires:  pkgconfig(ck)
+ BuildRequires:  pkgconfig(luajit)
++ExcludeArch:    %mips
+ 
+ %description
+ This benchmark was designed for identifying basic system parameters, as

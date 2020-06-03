@@ -1,0 +1,16 @@
+Index: rclone.spec
+===================================================================
+--- rclone.spec	(revision 1)
++++ rclone.spec	(working copy)
+@@ -43,7 +43,11 @@
+ mkdir -p $HOME/go/src/%{import_path}
+ cp -rT $PWD $HOME/go/src/%{import_path}
+ # Build.
++%ifnarch %mips
+ go build -buildmode=pie -o %{name} \
++%else
++go build -buildmode=exe -o %{name} \
++%endif
+          -ldflags "-s -X github.com/ncw/rclone/fs.Version=v%{version}" \
+ 		 %{import_path}
+ 

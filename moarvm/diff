@@ -1,0 +1,26 @@
+Index: moarvm.spec
+===================================================================
+--- moarvm.spec	(revision 1)
++++ moarvm.spec	(working copy)
+@@ -26,6 +26,9 @@
+ Url:            http://moarvm.org
+ Source:         http://moarvm.org/releases/MoarVM-%{mvrel}.tar.gz
+ BuildRequires:  perl(ExtUtils::Command)
++%ifarch %mips
++BuildRequires:  libffi-devel
++%endif
+ 
+ %description
+ MoarVM (short for Metamodel On A Runtime Virtual Machine) is a runtime built
+@@ -45,7 +48,11 @@
+ %setup -q -n MoarVM-%{mvrel}
+ 
+ %build
++%ifnarch %mips
+ perl Configure.pl --prefix=%{_usr} --libdir=%{_libdir} --debug --optimize=3
++%else
++perl Configure.pl --prefix=%{_usr} --libdir=%{_libdir} --debug --optimize=3 --has-libffi
++%endif
+ make %{?_smp_mflags}
+ 
+ %install

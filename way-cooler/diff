@@ -1,0 +1,12 @@
+Index: way-cooler.spec
+===================================================================
+--- way-cooler.spec	(revision 1)
++++ way-cooler.spec	(working copy)
+@@ -39,6 +39,7 @@
+ BuildRequires:  pkgconfig(wlc)
+ BuildRequires:  pkgconfig(xkbcommon)
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
++ExcludeArch:    %mips
+ 
+ %description
+ Way Cooler is a customizable tiling window manager written in Rust for Wayland and configurable using Lua.

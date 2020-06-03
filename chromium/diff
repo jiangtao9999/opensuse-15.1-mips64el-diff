@@ -1,0 +1,13 @@
+Index: chromium.spec
+===================================================================
+--- chromium.spec	(revision 1)
++++ chromium.spec	(working copy)
+@@ -215,7 +215,7 @@
+ Obsoletes:      chromium-ffmpeg
+ Obsoletes:      chromium-ffmpegsumo
+ # no 32bit supported and it takes ages to build
+-ExcludeArch:    %{ix86} %{arm} ppc ppc64 ppc64le s390 s390x
++ExcludeArch:    %{ix86} %{arm} ppc ppc64 ppc64le s390 s390x %mips
+ %if %{with pipewire}
+ BuildRequires:  pkgconfig(libpipewire-0.2)
+ %endif

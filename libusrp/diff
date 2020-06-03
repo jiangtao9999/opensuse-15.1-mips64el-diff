@@ -1,0 +1,37 @@
+Index: libusrp.spec
+===================================================================
+--- libusrp.spec	(revision 1)
++++ libusrp.spec	(working copy)
+@@ -25,6 +25,7 @@
+ Group:          Development/Libraries/C and C++
+ URL:            https://git.osmocom.org/libusrp
+ Source:         %{name}-%{version}.tar.xz
++Patch1:         libusrp-fix-boost-libdir.patch
+ BuildRequires:  autoconf
+ BuildRequires:  automake
+ BuildRequires:  fdupes
+@@ -87,6 +88,7 @@
+ 
+ %prep
+ %setup -q
++%patch1 -p1
+ 
+ %build
+ autoreconf -fiv
+Index: libusrp-fix-boost-libdir.patch
+===================================================================
+--- libusrp-fix-boost-libdir.patch	(revision 0)
++++ libusrp-fix-boost-libdir.patch	(working copy)
+@@ -0,0 +1,12 @@
++diff -Nrui libusrp-3.4.2+git.20190113-orig/m4/ax_boost_base.m4 libusrp-3.4.2+git.20190113/m4/ax_boost_base.m4
++--- libusrp-3.4.2+git.20190113-orig/m4/ax_boost_base.m4	2020-05-18 15:17:33.457789274 +0800
+++++ libusrp-3.4.2+git.20190113/m4/ax_boost_base.m4	2020-05-18 15:18:08.555012242 +0800
++@@ -113,7 +113,7 @@
++     dnl are found, e.g. when only header-only libraries are installed!
++     AS_CASE([${host_cpu}],
++       [x86_64],[libsubdirs="lib64 libx32 lib lib64"],
++-      [ppc64|s390x|sparc64|aarch64|ppc64le],[libsubdirs="lib64 lib lib64"],
+++      [ppc64|s390x|sparc64|aarch64|ppc64le|mips*],[libsubdirs="lib64 lib lib64"],
++       [libsubdirs="lib"]
++     )
++ 

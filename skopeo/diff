@@ -1,0 +1,161 @@
+Index: skopeo.spec
+===================================================================
+--- skopeo.spec	(revision 1)
++++ skopeo.spec	(working copy)
+@@ -34,6 +34,7 @@
+ # SUSE-FEATURE: Implement the skopeo sync command
+ #               (https://github.com/containers/skopeo/pull/524)
+ Patch000:       bsc1115165-0001-Introduce-the-sync-command.patch
++Patch001:       skopeo-fix-mips64el.patch
+ BuildRequires:  device-mapper-devel >= 1.2.68
+ BuildRequires:  glib2-devel
+ BuildRequires:  go >= 1.5
+@@ -57,6 +58,7 @@
+ %setup -q
+ # bsc#1115165
+ %patch000 -p1
++%patch001 -p1
+ 
+ %build
+ mkdir -p .gopath/src/github.com/containers
+@@ -72,7 +74,11 @@
+ %endif
+ 
+ # Build.
++%ifnarch %mips
+ go build -buildmode=pie -ldflags "-X main.gitCommit=" -gcflags "" -tags "$BUILDTAGS" -o skopeo %{project}/cmd/skopeo
++%else
++go build -ldflags "-X main.gitCommit=" -gcflags "" -tags "$BUILDTAGS" -o skopeo %{project}/cmd/skopeo
++%endif
+ make %{?_smp_mflags} docs
+ 
+ %install
+Index: skopeo-fix-mips64el.patch
+===================================================================
+--- skopeo-fix-mips64el.patch	(revision 0)
++++ skopeo-fix-mips64el.patch	(working copy)
+@@ -0,0 +1,124 @@
++--- skopeo-0.1.32-orig/vendor/github.com/containers/storage/pkg/system/stat_linux.go	2020-03-20 19:57:21.335177718 +0800
+++++ skopeo-0.1.32/vendor/github.com/containers/storage/pkg/system/stat_linux.go	2020-03-20 19:59:01.061089419 +0800
++@@ -8,7 +8,7 @@
++ 		mode: s.Mode,
++ 		uid:  s.Uid,
++ 		gid:  s.Gid,
++-		rdev: s.Rdev,
+++		rdev: uint64(s.Rdev),
++ 		mtim: s.Mtim}, nil
++ }
++ 
++--- skopeo-0.1.32-orig/vendor/github.com/docker/docker/pkg/system/stat_linux.go	2020-03-20 19:57:21.358647767 +0800
+++++ skopeo-0.1.32/vendor/github.com/docker/docker/pkg/system/stat_linux.go	2020-03-20 19:59:17.670384423 +0800
++@@ -8,7 +8,7 @@
++ 		mode: s.Mode,
++ 		uid:  s.Uid,
++ 		gid:  s.Gid,
++-		rdev: s.Rdev,
+++		rdev: uint64(s.Rdev),
++ 		mtim: s.Mtim}, nil
++ }
++ 
++--- skopeo-0.1.32-orig/vendor/github.com/containers/storage/pkg/loopback/attach_loopback.go	2020-03-20 19:57:21.327354369 +0800
+++++ skopeo-0.1.32/vendor/github.com/containers/storage/pkg/loopback/attach_loopback.go	2020-03-20 20:03:29.952199821 +0800
++@@ -93,7 +93,7 @@
++ 			logrus.Errorf("Error getting loopback backing file: %s", err)
++ 			return nil, ErrGetLoopbackBackingFile
++ 		}
++-		if dev != st.Dev || ino != st.Ino {
+++		if dev != uint64(st.Dev) || ino != st.Ino {
++ 			logrus.Errorf("Loopback device and filesystem disagree on device/inode for %q: %#x(%d):%#x(%d) vs %#x(%d):%#x(%d)", sparseName, dev, dev, ino, ino, st.Dev, st.Dev, st.Ino, st.Ino)
++ 		}
++ 
++--- skopeo-0.1.32-orig/vendor/github.com/containers/storage/pkg/loopback/loopback.go	2020-03-20 19:57:21.327354369 +0800
+++++ skopeo-0.1.32/vendor/github.com/containers/storage/pkg/loopback/loopback.go	2020-03-20 20:04:18.150084837 +0800
++@@ -53,7 +53,7 @@
++ 		}
++ 
++ 		dev, inode, err := getLoopbackBackingFile(file)
++-		if err == nil && dev == targetDevice && inode == targetInode {
+++		if err == nil && dev == uint64(targetDevice) && inode == targetInode {
++ 			return file
++ 		}
++ 		file.Close()
++--- skopeo-0.1.32-orig/vendor/github.com/containers/storage/pkg/archive/archive_linux.go	2020-03-20 19:57:21.319531019 +0800
+++++ skopeo-0.1.32/vendor/github.com/containers/storage/pkg/archive/archive_linux.go	2020-03-20 20:10:03.213439359 +0800
++@@ -63,7 +63,7 @@
++ 						// It's a whiteout for this directory, so it can't have been
++ 						// both deleted and recreated in the layer we're diffing.
++ 						s := stat.Sys().(*syscall.Stat_t)
++-						if major(s.Rdev) == 0 && minor(s.Rdev) == 0 {
+++						if major(uint64(s.Rdev)) == 0 && minor(uint64(s.Rdev)) == 0 {
++ 							return nil, nil
++ 						}
++ 					}
++@@ -98,7 +98,7 @@
++ 							// original directory wasn't inherited into this layer,
++ 							// so we don't need to emit whiteout for it.
++ 							s := stat.Sys().(*syscall.Stat_t)
++-							if major(s.Rdev) == 0 && minor(s.Rdev) == 0 {
+++							if major(uint64(s.Rdev)) == 0 && minor(uint64(s.Rdev)) == 0 {
++ 								return nil, nil
++ 							}
++ 						}
++--- skopeo-0.1.32-orig/vendor/github.com/containers/storage/pkg/archive/changes_linux.go	2020-03-20 19:57:21.319531019 +0800
+++++ skopeo-0.1.32/vendor/github.com/containers/storage/pkg/archive/changes_linux.go	2020-03-20 20:13:28.578532649 +0800
++@@ -309,7 +309,7 @@
++ 	if err == nil && stat.Mode()&os.ModeCharDevice != 0 {
++ 		// Check if there's whiteout for the specified item in the specified layer.
++ 		s := stat.Sys().(*syscall.Stat_t)
++-		if major(s.Rdev) == 0 && minor(s.Rdev) == 0 {
+++		if major(uint64(s.Rdev)) == 0 && minor(uint64(s.Rdev)) == 0 {
++ 			return true, nil
++ 		}
++ 	}
++@@ -320,7 +320,7 @@
++ 	// If it's a whiteout item, then a file or directory with that name is removed by this layer.
++ 	if fi.Mode()&os.ModeCharDevice != 0 {
++ 		s := fi.Sys().(*syscall.Stat_t)
++-		if major(s.Rdev) == 0 && minor(s.Rdev) == 0 {
+++		if major(uint64(s.Rdev)) == 0 && minor(uint64(s.Rdev)) == 0 {
++ 			return path, nil
++ 		}
++ 	}
++@@ -353,7 +353,7 @@
++ 				// It's a whiteout for this directory, so it can't have been
++ 				// deleted in this layer.
++ 				s := stat.Sys().(*syscall.Stat_t)
++-				if major(s.Rdev) == 0 && minor(s.Rdev) == 0 {
+++				if major(uint64(s.Rdev)) == 0 && minor(uint64(s.Rdev)) == 0 {
++ 					return "", nil
++ 				}
++ 			}
++@@ -373,7 +373,7 @@
++ 					// If it's whiteout for a parent directory, then the
++ 					// original directory wasn't inherited into the top layer.
++ 					s := stat.Sys().(*syscall.Stat_t)
++-					if major(s.Rdev) == 0 && minor(s.Rdev) == 0 {
+++					if major(uint64(s.Rdev)) == 0 && minor(uint64(s.Rdev)) == 0 {
++ 						return "", nil
++ 					}
++ 				}
++--- skopeo-0.1.32-orig/vendor/github.com/containers/storage/drivers/devmapper/deviceset.go	2020-03-20 20:15:16.589688484 +0800
+++++ skopeo-0.1.32/vendor/github.com/containers/storage/drivers/devmapper/deviceset.go	2020-03-20 20:16:50.772757715 +0800
++@@ -1539,8 +1539,8 @@
++ 	}
++ 
++ 	dev := stat.Rdev
++-	majorNum := major(dev)
++-	minorNum := minor(dev)
+++	majorNum := major(uint64(dev))
+++	minorNum := minor(uint64(dev))
++ 
++ 	logrus.Debugf("devmapper: Major:Minor for device: %s is:%v:%v", file.Name(), majorNum, minorNum)
++ 	return majorNum, minorNum, nil
++@@ -1743,7 +1743,7 @@
++ 	//	- Managed by container storage
++ 	//	- The target of this device is at major <maj> and minor <min>
++ 	//	- If <inode> is defined, use that file inside the device as a loopback image. Otherwise use the device itself.
++-	devices.devicePrefix = fmt.Sprintf("container-%d:%d-%d", major(st.Dev), minor(st.Dev), st.Ino)
+++	devices.devicePrefix = fmt.Sprintf("container-%d:%d-%d", major(uint64(st.Dev)), minor(uint64(st.Dev)), st.Ino)
++ 	logrus.Debugf("devmapper: Generated prefix: %s", devices.devicePrefix)
++ 
++ 	// Check for the existence of the thin-pool device

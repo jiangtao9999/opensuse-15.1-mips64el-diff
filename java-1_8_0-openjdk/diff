@@ -1,0 +1,155 @@
+Index: java-1_8_0-openjdk.spec
+===================================================================
+--- java-1_8_0-openjdk.spec	(revision 1)
++++ java-1_8_0-openjdk.spec	(working copy)
+@@ -123,6 +123,9 @@
+ # turn zero on non jit arches by default
+ %global _with_zero 1
+ %endif
++%ifarch %mips64
++%global archinstall mips64
++%endif
+ # bnc#542545
+ # 32-bit versus 64-bit specific provides:
+ %ifarch %{ix86} ppc s390
+@@ -195,6 +198,7 @@
+ Patch1002:      icedtea-3.8.0-s390.patch
+ Patch2001:      disable-doclint-by-default.patch
+ Patch2002:      aarch64.patch
++Patch3001:      icedtea-3.12.0-add-mips64el.patch
+ 
+ BuildRequires:  alsa-lib-devel
+ BuildRequires:  autoconf
+@@ -530,6 +534,8 @@
+ (cd openjdk/common/autoconf
+  bash ./autogen.sh
+ )
++
++patch -p1 -i %{PATCH3001}
+ 
+ make %{?_smp_mflags}
+ 
+Index: icedtea-3.12.0-add-mips64el.patch
+===================================================================
+--- icedtea-3.12.0-add-mips64el.patch	(revision 0)
++++ icedtea-3.12.0-add-mips64el.patch	(working copy)
+@@ -0,0 +1,91 @@
++diff -Nrui icedtea-3.12.0-orig/openjdk/common/autoconf/generated-configure.sh icedtea-3.12.0/openjdk/common/autoconf/generated-configure.sh
++--- icedtea-3.12.0-orig/openjdk/common/autoconf/generated-configure.sh	2020-01-31 11:53:38.156219748 +0800
+++++ icedtea-3.12.0/openjdk/common/autoconf/generated-configure.sh	2020-01-31 11:56:22.534593571 +0800
++@@ -13717,6 +13717,18 @@
++       VAR_CPU_BITS=64
++       VAR_CPU_ENDIAN=little
++       ;;
+++    mipsel)
+++      VAR_CPU=mips
+++      VAR_CPU_ARCH=mips
+++      VAR_CPU_BITS=32
+++      VAR_CPU_ENDIAN=little
+++      ;;
+++    mips64el)
+++      VAR_CPU=mips64
+++      VAR_CPU_ARCH=mips64
+++      VAR_CPU_BITS=64
+++      VAR_CPU_ENDIAN=little
+++      ;;
++     powerpc)
++       VAR_CPU=ppc
++       VAR_CPU_ARCH=ppc
++@@ -13863,6 +13875,18 @@
++       VAR_CPU_BITS=64
++       VAR_CPU_ENDIAN=little
++       ;;
+++    mipsel)
+++      VAR_CPU=mips
+++      VAR_CPU_ARCH=mips
+++      VAR_CPU_BITS=32
+++      VAR_CPU_ENDIAN=little
+++      ;;
+++    mips64el)
+++      VAR_CPU=mips64
+++      VAR_CPU_ARCH=mips64
+++      VAR_CPU_BITS=64
+++      VAR_CPU_ENDIAN=little
+++      ;;
++     powerpc)
++       VAR_CPU=ppc
++       VAR_CPU_ARCH=ppc
++@@ -14134,6 +14158,7 @@
++     sparc*)  ZERO_ARCHDEF=SPARC ;;
++     x86_64*) ZERO_ARCHDEF=AMD64 ;;
++     x86)     ZERO_ARCHDEF=IA32  ;;
+++    mips*)   ZERO_ARCHDEF=MIPS  ;;
++     *)      ZERO_ARCHDEF=$(echo "${OPENJDK_TARGET_CPU_LEGACY_LIB}" | tr a-z A-Z)
++   esac
++ 
++diff -Nrui icedtea-3.12.0-orig/openjdk/common/autoconf/platform.m4 icedtea-3.12.0/openjdk/common/autoconf/platform.m4
++--- icedtea-3.12.0-orig/openjdk/common/autoconf/platform.m4	2020-01-31 11:53:38.160128760 +0800
+++++ icedtea-3.12.0/openjdk/common/autoconf/platform.m4	2020-01-31 11:53:57.890040996 +0800
++@@ -54,6 +54,18 @@
++       VAR_CPU_BITS=64
++       VAR_CPU_ENDIAN=little
++       ;;
+++    mipsel)
+++      VAR_CPU=mips
+++      VAR_CPU_ARCH=mips
+++      VAR_CPU_BITS=32
+++      VAR_CPU_ENDIAN=little
+++      ;;
+++    mips64el)
+++      VAR_CPU=mips64
+++      VAR_CPU_ARCH=mips64
+++      VAR_CPU_BITS=64
+++      VAR_CPU_ENDIAN=little
+++      ;;
++     powerpc)
++       VAR_CPU=ppc
++       VAR_CPU_ARCH=ppc
++@@ -389,6 +401,7 @@
++     sparc*)  ZERO_ARCHDEF=SPARC ;;
++     x86_64*) ZERO_ARCHDEF=AMD64 ;;
++     x86)     ZERO_ARCHDEF=IA32  ;;
+++    mips*)   ZERO_ARCHDEF=MIPS  ;;
++     *)      ZERO_ARCHDEF=$(echo "${OPENJDK_TARGET_CPU_LEGACY_LIB}" | tr a-z A-Z)
++   esac
++   AC_SUBST(ZERO_ARCHDEF)
++diff -Nrui icedtea-3.12.0-orig/openjdk/hotspot/src/cpu/zero/vm/cppInterpreter_zero.cpp icedtea-3.12.0/openjdk/hotspot/src/cpu/zero/vm/cppInterpreter_zero.cpp
++--- icedtea-3.12.0-orig/openjdk/hotspot/src/cpu/zero/vm/cppInterpreter_zero.cpp	2020-01-31 11:53:39.309370388 +0800
+++++ icedtea-3.12.0/openjdk/hotspot/src/cpu/zero/vm/cppInterpreter_zero.cpp	2020-01-31 11:58:59.394681264 +0800
++@@ -367,7 +367,7 @@
++   ThreadStateTransition::transition_from_java(thread, _thread_in_native);
++ 
++   // Make the call
++-  intptr_t result[4 - LogBytesPerWord];
+++  intptr_t result[4 - LogBytesPerWord] __attribute__((__aligned__(__alignof__(double))));
++   ffi_call(handler->cif(), (void (*)()) function, result, arguments);
++ 
++   // Change the thread state back to _thread_in_Java.
+Index: _constraints
+===================================================================
+--- _constraints	(revision 1)
++++ _constraints	(working copy)
+@@ -1,23 +0,0 @@
+-<constraints>
+-  <hardware>
+-    <physicalmemory>
+-      <size unit="M">4096</size>
+-    </physicalmemory>
+-    <disk>
+-      <size unit="G">20</size>
+-    </disk>
+-  </hardware>
+-
+-  <overwrite>
+-    <conditions>
+-      <arch>armv7l</arch>
+-      <arch>armv6l</arch>
+-    </conditions>
+-    <hardware>
+-      <physicalmemory>
+-        <size unit="M">512</size>
+-      </physicalmemory>
+-    </hardware>
+-  </overwrite>
+-
+-</constraints> 

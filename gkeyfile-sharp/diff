@@ -1,0 +1,12 @@
+Index: gkeyfile-sharp.spec
+===================================================================
+--- gkeyfile-sharp.spec	(revision 1)
++++ gkeyfile-sharp.spec	(working copy)
+@@ -27,6 +27,7 @@
+ Url:            http://github.com/mono/gkeyfile-sharp
+ Source:         %{name}-%{version}.tar.bz2
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
++ExcludeArch:    %mips
+ 
+ BuildRequires:  glib2-devel >= 2.6
+ BuildRequires:  glib-sharp2 >= 2.12.9

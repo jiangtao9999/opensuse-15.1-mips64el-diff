@@ -1,0 +1,20 @@
+Index: ffmpeg-3.spec
+===================================================================
+--- ffmpeg-3.spec	(revision 1)
++++ ffmpeg-3.spec	(working copy)
+@@ -552,6 +552,15 @@
+ %if %{with zimg}
+ 	--enable-libzimg \
+ %endif
++%ifarch %mips
++	--disable-mipsdsp \
++	--disable-mipsdspr2 \
++	--disable-msa \
++	--disable-mmi \
++%endif
++%ifarch %mips32
++	--disable-mipsfpu \
++%endif
+ 	--enable-libzvbi \
+ 	--enable-vaapi \
+ 	--enable-vdpau \

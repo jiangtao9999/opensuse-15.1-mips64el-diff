@@ -1,0 +1,13 @@
+Index: kmail-account-wizard.spec
+===================================================================
+--- kmail-account-wizard.spec	(revision 1)
++++ kmail-account-wizard.spec	(working copy)
+@@ -62,7 +62,7 @@
+ Obsoletes:      akonadi_resources
+ Obsoletes:      kdepim
+ # It can only build on the same platforms as Qt Webengine
+-ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 mips mips64
++ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 %mips
+ %if %{with lang}
+ Recommends:     %{name}-lang
+ %endif

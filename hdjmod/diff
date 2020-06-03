@@ -1,0 +1,12 @@
+Index: hdjmod.spec
+===================================================================
+--- hdjmod.spec	(revision 1)
++++ hdjmod.spec	(working copy)
+@@ -60,6 +60,7 @@
+ Patch11:        hdjmod_kernel_4.14.patch
+ # PATCH-FIX-UPSTREAM hdjmod_kernel_4.15.patch marix@marix.org -- Fix build on kernel 4.15 and newer
+ Patch12:        hdjmod_kernel_4.15.patch
++ExcludeArch:    %mips
+ 
+ %suse_kernel_module_package -p%_sourcedir/preamble
+ 

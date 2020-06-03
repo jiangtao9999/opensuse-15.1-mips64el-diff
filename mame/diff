@@ -1,0 +1,71 @@
+Index: mame.spec
+===================================================================
+--- mame.spec	(revision 1)
++++ mame.spec	(working copy)
+@@ -55,7 +55,10 @@
+ Source104:      mame-mess.appdata.xml
+ Patch0:         treat_gcc73_and_later_like_gcc72.patch
+ Patch1:         fix_mkdir_order.patch
++Patch2:         mame-fix-mips64.patch
++%ifnarch %mips
+ BuildRequires:  binutils-gold
++%endif
+ BuildRequires:  fdupes
+ BuildRequires:  pkgconfig
+ BuildRequires:  python-xml
+@@ -152,6 +155,7 @@
+ %setup -q -n mame-mame0%fver
+ %patch0 -p1
+ %patch1 -p0
++%patch2 -p1
+ 
+ cp %{SOURCE1} whatsnew-%{version}.txt
+ # Fix rpmlint warning "wrong-file-end-of-line-encoding"
+@@ -177,7 +181,9 @@
+ %ifarch %ix86 %arm
+ export LDFLAGS="${LDFLAGS} -Wl,-v -fuse-ld=gold -Wl,--no-keep-files-mapped -Wl,--no-map-whole-files -Wl,--no-mmap-output-file"
+ %else
++%ifnarch %mips
+ export LDFLAGS="${LDFLAGS} -Wl,-v -fuse-ld=gold"
++%endif
+ %endif
+ 
+ %if 0%{?suse_version} > 1320
+Index: mame-fix-mips64.patch
+===================================================================
+--- mame-fix-mips64.patch	(revision 0)
++++ mame-fix-mips64.patch	(working copy)
+@@ -0,0 +1,17 @@
++diff -Nrui mame-mame0193-orig/makefile mame-mame0193/makefile
++--- mame-mame0193-orig/makefile	2020-05-10 13:16:45.130556917 +0800
+++++ mame-mame0193/makefile	2020-05-10 13:17:17.823125555 +0800
++@@ -345,6 +345,13 @@
++ endif
++ endif
++ 
+++ifeq ($(findstring mips64,$(UNAME)),mips64)
+++ARCHITECTURE :=
+++ifndef NOASM
+++        NOASM := 1
+++endif
+++endif
+++
++ # Emscripten
++ ifeq ($(findstring emcc,$(CC)),emcc)
++ TARGETOS := asmjs
+Index: _constraints
+===================================================================
+--- _constraints	(revision 1)
++++ _constraints	(working copy)
+@@ -1,11 +0,0 @@
+-<constraints>
+-  <hardware>
+-    <processors>4</processors>
+-      <disk>
+-        <size unit="G">32</size>
+-      </disk>
+-      <physicalmemory>
+-        <size unit="G">8</size>
+-      </physicalmemory>
+-  </hardware>
+-</constraints>

@@ -1,0 +1,13 @@
+Index: kmail.spec
+===================================================================
+--- kmail.spec	(revision 1)
++++ kmail.spec	(working copy)
+@@ -117,7 +117,7 @@
+ Provides:       kmail5 = %{version}
+ Obsoletes:      kmail5 < %{version}
+ # It can only build on the same platforms as Qt Webengine
+-ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 mips mips64
++ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 %mips
+ %if 0%{?suse_version} < 1500
+ # the default gcc 4.8 is too old
+ BuildRequires:  gcc7-c++

@@ -1,0 +1,37 @@
+Index: dynamips.spec
+===================================================================
+--- dynamips.spec	(revision 1)
++++ dynamips.spec	(working copy)
+@@ -25,6 +25,7 @@
+ Url:            https://www.gns3.net
+ Source:         https://github.com/GNS3/%{name}/archive/v%{version}.tar.gz#/%{name}-%{version}.tar.gz
+ Patch1:         define-s390x-arch.patch
++Patch2:         define-mips-arch.patch
+ BuildRequires:  cmake
+ BuildRequires:  libelf-devel
+ BuildRequires:  libpcap-devel
+@@ -47,6 +48,7 @@
+ %prep
+ %setup -q
+ %patch1 -p1
++%patch2 -p1
+ 
+ %build
+ %cmake \
+Index: define-mips-arch.patch
+===================================================================
+--- define-mips-arch.patch	(revision 0)
++++ define-mips-arch.patch	(working copy)
+@@ -0,0 +1,12 @@
++diff -Nuir dynamips-0.2.17-orig/common/dynamips_common.h dynamips-0.2.17/common/dynamips_common.h
++--- dynamips-0.2.17-orig/common/dynamips_common.h	2020-05-01 14:31:01.032218793 +0800
+++++ dynamips-0.2.17/common/dynamips_common.h	2020-05-01 14:32:39.757385163 +0800
++@@ -67,6 +67,8 @@
++ #define ARCH_BYTE_ORDER ARCH_LITTLE_ENDIAN
++ #elif defined(__s390x__)
++ #define ARCH_BYTE_ORDER ARCH_BIG_ENDIAN
+++#elif defined(__mips__)
+++#define ARCH_BYTE_ORDER ARCH_LITTLE_ENDIAN
++ #endif
++ 
++ #ifndef ARCH_BYTE_ORDER

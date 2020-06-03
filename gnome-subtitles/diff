@@ -1,0 +1,12 @@
+Index: gnome-subtitles.spec
+===================================================================
+--- gnome-subtitles.spec	(revision 1)
++++ gnome-subtitles.spec	(working copy)
+@@ -46,6 +46,7 @@
+ Recommends:     %{name}-lang
+ 
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
++ExcludeArch:    %mips
+ 
+ %gconf_schemas_prereq
+ 

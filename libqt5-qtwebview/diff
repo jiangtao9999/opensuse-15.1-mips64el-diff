@@ -1,0 +1,13 @@
+Index: libqt5-qtwebview.spec
+===================================================================
+--- libqt5-qtwebview.spec	(revision 1)
++++ libqt5-qtwebview.spec	(working copy)
+@@ -47,7 +47,7 @@
+ %endif
+ BuildRequires:  xz
+ # It can only build on the same platforms as Qt Webengine
+-ExclusiveArch:  %ix86 x86_64 %arm aarch64 mips mips64
++ExclusiveArch:  %ix86 x86_64 %arm aarch64 %mips
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ 
+ %description

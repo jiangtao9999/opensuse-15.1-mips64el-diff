@@ -1,0 +1,12 @@
+Index: kdumpid.spec
+===================================================================
+--- kdumpid.spec	(revision 1)
++++ kdumpid.spec	(working copy)
+@@ -34,6 +34,7 @@
+ Url:            http://sourceforge.net/p/kdumpid
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ Source:         %{name}-%{version}.tar.bz2
++ExcludeArch:    %mips
+ 
+ %description
+ Kdumpid extracts information such as type of dump, architecture

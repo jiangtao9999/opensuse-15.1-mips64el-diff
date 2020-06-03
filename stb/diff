@@ -1,0 +1,75 @@
+Index: stb.spec
+===================================================================
+--- stb.spec	(revision 1)
++++ stb.spec	(working copy)
+@@ -24,6 +24,7 @@
+ Group:          Development/Libraries/C and C++
+ Url:            https://github.com/nothings/stb
+ Source0:        stb-%{version}.tar.xz
++Patch1:         0005-stb_sprintf.h-fix-pointer-detection.patch
+ BuildRequires:  c++_compiler
+ BuildArch:      noarch
+ 
+@@ -82,6 +83,7 @@
+ 
+ %prep
+ %setup -q
++%patch1 -p1
+ 
+ %build
+ # nothing to do
+Index: 0005-stb_sprintf.h-fix-pointer-detection.patch
+===================================================================
+--- 0005-stb_sprintf.h-fix-pointer-detection.patch	(revision 0)
++++ 0005-stb_sprintf.h-fix-pointer-detection.patch	(working copy)
+@@ -0,0 +1,30 @@
++From 30c968afbf3dd034d5533be44a24420561b4a9be Mon Sep 17 00:00:00 2001
++From: yangfl <yangfl@users.noreply.github.com>
++Date: Wed, 10 Jul 2019 11:03:57 +0800
++Subject: [PATCH 5/8] stb_sprintf.h: fix pointer detection
++
++---
++ stb_sprintf.h | 7 ++-----
++ 1 file changed, 2 insertions(+), 5 deletions(-)
++
++diff --git a/stb_sprintf.h b/stb_sprintf.h
++index e3a3018..8620ced 100644
++--- a/stb_sprintf.h
+++++ b/stb_sprintf.h
++@@ -200,11 +200,8 @@ STBSP__PUBLICDEF void STB_SPRINTF_DECORATE(set_separators)(char comma, char peri
++ #define stbsp__uint16 unsigned short
++ 
++ #ifndef stbsp__uintptr
++-#if defined(__ppc64__) || defined(__aarch64__) || defined(_M_X64) || defined(__x86_64__) || defined(__x86_64)
++-#define stbsp__uintptr stbsp__uint64
++-#else
++-#define stbsp__uintptr stbsp__uint32
++-#endif
+++#include <stdint.h>
+++#define stbsp__uintptr uintptr_t
++ #endif
++ 
++ #ifndef STB_SPRINTF_MSVC_MODE // used for MSVC2013 and earlier (MSVC2015 matches GCC)
++-- 
++2.23.0
++
+Index: _service
+===================================================================
+--- _service	(revision 0)
++++ _service	(working copy)
+@@ -0,0 +1,15 @@
++<services>
++  <service name="obs_scm" mode="disabled">
++    <param name="url">https://github.com/nothings/stb.git</param>
++    <param name="scm">git</param>
++<!-- defined in stb.h file -->
++    <param name="versionprefix">2.32</param>
++  </service>
++  <service mode="disabled" name="set_version" />
++
++  <service mode="buildtime" name="tar" />
++  <service mode="buildtime" name="recompress">
++    <param name="file">*.tar</param>
++    <param name="compression">xz</param>
++  </service>
++</services>

@@ -1,0 +1,13 @@
+Index: kmymoney.spec
+===================================================================
+--- kmymoney.spec	(revision 1)
++++ kmymoney.spec	(working copy)
+@@ -19,7 +19,7 @@
+ %bcond_without lang
+ %if 0%{?suse_version} >= 1500
+ # Only include WebEngine for platforms that support it
+-%ifarch %{ix86} x86_64 %{arm} aarch64 mips mips64
++%ifarch %{ix86} x86_64 %{arm} aarch64 %{mips}
+ %bcond_without qtwebengine
+ %else
+ %bcond_with qtwebengine

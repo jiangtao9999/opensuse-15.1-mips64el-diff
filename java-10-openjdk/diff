@@ -1,0 +1,183 @@
+Index: java-10-openjdk.spec
+===================================================================
+--- java-10-openjdk.spec	(revision 1)
++++ java-10-openjdk.spec	(working copy)
+@@ -187,6 +187,7 @@
+ Patch400:       jaw-misc.patch
+ Patch401:       jaw-jdk10.patch
+ Patch800:       java10-improved-fonts.patch
++Patch900:       jdk10-fix-mips64el.patch
+ BuildRequires:  alsa-lib-devel
+ BuildRequires:  autoconf
+ BuildRequires:  automake
+@@ -462,6 +463,8 @@
+ %patch400
+ %patch401
+ 
++%patch900 -p1
++
+ # Extract systemtap tapsets
+ 
+ %if %{with_systemtap}
+Index: jdk10-fix-mips64el.patch
+===================================================================
+--- jdk10-fix-mips64el.patch	(revision 0)
++++ jdk10-fix-mips64el.patch	(working copy)
+@@ -0,0 +1,129 @@
++diff -Nrui jdk10u-45b1d041a4ef-orig/src/hotspot/cpu/zero/cppInterpreter_zero.cpp jdk10u-45b1d041a4ef/src/hotspot/cpu/zero/cppInterpreter_zero.cpp
++--- jdk10u-45b1d041a4ef-orig/src/hotspot/cpu/zero/cppInterpreter_zero.cpp	2020-02-12 10:53:34.346000611 +0800
+++++ jdk10u-45b1d041a4ef/src/hotspot/cpu/zero/cppInterpreter_zero.cpp	2020-02-12 10:54:41.618016995 +0800
++@@ -366,7 +366,7 @@
++   ThreadStateTransition::transition_from_java(thread, _thread_in_native);
++ 
++   // Make the call
++-  intptr_t result[4 - LogBytesPerWord];
+++  intptr_t result[4 - LogBytesPerWord] __attribute__((__aligned__(__alignof__(double))));
++   ffi_call(handler->cif(), (void (*)()) function, result, arguments);
++ 
++   // Change the thread state back to _thread_in_Java.
++diff -Nrui jdk10u-45b1d041a4ef-orig/src/hotspot/os/linux/os_linux.cpp jdk10u-45b1d041a4ef/src/hotspot/os/linux/os_linux.cpp
++--- jdk10u-45b1d041a4ef-orig/src/hotspot/os/linux/os_linux.cpp	2020-02-12 10:53:34.353832232 +0800
+++++ jdk10u-45b1d041a4ef/src/hotspot/os/linux/os_linux.cpp	2020-02-12 10:54:41.625843747 +0800
++@@ -4411,14 +4411,16 @@
++ 
++ // For signal-chaining
++ struct sigaction sigact[NSIG];
++-uint64_t sigs = 0;
++-#if (64 < NSIG-1)
++-#error "Not all signals can be encoded in sigs. Adapt its type!"
++-#endif
+++sigset_t sigs;
++ bool os::Linux::libjsig_is_loaded = false;
++ typedef struct sigaction *(*get_signal_t)(int);
++ get_signal_t os::Linux::get_signal_action = NULL;
++ 
+++static __attribute__((constructor)) void sigs_init()
+++{
+++    sigemptyset(&sigs);
+++}
+++
++ struct sigaction* os::Linux::get_chained_signal_action(int sig) {
++   struct sigaction *actp = NULL;
++ 
++@@ -4493,7 +4495,7 @@
++ }
++ 
++ struct sigaction* os::Linux::get_preinstalled_handler(int sig) {
++-  if ((((uint64_t)1 << (sig-1)) & sigs) != 0) {
+++  if (sigismember(&sigs, sig)) {
++     return &sigact[sig];
++   }
++   return NULL;
++@@ -4502,7 +4504,7 @@
++ void os::Linux::save_preinstalled_handler(int sig, struct sigaction& oldAct) {
++   assert(sig > 0 && sig < NSIG, "vm signal out of expected range");
++   sigact[sig] = oldAct;
++-  sigs |= (uint64_t)1 << (sig-1);
+++  sigaddset(&sigs, sig);
++ }
++ 
++ // for diagnostic
++diff -Nrui jdk10u-45b1d041a4ef-orig/src/java.base/linux/native/libjsig/jsig.c jdk10u-45b1d041a4ef/src/java.base/linux/native/libjsig/jsig.c
++--- jdk10u-45b1d041a4ef-orig/src/java.base/linux/native/libjsig/jsig.c	2020-02-12 10:53:34.553538556 +0800
+++++ jdk10u-45b1d041a4ef/src/java.base/linux/native/libjsig/jsig.c	2020-02-12 10:54:41.621930371 +0800
++@@ -41,13 +41,8 @@
++ #define true 1
++ #define false 0
++ 
++-#define MASK(sig) ((uint64_t)1 << (sig-1))  // 0 is not a signal.
++-// Check whether all signals fit into jvmsigs. -1 as MASK shifts by -1.
++-#if (64 < NSIG-1)
++-#error "Not all signals can be encoded in jvmsigs. Adapt its type!"
++-#endif
++ static struct sigaction sact[NSIG]; /* saved signal handlers */
++-static uint64_t jvmsigs = 0; /* signals used by jvm */
+++static sigset_t jvmsigs; /* signals used by jvm */
++ 
++ /* used to synchronize the installation of signal handlers */
++ static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
++@@ -65,6 +60,11 @@
++ static bool jvm_signal_installing = false;
++ static bool jvm_signal_installed = false;
++ 
+++static __attribute__((constructor)) void jvmsigs_init(void)
+++{
+++    sigemptyset(&jvmsigs);
+++}
+++
++ static void signal_lock() {
++   pthread_mutex_lock(&mutex);
++   /* When the jvm is installing its set of signal handlers, threads
++@@ -110,7 +110,7 @@
++ 
++   signal_lock();
++ 
++-  sigused = (sig < NSIG) && ((MASK(sig) & jvmsigs) != 0);
+++  sigused = (sig < NSIG) && sigismember(&jvmsigs, sig);
++   if (jvm_signal_installed && sigused) {
++     /* jvm has installed its signal handler for this signal. */
++     /* Save the handler. Don't really install it. */
++@@ -127,7 +127,7 @@
++     save_signal_handler(sig, oldhandler);
++ 
++     /* Record the signals used by jvm */
++-    jvmsigs |= MASK(sig);
+++    sigaddset(&jvmsigs, sig);
++ 
++     signal_unlock();
++     return oldhandler;
++@@ -168,7 +168,7 @@
++ 
++   signal_lock();
++ 
++-  sigused = (sig < NSIG) && ((MASK(sig) & jvmsigs) != 0);
+++  sigused = (sig < NSIG) && sigismember(&jvmsigs, sig);
++   if (jvm_signal_installed && sigused) {
++     /* jvm has installed its signal handler for this signal. */
++     /* Save the handler. Don't really install it. */
++@@ -191,7 +191,7 @@
++     }
++ 
++     /* Record the signals used by jvm */
++-    jvmsigs |= MASK(sig);
+++    sigaddset(&jvmsigs, sig);
++ 
++     signal_unlock();
++     return res;
++@@ -223,7 +223,7 @@
++ 
++ struct sigaction *JVM_get_signal_action(int sig) {
++   /* Does race condition make sense here? */
++-  if ((MASK(sig) & jvmsigs) != 0) {
+++  if (sigismember(&jvmsigs, sig)) {
++     return &sact[sig];
++   }
++   return NULL;
+Index: _constraints
+===================================================================
+--- _constraints	(revision 1)
++++ _constraints	(working copy)
+@@ -1,23 +0,0 @@
+-<constraints>
+-  <hardware>
+-    <physicalmemory>
+-      <size unit="M">4096</size>
+-    </physicalmemory>
+-    <disk>
+-      <size unit="G">20</size>
+-    </disk>
+-  </hardware>
+-
+-  <overwrite>
+-    <conditions>
+-      <arch>armv7l</arch>
+-      <arch>armv6l</arch>
+-    </conditions>
+-    <hardware>
+-      <physicalmemory>
+-        <size unit="M">512</size>
+-      </physicalmemory>
+-    </hardware>
+-  </overwrite>
+-
+-</constraints> 

@@ -1,0 +1,14 @@
+Index: nlohmann_json.spec
+===================================================================
+--- nlohmann_json.spec	(revision 1)
++++ nlohmann_json.spec	(working copy)
+@@ -47,6 +47,9 @@
+ 
+ %prep
+ %setup -q -n json-%{version}
++%ifarch %mips
++rm -v test/src/unit-unicode.cpp
++%endif
+ 
+ %build
+ %if 0%{?suse_version} < 1500

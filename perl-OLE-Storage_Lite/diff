@@ -1,0 +1,48 @@
+Index: perl-OLE-Storage_Lite.spec
+===================================================================
+--- perl-OLE-Storage_Lite.spec	(revision 1)
++++ perl-OLE-Storage_Lite.spec	(working copy)
+@@ -26,6 +26,7 @@
+ Url:            http://search.cpan.org/dist/OLE-Storage_Lite/
+ Group:          Development/Libraries/Perl
+ Source:         http://www.cpan.org/authors/id/J/JM/JMCNAMARA/%{cpan_name}-%{version}.tar.gz
++Patch0:          fix-time-local.patch
+ BuildArch:      noarch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ BuildRequires:  perl
+@@ -41,6 +42,7 @@
+ 
+ %prep
+ %setup -q -n %{cpan_name}-%{version}
++%patch0 -p1
+ 
+ %build
+ %{__perl} Makefile.PL INSTALLDIRS=vendor
+Index: fix-time-local.patch
+===================================================================
+--- fix-time-local.patch	(revision 0)
++++ fix-time-local.patch	(working copy)
+@@ -0,0 +1,23 @@
++Date: 2018-02-21
++Author: Bernhard M. Wiedemann <bwiedemann suse de>
++
++https://rt.cpan.org/Public/Bug/Display.html?id=124513
++
++fix how code uses Time::Local to ensure no relative 2-digit dates are used
++to make tests pass in 2020 and beyond
++
++Index: OLE-Storage_Lite-0.19/lib/OLE/Storage_Lite.pm
++===================================================================
++--- OLE-Storage_Lite-0.19.orig/lib/OLE/Storage_Lite.pm
+++++ OLE-Storage_Lite-0.19/lib/OLE/Storage_Lite.pm
++@@ -1364,7 +1364,9 @@ sub LocalDate2OLE {
++     return "\x00" x 8 unless $localtime;
++ 
++     # Convert from localtime (actually gmtime) to seconds.
++-    my $time = timegm( @{$localtime} );
+++    my @localtimecopy = @{$localtime};
+++    $localtimecopy[5] += 1900 unless $localtimecopy[5] > 99;
+++    my $time = timegm( @localtimecopy );
++ 
++     # Add the number of seconds between the 1601 and 1970 epochs.
++     $time += 11644473600;

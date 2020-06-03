@@ -1,0 +1,14 @@
+Index: pcp.spec
+===================================================================
+--- pcp.spec	(revision 1)
++++ pcp.spec	(working copy)
+@@ -2914,8 +2914,7 @@
+ %endif
+ %endif
+ 
+-cd $PCP_PMNS_DIR && ./Rebuild -s && rm -f .NeedRebuild
+-cd
++(cd $PCP_PMNS_DIR && ./Rebuild -s && rm -f .NeedRebuild)
+ 
+ %post -n %{lib_pkg} -p /sbin/ldconfig
+ %postun -n %{lib_pkg} -p /sbin/ldconfig

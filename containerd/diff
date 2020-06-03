@@ -1,0 +1,75 @@
+Index: containerd.spec
+===================================================================
+--- containerd.spec	(revision 1)
++++ containerd.spec	(working copy)
+@@ -49,6 +49,7 @@
+ Source1:        %{realname}-rpmlintrc
+ # OPENSUSE-FIX-UPSTREAM: Backport of https://github.com/containerd/containerd/pull/2764.
+ Patch1:         0001-makefile-remove-emoji.patch
++Patch2:         mipsel-fix.patch
+ BuildRequires:  fdupes
+ BuildRequires:  glibc-devel-static
+ BuildRequires:  go-go-md2man
+@@ -131,6 +132,9 @@
+ %prep
+ %setup -q -n %{realname}-git.%{git_short}
+ %patch1 -p1
++%ifarch %mips
++%patch2 -p1
++%endif
+ 
+ %build
+ # Do not use symlinks. If you want to run the unit tests for this package at
+Index: mipsel-fix.patch
+===================================================================
+--- mipsel-fix.patch	(revision 0)
++++ mipsel-fix.patch	(working copy)
+@@ -0,0 +1,48 @@
++diff -Nuri containerd-git.9754871865f7-orig/Makefile.linux containerd-git.9754871865f7/Makefile.linux
++--- containerd-git.9754871865f7-orig/Makefile.linux	2020-03-20 14:51:10.288918567 +0800
+++++ containerd-git.9754871865f7/Makefile.linux	2020-03-20 14:52:09.135333971 +0800
++@@ -17,9 +17,9 @@
++ COMMANDS += containerd-shim containerd-shim-runc-v1
++ 
++ # check GOOS for cross compile builds
++-ifeq ($(GOOS),linux)
++-	GO_GCFLAGS += -buildmode=pie
++-endif
+++#ifeq ($(GOOS),linux)
+++#	GO_GCFLAGS += -buildmode=pie
+++#endif
++ 
++ # amd64 supports go test -race
++ ifeq ($(GOARCH),amd64)
++diff -Nuri containerd-git.9754871865f7-orig/signal_map_linux.go containerd-git.9754871865f7/signal_map_linux.go
++--- containerd-git.9754871865f7-orig/signal_map_linux.go	2020-03-20 14:51:10.316446275 +0800
+++++ containerd-git.9754871865f7/signal_map_linux.go	2020-03-20 14:51:49.031902649 +0800
++@@ -42,7 +42,6 @@
++ 	"PWR":    unix.SIGPWR,
++ 	"QUIT":   unix.SIGQUIT,
++ 	"SEGV":   unix.SIGSEGV,
++-	"STKFLT": unix.SIGSTKFLT,
++ 	"STOP":   unix.SIGSTOP,
++ 	"SYS":    unix.SIGSYS,
++ 	"TERM":   unix.SIGTERM,
++--- containerd-git.9754871865f7-orig/vendor/github.com/docker/docker/pkg/system/stat_linux.go	2020-03-20 14:51:10.422624576 +0800
+++++ containerd-git.9754871865f7/vendor/github.com/docker/docker/pkg/system/stat_linux.go	2020-03-20 15:01:41.598769923 +0800
++@@ -8,7 +8,7 @@
++ 		mode: s.Mode,
++ 		uid:  s.Uid,
++ 		gid:  s.Gid,
++-		rdev: s.Rdev,
+++		rdev: uint64(s.Rdev),
++ 		mtim: s.Mtim}, nil
++ }
++ 
++--- containerd-git.9754871865f7-orig/vendor/github.com/docker/docker/pkg/signal/signal_linux.go	2020-03-20 14:51:10.418692047 +0800
+++++ containerd-git.9754871865f7/vendor/github.com/docker/docker/pkg/signal/signal_linux.go	2020-03-20 14:54:27.327212552 +0800
++@@ -32,7 +32,6 @@
++ 	"PWR":      unix.SIGPWR,
++ 	"QUIT":     unix.SIGQUIT,
++ 	"SEGV":     unix.SIGSEGV,
++-	"STKFLT":   unix.SIGSTKFLT,
++ 	"STOP":     unix.SIGSTOP,
++ 	"SYS":      unix.SIGSYS,
++ 	"TERM":     unix.SIGTERM,

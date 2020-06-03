@@ -1,0 +1,13 @@
+Index: kdevelop5.spec
+===================================================================
+--- kdevelop5.spec	(revision 1)
++++ kdevelop5.spec	(working copy)
+@@ -72,7 +72,7 @@
+ BuildRequires:  cmake(Qt5QuickWidgets)
+ BuildRequires:  cmake(Qt5Script)
+ BuildRequires:  cmake(Qt5Test)
+-%ifarch %{ix86} x86_64 %{arm} aarch64 mips mips64
++%ifarch %{ix86} x86_64 %{arm} aarch64 %{mips}
+ BuildRequires:  cmake(Qt5WebEngineWidgets)
+ %else
+ BuildRequires:  cmake(Qt5WebKitWidgets)

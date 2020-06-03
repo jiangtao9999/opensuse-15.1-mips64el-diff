@@ -1,0 +1,44 @@
+Index: amazon-ssm-agent.spec
+===================================================================
+--- amazon-ssm-agent.spec	(revision 1)
++++ amazon-ssm-agent.spec	(working copy)
+@@ -27,6 +27,7 @@
+ Source1:        %{name}.service
+ Patch1:         fix-config.patch
+ Patch2:         fix-version.patch
++Patch3:         fix-mips-Ospeed.patch
+ BuildRequires:  go >= 1.7.4
+ BuildRequires:  systemd
+ Requires:       systemd
+@@ -53,6 +54,9 @@
+ %setup -q -n %{name}-%{version}
+ %patch1 -p1
+ %patch2 -p1
++%ifarch %mips
++%patch3 -p1
++%endif
+ 
+ %build
+ rm -rf vendor/src/github.com/aws/aws-sdk-go/vendor/
+Index: fix-mips-Ospeed.patch
+===================================================================
+--- fix-mips-Ospeed.patch	(revision 0)
++++ fix-mips-Ospeed.patch	(working copy)
+@@ -0,0 +1,17 @@
++diff -Nrui amazon-ssm-agent-2.2.45.0-orig/agent/startup/serialport/serialport_unix.go amazon-ssm-agent-2.2.45.0/agent/startup/serialport/serialport_unix.go
++--- amazon-ssm-agent-2.2.45.0-orig/agent/startup/serialport/serialport_unix.go	2020-04-28 14:45:02.145914036 +0800
+++++ amazon-ssm-agent-2.2.45.0/agent/startup/serialport/serialport_unix.go	2020-04-28 14:46:44.353397980 +0800
++@@ -53,11 +53,11 @@
++ 		return err
++ 	}
++ 
++-	baudRate := uint32(syscall.B115200)
+++//	baudRate := uint32(syscall.B115200)
++ 	state := syscall.Termios{
++ 		Cflag:  syscall.CS8,
++ 		Oflag:  0,
++-		Ospeed: baudRate,
+++//		Ospeed: baudRate,
++ 	}
++ 
++ 	fd := fileHandle.Fd()

@@ -1,0 +1,13 @@
+Index: mokutil.spec
+===================================================================
+--- mokutil.spec	(revision 1)
++++ mokutil.spec	(working copy)
+@@ -41,7 +41,7 @@
+ BuildRequires:  libopenssl-devel >= 0.9.8
+ BuildRequires:  pkg-config
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+-ExclusiveArch:  x86_64 aarch64
++ExclusiveArch:  x86_64 aarch64 %mips
+ 
+ %description
+ This program provides the means to enroll and erase the machine owner

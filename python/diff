@@ -1,0 +1,123 @@
+Index: python-base.spec
+===================================================================
+--- python-base.spec	(revision 1)
++++ python-base.spec	(working copy)
+@@ -76,6 +76,9 @@
+ # PATCH-FIX-UPSTREAM CVE-2019-9948-avoid_local-file.patch bsc#1130847 mcepl@suse.com
+ # removing unnecessary (and potentially harmful) URL scheme local-file://
+ Patch45:        CVE-2019-9948-avoid_local-file.patch
++# mips64el
++Patch50:        Python-2.7.14-fix-mips64-libffi.patch
++Patch51:        python-add-mips64-multilib.patch
+ # 
+ # COMMON-PATCH-END
+ %define         python_version    %(echo %{tarversion} | head -c 3)
+@@ -189,6 +192,8 @@
+ %patch43 -p1
+ %patch44 -p1
+ %patch45 -p1
++%patch50 -p1
++%patch51 -p1
+ 
+ # drop Autoconf version requirement
+ sed -i 's/^version_required/dnl version_required/' configure.ac
+@@ -262,6 +267,10 @@
+ # many flaky tests if osc build in loop on ppc64le
+ %ifarch ppc ppc64 ppc64le
+ EXCLUDE="$EXCLUDE test_asynchat test_asyncore test_dircache test_multiprocessing test_nntplib test_queue test_signal test_socket test_subprocess test_telnetlib test_xmlrpc "
++%endif
++
++%ifarch mips64el
++EXCLUDE="$EXCLUDE test_ctypes "
+ %endif
+ 
+ # Limit virtual memory to avoid spurious failures
+@@ -452,7 +461,7 @@
+ %{_libdir}/python%{python_version}/lib-dynload/_multibytecodec.so
+ %{_libdir}/python%{python_version}/lib-dynload/Python-%{tarversion}-py%{python_version}.egg-info
+ # these modules don't support 64-bit arches (disabled by setup.py)
+-%ifnarch alpha ia64 x86_64 s390x ppc64 ppc64le sparc64 aarch64
++%ifnarch alpha ia64 x86_64 s390x ppc64 ppc64le sparc64 aarch64 %mips64
+ # requires sizeof(int) == sizeof(long) == sizeof(char*)
+ %{_libdir}/python%{python_version}/lib-dynload/dl.so
+ %endif
+Index: python-doc.spec
+===================================================================
+--- python-doc.spec	(revision 1)
++++ python-doc.spec	(working copy)
+@@ -75,6 +75,9 @@
+ # PATCH-FIX-UPSTREAM CVE-2019-9948-avoid_local-file.patch bsc#1130847 mcepl@suse.com
+ # removing unnecessary (and potentially harmful) URL scheme local-file://
+ Patch45:        CVE-2019-9948-avoid_local-file.patch
++# mips64el
++Patch50:        Python-2.7.14-fix-mips64-libffi.patch
++Patch51:        python-add-mips64-multilib.patch
+ # 
+ # COMMON-PATCH-END
+ Provides:       pyth_doc
+@@ -134,6 +137,8 @@
+ %patch43 -p1
+ %patch44 -p1
+ %patch45 -p1
++%patch50 -p1
++%patch51 -p1
+ 
+ # drop Autoconf version requirement
+ sed -i 's/^version_required/dnl version_required/' configure.ac
+Index: python.spec
+===================================================================
+--- python.spec	(revision 1)
++++ python.spec	(working copy)
+@@ -80,6 +80,9 @@
+ # PATCH-FIX-UPSTREAM CVE-2019-9948-avoid_local-file.patch bsc#1130847 mcepl@suse.com
+ # removing unnecessary (and potentially harmful) URL scheme local-file://
+ Patch45:        CVE-2019-9948-avoid_local-file.patch
++# mips64el
++Patch50:        Python-2.7.14-fix-mips64-libffi.patch
++Patch51:        python-add-mips64-multilib.patch
+ # 
+ # COMMON-PATCH-END
+ BuildRequires:  automake
+@@ -240,6 +243,8 @@
+ %patch43 -p1
+ %patch44 -p1
+ %patch45 -p1
++%patch50 -p1
++%patch51 -p1
+ 
+ # drop Autoconf version requirement
+ sed -i 's/^version_required/dnl version_required/' configure.ac
+Index: Python-2.7.14-fix-mips64-libffi.patch
+===================================================================
+--- Python-2.7.14-fix-mips64-libffi.patch	(revision 0)
++++ Python-2.7.14-fix-mips64-libffi.patch	(working copy)
+@@ -0,0 +1,12 @@
++diff -Nuri Python-2.7.14-orig/Modules/_ctypes/libffi/fficonfig.py.in Python-2.7.14/Modules/_ctypes/libffi/fficonfig.py.in
++--- Python-2.7.14-orig/Modules/_ctypes/libffi/fficonfig.py.in	2019-12-20 21:10:01.181554546 +0800
+++++ Python-2.7.14/Modules/_ctypes/libffi/fficonfig.py.in	2019-12-20 21:10:43.814457948 +0800
++@@ -5,7 +5,7 @@
++ 
++ ffi_platforms = {
++     'MIPS_IRIX': ['src/mips/ffi.c', 'src/mips/o32.S', 'src/mips/n32.S'],
++-    'MIPS_LINUX': ['src/mips/ffi.c', 'src/mips/o32.S'],
+++    'MIPS_LINUX': ['src/mips/ffi.c', 'src/mips/o32.S', 'src/mips/n32.S'],
++     'X86': ['src/x86/ffi.c', 'src/x86/sysv.S', 'src/x86/win32.S'],
++     'X86_FREEBSD': ['src/x86/ffi.c', 'src/x86/freebsd.S'],
++     'X86_WIN32': ['src/x86/ffi.c', 'src/x86/win32.S'],
+Index: python-add-mips64-multilib.patch
+===================================================================
+--- python-add-mips64-multilib.patch	(revision 0)
++++ python-add-mips64-multilib.patch	(working copy)
+@@ -0,0 +1,12 @@
++diff -Nrui Python-2.7.14-orig/configure.ac Python-2.7.14/configure.ac
++--- Python-2.7.14-orig/configure.ac	2019-12-21 19:31:06.804897363 +0800
+++++ Python-2.7.14/configure.ac	2019-12-21 19:31:13.064859687 +0800
++@@ -785,7 +785,7 @@
++ esac
++ 
++ case $ARCH:$python_cv_cc_64bit_output in
++-aarch64:yes | ppc64:yes | ppc64le:yes | powerpc64:yes | s390x:yes | sparc64:yes | x86_64:yes)
+++aarch64:yes | ppc64:yes | ppc64le:yes | powerpc64:yes | s390x:yes | sparc64:yes | x86_64:yes | mips64:yes | mips64el:yes)
++   LIB="lib64"
++   ;;
++ *:*)

@@ -1,0 +1,12 @@
+Index: omnisharp-server.spec
+===================================================================
+--- omnisharp-server.spec	(revision 1)
++++ omnisharp-server.spec	(working copy)
+@@ -29,6 +29,7 @@
+ # Otherwise Mono(Nancy) is added as PreReq
+ AutoReqProv:    no
+ BuildArch:      noarch
++ExcludeArch:    %mips64
+ 
+ %description
+ HTTP wrapper around NRefactory allowing C# editor plugins to be written for any

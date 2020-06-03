@@ -1,0 +1,13 @@
+Index: sysdig.spec
+===================================================================
+--- sysdig.spec	(revision 1)
++++ sysdig.spec	(working copy)
+@@ -38,7 +38,7 @@
+ BuildRequires:  pkgconfig(libcurl)
+ BuildRequires:  pkgconfig(openssl)
+ BuildRequires:  pkgconfig(zlib)
+-ExcludeArch:    %{arm} aarch64
++ExcludeArch:    %{arm} aarch64 %mips
+ %kernel_module_package
+ 
+ %description

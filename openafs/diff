@@ -1,0 +1,12 @@
+Index: openafs.spec
+===================================================================
+--- openafs.spec	(revision 1)
++++ openafs.spec	(working copy)
+@@ -66,6 +66,7 @@
+ License:        IPL-1.0
+ Group:          System/Filesystems
+ Url:            http://www.openafs.org/
++ExcludeArch:    %mips
+ 
+ Source0:        openafs-%{version}-src.tar.bz2
+ Source1:        openafs-%{version}-doc.tar.bz2

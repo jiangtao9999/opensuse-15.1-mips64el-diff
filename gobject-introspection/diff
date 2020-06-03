@@ -1,0 +1,13 @@
+Index: gobject-introspection.spec
+===================================================================
+--- gobject-introspection.spec	(revision 1)
++++ gobject-introspection.spec	(working copy)
+@@ -106,6 +106,8 @@
+ %make_install
+ find %{buildroot} -type f -name "*.la" -delete -print
+ install -D %{SOURCE1} %{buildroot}%{_rpmconfigdir}/gi-find-deps.sh
++# fix mips64el is 64bit
++sed -i 's/aarch64/aarch64 mips64/' %{buildroot}%{_rpmconfigdir}/gi-find-deps.sh
+ install -D %{SOURCE2} -m 0644 %{buildroot}%{_rpmconfigdir}/fileattrs/gobjectintrospection.attr
+ # comparing, if we provide all the symbols expected.
+ ls %{buildroot}%{_libdir}/girepository-1.0/*.typelib | sh %{SOURCE1} -P > gobject-introspection-typelib.installed

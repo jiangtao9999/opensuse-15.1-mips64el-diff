@@ -1,0 +1,12 @@
+Index: avahi-mono.spec
+===================================================================
+--- avahi-mono.spec	(revision 1)
++++ avahi-mono.spec	(working copy)
+@@ -44,6 +44,7 @@
+ License:        LGPL-2.1-or-later
+ Group:          Development/Languages/Mono
+ Url:            http://www.avahi.org/
++ExcludeArch:    %mips64
+ Source:         http://avahi.org/download/%{_name}-%{version}.tar.gz
+ # From http://packages.debian.org/sid/avahi-daemon http://ftp.debian.org/debian/pool/main/a/avahi/avahi_0.6.31-1.debian.tar.gz
+ Source1:        avahi-daemon-check-dns.sh

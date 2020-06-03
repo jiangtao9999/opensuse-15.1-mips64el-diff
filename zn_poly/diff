@@ -1,0 +1,37 @@
+Index: zn_poly.spec
+===================================================================
+--- zn_poly.spec	(revision 1)
++++ zn_poly.spec	(working copy)
+@@ -28,6 +28,7 @@
+ Source:         http://web.maths.unsw.edu.au/~davidharvey/code/zn_poly/releases/%name-%version.tar.gz
+ Source4:        COPYING
+ Patch1:         znpoly-automake.diff
++Patch2:         zn_poly-0.9-disable-mips-asm.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ BuildRequires:  gmp-devel
+ BuildRequires:  libtool
+@@ -57,6 +58,7 @@
+ %prep
+ %setup -q
+ %patch -P 1 -p1
++%patch2 -p1
+ 
+ %build
+ autoreconf -fi;
+Index: zn_poly-0.9-disable-mips-asm.patch
+===================================================================
+--- zn_poly-0.9-disable-mips-asm.patch	(revision 0)
++++ zn_poly-0.9-disable-mips-asm.patch	(working copy)
+@@ -0,0 +1,12 @@
++diff -Nrui zn_poly-0.9-orig/include/wide_arith.h zn_poly-0.9/include/wide_arith.h
++--- zn_poly-0.9-orig/include/wide_arith.h	2020-05-20 11:11:43.450187207 +0800
+++++ zn_poly-0.9/include/wide_arith.h	2020-05-20 11:12:29.051975829 +0800
++@@ -242,7 +242,7 @@
++ 
++ // ------ MIPS ------
++ 
++-#if (defined (__mips))
+++#if (defined (__mips)) && 0
++ 
++ #if (UNSIGNED_LONG_BITS == 32)
++ 

@@ -1,0 +1,12 @@
+Index: pinta.spec
+===================================================================
+--- pinta.spec	(revision 1)
++++ pinta.spec	(working copy)
+@@ -37,6 +37,7 @@
+ BuildRequires:  pkgconfig(mono-cairo)
+ Recommends:     %{name}-lang = %{version}
+ BuildArch:      noarch
++ExcludeArch:    %mips64
+ 
+ %description
+ Pinta is a free, open source drawing/editing application designed

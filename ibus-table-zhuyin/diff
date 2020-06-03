@@ -1,0 +1,13 @@
+Index: ibus-table-zhuyin.spec
+===================================================================
+--- ibus-table-zhuyin.spec	(revision 1)
++++ ibus-table-zhuyin.spec	(working copy)
+@@ -44,7 +44,7 @@
+ %build
+ export PYTHON=python3
+ %configure
+-make %{?_smp_mflags}
++make
+ 
+ %install
+ make DESTDIR=%{buildroot} install %{?_smp_mflags}

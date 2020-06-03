@@ -1,0 +1,12 @@
+Index: nunit.spec
+===================================================================
+--- nunit.spec	(revision 1)
++++ nunit.spec	(working copy)
+@@ -38,6 +38,7 @@
+ Summary:        Unit-testing framework for all .NET languages
+ License:        Zlib
+ Group:          Development/Libraries/Mono
++ExcludeArch:    %mips64
+ 
+ %description
+ NUnit is a unit testing framework for all .NET languages. It serves the

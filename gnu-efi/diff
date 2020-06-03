@@ -1,0 +1,13 @@
+Index: gnu-efi.spec
+===================================================================
+--- gnu-efi.spec	(revision 1)
++++ gnu-efi.spec	(working copy)
+@@ -28,7 +28,7 @@
+ Patch1:         %{name}-fix-strncpy-stpncpy-strncat.patch
+ BuildRequires:  kernel-source
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+-ExclusiveArch:  ia64 %ix86 x86_64 aarch64 %arm
++ExclusiveArch:  ia64 %ix86 x86_64 aarch64 %arm %mips64
+ 
+ %description
+ Library to develop EFI applications for IA-64 (IPF), IA-32 (x86), x86_64,

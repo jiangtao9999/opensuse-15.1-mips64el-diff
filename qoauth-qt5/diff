@@ -1,0 +1,43 @@
+Index: qoauth-qt5.spec
+===================================================================
+--- qoauth-qt5.spec	(revision 1)
++++ qoauth-qt5.spec	(working copy)
+@@ -32,6 +32,8 @@
+ Patch3:         pcfile.patch
+ # PATCH-FIX-OPENSUSE qoauth-qt5-fix-includedir.patch sor.alexei@meowr.ru -- Fix the include directory.
+ Patch4:         qoauth-qt5-fix-includedir.patch
++# mips64el
++Patch5:         qoauth-2.0.0-mips64el-libdir.patch
+ BuildRequires:  libqca-qt5-devel
+ BuildRequires:  pkgconfig
+ BuildRequires:  pkgconfig(Qt5Network)
+@@ -67,6 +69,7 @@
+ %patch2 -p1
+ %patch3 -p1
+ %patch4 -p1
++%patch5 -p1
+ 
+ %build
+ %qmake5
+Index: qoauth-2.0.0-mips64el-libdir.patch
+===================================================================
+--- qoauth-2.0.0-mips64el-libdir.patch	(revision 0)
++++ qoauth-2.0.0-mips64el-libdir.patch	(working copy)
+@@ -0,0 +1,17 @@
++diff -Nrui qoauth-2.0.0-orig/src/src.pro qoauth-2.0.0/src/src.pro
++--- qoauth-2.0.0-orig/src/src.pro	2019-02-18 14:23:50.508320800 +0800
+++++ qoauth-2.0.0/src/src.pro	2019-02-18 14:25:28.973563800 +0800
++@@ -100,6 +100,12 @@
++     contains(QMAKE_HOST.arch, s390x) {
++       target.path = $${INSTALL_PREFIX}/lib64
++     }
+++    contains(QMAKE_HOST.arch, mips64el) {
+++      target.path = $${INSTALL_PREFIX}/lib64
+++    }
+++    contains(QMAKE_HOST.arch, mips64) {
+++      target.path = $${INSTALL_PREFIX}/lib64
+++    }
++ 
++     headers.path = $${INSTALL_PREFIX}/include/QtOAuth
++     docs.path = $${INSTALL_PREFIX}/share/doc/$${TARGET}-$${VERSION}/html
++

@@ -1,0 +1,13 @@
+Index: ktp-text-ui.spec
+===================================================================
+--- ktp-text-ui.spec	(revision 1)
++++ ktp-text-ui.spec	(working copy)
+@@ -65,7 +65,7 @@
+ Obsoletes:      %{name}5 < %{version}
+ Provides:       %{name}5 = %{version}
+ # It can only build on the same platforms as Qt Webengine
+-ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 mips mips64
++ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 %{mips}
+ Recommends:     %{name}-lang
+ 
+ %description

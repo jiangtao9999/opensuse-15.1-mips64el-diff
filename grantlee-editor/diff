@@ -1,0 +1,13 @@
+Index: grantlee-editor.spec
+===================================================================
+--- grantlee-editor.spec	(revision 1)
++++ grantlee-editor.spec	(working copy)
+@@ -64,7 +64,7 @@
+ Requires:       kmail-application-icons
+ Recommends:     %{name}-lang
+ # It can only build on the same platforms as Qt Webengine
+-ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 mips mips64
++ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 %mips
+ %if 0%{?suse_version} > 1325
+ BuildRequires:  libboost_headers-devel
+ %else

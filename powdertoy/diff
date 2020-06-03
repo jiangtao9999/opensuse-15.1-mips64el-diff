@@ -1,0 +1,22 @@
+Index: powdertoy.spec
+===================================================================
+--- powdertoy.spec	(revision 1)
++++ powdertoy.spec	(working copy)
+@@ -61,12 +61,16 @@
+ %ifarch %ix86
+ scons --lin --release --32
+ %else
++%ifarch %mips
++scons --lin --release --no-sse
++%else
+ scons --lin --release
++%endif
+ %endif
+ %endif
+ 
+ %install
+-%ifarch %ix86
++%ifarch %ix86 %mips
+ install -D -m 0755 build/powder %{buildroot}%{_bindir}/powder
+ %endif
+ %ifarch x86_64

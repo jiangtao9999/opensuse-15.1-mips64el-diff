@@ -1,0 +1,12 @@
+Index: pgloader.spec
+===================================================================
+--- pgloader.spec	(revision 1)
++++ pgloader.spec	(working copy)
+@@ -38,6 +38,7 @@
+ BuildRequires:  libopenssl-devel
+ %endif
+ BuildRequires:  pkgconfig(sqlite3)
++ExcludeArch:    %mips
+ 
+ %description
+ pgloader imports data from different kind of sources and COPY it into

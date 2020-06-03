@@ -1,0 +1,12 @@
+Index: mhvtl.spec
+===================================================================
+--- mhvtl.spec	(revision 1)
++++ mhvtl.spec	(working copy)
+@@ -50,6 +50,7 @@
+ Patch1:         %{name}-remove-use-of-use_clustering.patch
+ Patch2:         %{name}-systemd-load-modules-cleanup.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
++ExcludeArch:    %mips
+ %{?systemd_ordering}
+ 
+ %if 0%{buildkmp} == 1

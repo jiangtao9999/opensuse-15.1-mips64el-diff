@@ -1,0 +1,13 @@
+Index: star.spec
+===================================================================
+--- star.spec	(revision 1)
++++ star.spec	(working copy)
+@@ -114,7 +114,7 @@
+ 
+ cp %{SOURCE1} .
+ 
+-for PLAT in aarch64 %{arm} ppc ppc64 ppc64le x86_64 s390 s390x; do
++for PLAT in aarch64 %{arm} ppc ppc64 ppc64le x86_64 s390 s390x %{mips}; do
+     for AFILE in gcc cc; do
+             [ ! -e RULES/${PLAT}-linux-${AFILE}.rul ] \
+             && ln -s i586-linux-${AFILE}.rul RULES/${PLAT}-linux-${AFILE}.rul

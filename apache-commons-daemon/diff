@@ -1,0 +1,67 @@
+Index: apache-commons-daemon.spec
+===================================================================
+--- apache-commons-daemon.spec	(revision 1)
++++ apache-commons-daemon.spec	(working copy)
+@@ -31,6 +31,7 @@
+ Patch1:         apache-commons-daemon-s390x.patch
+ Patch2:         apache-commons-daemon-ppc64.patch
+ Patch3:         apache-commons-daemon-aarch64.patch
++Patch4:         mips_abi_n32_n64_support.diff
+ BuildRequires:  ant
+ BuildRequires:  apache-commons-parent
+ BuildRequires:  java-devel
+@@ -77,6 +78,7 @@
+ %patch1 -p1
+ %patch2 -p1
+ %patch3 -p1
++%patch4 -p1
+ 
+ # remove java binaries from sources
+ rm -rf src/samples/build/
+Index: mips_abi_n32_n64_support.diff
+===================================================================
+--- mips_abi_n32_n64_support.diff	(revision 0)
++++ mips_abi_n32_n64_support.diff	(working copy)
+@@ -0,0 +1,42 @@
++diff -Nrui commons-daemon-1.0.15-src-orig/src/native/unix/configure commons-daemon-1.0.15-src/src/native/unix/configure
++--- commons-daemon-1.0.15-src-orig/src/native/unix/configure	2020-01-30 10:59:57.515002408 +0800
+++++ commons-daemon-1.0.15-src/src/native/unix/configure	2020-01-30 11:02:27.767495334 +0800
++@@ -2637,7 +2637,7 @@
++     LDCMD="/opt/C/bin/cc"
++     HOST_CPU=osd
++     ;;
++-  mips)
+++  mips | mipsn32 | mips64)
++     CFLAGS="$CFLAGS -DCPU=\\\"mips\\\""
++     supported_os="mips"
++     HOST_CPU=mips
++@@ -2666,7 +2666,7 @@
++     fi
++     CFLAGS="$CFLAGS -DCPU=\\\"$HOST_CPU\\\" -DSO_EXT=\\\"sl\\\""
++     ;;
++-  mipsel)
+++  mipsel | mipsn32el | mips64el)
++     CFLAGS="$CFLAGS -DCPU=\\\"mipsel\\\""
++     supported_os="mipsel"
++     HOST_CPU=mipsel
++diff -Nrui commons-daemon-1.0.15-src-orig/src/native/unix/support/apsupport.m4 commons-daemon-1.0.15-src/src/native/unix/support/apsupport.m4
++--- commons-daemon-1.0.15-src-orig/src/native/unix/support/apsupport.m4	2020-01-30 10:59:57.511068791 +0800
+++++ commons-daemon-1.0.15-src/src/native/unix/support/apsupport.m4	2020-01-30 11:01:24.010396851 +0800
++@@ -103,7 +103,7 @@
++     LDCMD="/opt/C/bin/cc"
++     HOST_CPU=osd
++     ;;
++-  mips)
+++  mips | mipsn32 | mips64)
++     CFLAGS="$CFLAGS -DCPU=\\\"mips\\\""
++     supported_os="mips"
++     HOST_CPU=mips
++@@ -132,7 +132,7 @@
++     fi
++     CFLAGS="$CFLAGS -DCPU=\\\"$HOST_CPU\\\" -DSO_EXT=\\\"sl\\\""
++     ;;
++-  mipsel)
+++  mipsel | mipsn32el | mips64el)
++     CFLAGS="$CFLAGS -DCPU=\\\"mipsel\\\""
++     supported_os="mipsel"
++     HOST_CPU=mipsel

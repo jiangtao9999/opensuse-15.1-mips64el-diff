@@ -1,0 +1,12 @@
+Index: crazydiskinfo.spec
+===================================================================
+--- crazydiskinfo.spec	(revision 1)
++++ crazydiskinfo.spec	(working copy)
+@@ -30,6 +30,7 @@
+ BuildRequires:  gcc-c++
+ BuildRequires:  libatasmart-devel
+ BuildRequires:  ncurses-devel
++ExcludeArch:    %mips
+ 
+ %description
+ CrazyDiskInfo is an interactive TUI S.M.A.R.T viewer.

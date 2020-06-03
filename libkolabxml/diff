@@ -1,0 +1,16 @@
+Index: libkolabxml.spec
+===================================================================
+--- libkolabxml.spec	(revision 1)
++++ libkolabxml.spec	(working copy)
+@@ -25,7 +25,11 @@
+ %bcond_without php
+ %endif
+ %bcond_without java
++%ifnarch %mips64
+ %bcond_without mono
++%else
++%bcond_with mono
++%endif
+ %bcond_with tests
+ Name:           libkolabxml
+ Version:        1.1.6

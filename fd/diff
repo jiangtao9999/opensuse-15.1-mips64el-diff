@@ -1,0 +1,12 @@
+Index: fd.spec
+===================================================================
+--- fd.spec	(revision 1)
++++ fd.spec	(working copy)
+@@ -28,6 +28,7 @@
+ BuildRequires:  cargo
+ BuildRequires:  rust
+ BuildRequires:  rust-std
++ExcludeArch:    %mips
+ 
+ %description
+ fd is an alternative to /usr/bin/find. It features:

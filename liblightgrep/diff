@@ -1,0 +1,37 @@
+Index: liblightgrep.spec
+===================================================================
+--- liblightgrep.spec	(revision 1)
++++ liblightgrep.spec	(working copy)
+@@ -31,6 +31,7 @@
+ #Source:         https://github.com/LightboxTech/liblightgrep/archive/v%{version}.tar.gz
+ Source:         %{name}-%{version}.tar.xz
+ Patch0:         aarch64_and_ppc64le.patch
++Patch1:         liblightgrep-1.4-add-mips64.patch
+ BuildRequires:  autoconf
+ BuildRequires:  automake
+ BuildRequires:  bison
+@@ -98,6 +99,7 @@
+ %prep
+ %setup -q
+ %patch0 -p1
++%patch1 -p1
+ #The test file test_kilopattern.CPP breaks ARM builds
+ find . -name 'test_kilopattern.CPP' -delete
+ 
+Index: liblightgrep-1.4-add-mips64.patch
+===================================================================
+--- liblightgrep-1.4-add-mips64.patch	(revision 0)
++++ liblightgrep-1.4-add-mips64.patch	(working copy)
+@@ -0,0 +1,12 @@
++diff -Nrui liblightgrep-1.4-orig/m4/ax_boost_base.m4 liblightgrep-1.4/m4/ax_boost_base.m4
++--- liblightgrep-1.4-orig/m4/ax_boost_base.m4	2020-05-08 21:42:49.524663882 +0800
+++++ liblightgrep-1.4/m4/ax_boost_base.m4	2020-05-08 21:43:39.027721881 +0800
++@@ -91,7 +91,7 @@
++     dnl are found, e.g. when only header-only libraries are installed!
++     libsubdirs="lib"
++     ax_arch=`uname -m`
++-    if test $ax_arch = x86_64 -o $ax_arch = aarch64 -o $ax_arch = ppc64 -o $ax_arch = ppc64le -o $ax_arch = s390x -o $ax_arch = sparc64; then
+++    if test $ax_arch = x86_64 -o $ax_arch = aarch64 -o $ax_arch = ppc64 -o $ax_arch = ppc64le -o $ax_arch = s390x -o $ax_arch = sparc64 -o $ax_arch = mips64; then
++         libsubdirs="lib64 lib lib64"
++     fi
++ 

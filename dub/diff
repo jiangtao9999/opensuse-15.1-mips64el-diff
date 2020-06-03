@@ -1,0 +1,12 @@
+Index: dub.spec
+===================================================================
+--- dub.spec	(revision 1)
++++ dub.spec	(working copy)
+@@ -39,6 +39,7 @@
+ BuildRequires:  ldc
+ BuildRequires:  ldc-phobos-devel
+ %endif
++ExcludeArch:    %mips
+ 
+ %description
+ Package Manager for the D Programming language.

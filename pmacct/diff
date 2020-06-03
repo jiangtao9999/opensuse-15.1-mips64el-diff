@@ -1,0 +1,54 @@
+Index: pmacct.spec
+===================================================================
+--- pmacct.spec	(revision 1)
++++ pmacct.spec	(working copy)
+@@ -40,6 +40,7 @@
+ Source11:       pmacctd.conf
+ Source12:       sfacctd.conf
+ Source20:       pmacct.1
++Patch1:         pmacct-fix-overflow.patch
+ BuildRequires:  autoconf
+ BuildRequires:  automake
+ BuildRequires:  libmysqlclient-devel
+@@ -71,6 +72,7 @@
+ 
+ %prep
+ %setup -q
++%patch1 -p1
+ 
+ # fix permissions
+ chmod -x sql/pmacct-*
+Index: pmacct-fix-overflow.patch
+===================================================================
+--- pmacct-fix-overflow.patch	(revision 0)
++++ pmacct-fix-overflow.patch	(working copy)
+@@ -0,0 +1,29 @@
++diff -Nrui pmacct-1.7.2-orig/src/sfacctd.c pmacct-1.7.2/src/sfacctd.c
++--- pmacct-1.7.2-orig/src/sfacctd.c	2020-05-16 16:43:28.778767593 +0800
+++++ pmacct-1.7.2/src/sfacctd.c	2020-05-16 16:45:21.476841606 +0800
++@@ -1997,7 +1997,7 @@
++ 
++ int SF_find_id(struct id_table *t, struct packet_ptrs *pptrs, pm_id_t *tag, pm_id_t *tag2)
++ {
++-  struct sockaddr sa_local;
+++  struct sockaddr_storage sa_local;
++   struct sockaddr_in *sa4 = (struct sockaddr_in *) &sa_local;
++ #if defined ENABLE_IPV6
++   struct sockaddr_in6 *sa6 = (struct sockaddr_in6 *) &sa_local;
++@@ -2040,14 +2040,14 @@
++   if (sample->agent_addr.type == SFLADDRESSTYPE_IP_V4) {
++     begin = 0;
++     end = t->ipv4_num;
++-    sa_local.sa_family = AF_INET;
+++    sa_local.ss_family = AF_INET;
++     sa4->sin_addr.s_addr = sample->agent_addr.address.ip_v4.s_addr;
++   }
++ #if defined ENABLE_IPV6
++   else if (sample->agent_addr.type == SFLADDRESSTYPE_IP_V6) {
++     begin = t->num-t->ipv6_num;
++     end = t->num;
++-    sa_local.sa_family = AF_INET6;
+++    sa_local.ss_family = AF_INET6;
++     memcpy(sa6->sin6_addr.s6_addr, sample->agent_addr.address.ip_v6.s6_addr, 16);
++   }
++ #endif

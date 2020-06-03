@@ -1,0 +1,13 @@
+Index: konqueror.spec
+===================================================================
+--- konqueror.spec	(revision 1)
++++ konqueror.spec	(working copy)
+@@ -64,7 +64,7 @@
+ Obsoletes:      libKF5Konq6 < 17.04
+ Provides:       libKF5Konq6 = 17.04
+ # It can only build on the same platforms as Qt Webengine
+-ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 mips mips64
++ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 %mips
+ # Needed for 42.3
+ %if 0%{?suse_version} < 1330
+ # It does not build with the default compiler (GCC 4.8) on Leap 42.x

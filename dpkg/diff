@@ -1,0 +1,65 @@
+Index: dpkg.spec
+===================================================================
+--- dpkg.spec	(revision 1)
++++ dpkg.spec	(working copy)
+@@ -29,6 +29,8 @@
+ Patch1:         update-alternatives-suse.patch
+ # PATCH-FIX-SUSE: tar of Leap 42.{2,3} does not recognize --sort=name, --clamp-mtime options
+ Patch2:         drop-tar-option.patch
++# warning message make test failed
++Patch3:         dpkg_1.19.0.4-drop-CC-warning.patch
+ BuildRequires:  autoconf
+ BuildRequires:  automake
+ BuildRequires:  gcc-c++
+@@ -92,6 +94,9 @@
+ autoreconf -fvi
+ export CFLAGS="%{optflags}"
+ %configure \
++%ifarch %mips64
++    --host=%{_host}abi64 \
++%endif
+     --disable-silent-rules \
+     --with-libselinux \
+     --localstatedir=%{_localstatedir}/lib \
+@@ -140,6 +145,10 @@
+ install -m 755 %{SOURCE3} %{buildroot}%{_bindir}
+ 
+ %check
++%ifarch %mips64
++# fix when check
++patch -p1 -i %{PATCH3}
++%endif
+ make %{?_smp_mflags} check
+ 
+ %post
+Index: update-alternatives.spec
+===================================================================
+--- update-alternatives.spec	(revision 1)
++++ update-alternatives.spec	(working copy)
+@@ -53,6 +53,9 @@
+ %build
+ autoreconf -fvi
+ %configure \
++%ifarch %mips64
++    --host=%{_host}abi64 \
++%endif
+   --disable-silent-rules \
+   --with-admindir=%{_localstatedir}/lib
+ 
+Index: dpkg_1.19.0.4-drop-CC-warning.patch
+===================================================================
+--- dpkg_1.19.0.4-drop-CC-warning.patch	(revision 0)
++++ dpkg_1.19.0.4-drop-CC-warning.patch	(working copy)
+@@ -0,0 +1,12 @@
++diff -Nrui dpkg-1.19.0.4-orig/scripts/Dpkg/Arch.pm dpkg-1.19.0.4/scripts/Dpkg/Arch.pm
++--- dpkg-1.19.0.4-orig/scripts/Dpkg/Arch.pm	2019-12-25 15:38:21.847629782 +0000
+++++ dpkg-1.19.0.4/scripts/Dpkg/Arch.pm	2019-12-25 15:38:59.128850512 +0000
++@@ -210,8 +210,6 @@
++         if (defined $host_arch) {
++             $host_gnu_type = debtuple_to_gnutriplet(@host_archtuple);
++         } else {
++-            warning(g_('unknown CC system type %s, falling back to ' .
++-                       'default (native compilation)'), $host_gnu_type);
++             $host_gnu_type = '';
++         }
++         set_host_gnu_type($host_gnu_type);

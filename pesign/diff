@@ -1,0 +1,13 @@
+Index: pesign.spec
+===================================================================
+--- pesign.spec	(revision 1)
++++ pesign.spec	(working copy)
+@@ -46,7 +46,7 @@
+ BuildRequires:  pkgconfig(systemd)
+ Requires(pre):  shadow
+ %{?systemd_requires}
+-ExclusiveArch:  ia64 %ix86 x86_64 aarch64 %arm
++ExclusiveArch:  ia64 %ix86 x86_64 aarch64 %arm %mips
+ 
+ %description
+ Signing tool for PE-COFF binaries, hopefully at least vaguely compliant

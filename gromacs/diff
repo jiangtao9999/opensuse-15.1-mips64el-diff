@@ -1,0 +1,72 @@
+Index: gromacs.spec
+===================================================================
+--- gromacs.spec	(revision 1)
++++ gromacs.spec	(working copy)
+@@ -27,6 +27,7 @@
+ Source0:        ftp://ftp.gromacs.org/pub/gromacs/gromacs-%{version}.tar.gz
+ Source1:        ftp://ftp.gromacs.org/pub/manual/manual-%{version}.pdf
+ Source2:        http://gerrit.gromacs.org/download/regressiontests-%{version}.tar.gz
++Patch1:         disable-cpuinfotest.patch
+ 
+ BuildRequires:  cmake >= 2.8.8
+ BuildRequires:  fdupes
+@@ -120,6 +121,7 @@
+ %prep
+ %setup -q
+ tar -xzf %{S:2}
++%patch1 -p1
+ 
+ %build
+ source %{_libdir}/mpi/gcc/openmpi/bin/mpivars.sh
+@@ -199,7 +201,7 @@
+ 
+ %check
+ #s390x is too slow for tests
+-%ifnarch s390x
++%ifnarch s390x %mips
+ LD_LIBRARY_PATH=%{buildroot}/%{_libdir} make -C nompi/build %{?_smp_mflags} check
+ LD_LIBRARY_PATH='%{buildroot}/%{_libdir}::%{_libdir}/mpi/gcc/openmpi/%{_lib}' make -C openmpi/build %{?_smp_mflags} check
+ %endif
+Index: disable-cpuinfotest.patch
+===================================================================
+--- disable-cpuinfotest.patch	(revision 0)
++++ disable-cpuinfotest.patch	(working copy)
+@@ -0,0 +1,20 @@
++Description: Disable CpuInfoTest.SupportLevel test
++ This test is still a hard failure on less common architectures instead of
++ a warning.  Disable for now, as it should not fail the build.
++Author: Nicholas Breen
++Bug: http://redmine.gromacs.org/issues/1987
++Last-Update: 2016-07-15
++
++Index: gromacs-2016~rc1/src/gromacs/hardware/tests/CMakeLists.txt
++===================================================================
++--- gromacs-2016~rc1.orig/src/gromacs/hardware/tests/CMakeLists.txt
+++++ gromacs-2016~rc1/src/gromacs/hardware/tests/CMakeLists.txt
++@@ -33,5 +33,7 @@
++ # the research papers on the package. Check out http://www.gromacs.org.
++ 
++ gmx_add_unit_test(HardwareUnitTests hardware-test
++-                  cpuinfo.cpp
++                   hardwaretopology.cpp)
+++
+++# cpuinfo.cpp disabled in Debian patch pending resolution of
+++# http://redmine.gromacs.org/issues/1987
+Index: _constraints
+===================================================================
+--- _constraints	(revision 1)
++++ _constraints	(working copy)
+@@ -1,13 +0,0 @@
+-<?xml version="1.0"?>
+-<constraints>
+-  <hardware>
+-    <physicalmemory>
+-      <size unit="M">1500</size>
+-    </physicalmemory>
+-    <disk>
+-      <size unit="G">2</size>
+-    </disk>
+-  </hardware>
+-  <sandbox>kvm</sandbox>
+-  <hostlabel exclude="true">SLOW_CPU</hostlabel>
+-</constraints>

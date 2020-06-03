@@ -1,0 +1,13 @@
+Index: bin86.spec
+===================================================================
+--- bin86.spec	(revision 1)
++++ bin86.spec	(working copy)
+@@ -29,7 +29,7 @@
+ Patch2:         dev86-noelks.patch
+ Patch3:         dev86-x86_64.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+-ExclusiveArch:  %ix86 x86_64
++ExclusiveArch:  %ix86 x86_64 %mips
+ %if 0%{?suse_version} > 1020
+ BuildRequires:  fdupes
+ %endif

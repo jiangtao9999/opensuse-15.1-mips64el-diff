@@ -1,0 +1,12 @@
+Index: gettext-csharp.spec
+===================================================================
+--- gettext-csharp.spec	(revision 1)
++++ gettext-csharp.spec	(working copy)
+@@ -47,6 +47,7 @@
+ Patch4:         gettext-po-mode.diff
+ Patch5:         gettext-initialize_vars.patch
+ Patch9:         gettext-needlessly_init_vars.patch
++ExcludeArch:    %mips
+ 
+ %description
+ Mono with its 'resgen' program uses a design that Microsoft created and

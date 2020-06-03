@@ -1,0 +1,62 @@
+Index: acpica.spec
+===================================================================
+--- acpica.spec	(revision 1)
++++ acpica.spec	(working copy)
+@@ -33,12 +33,13 @@
+ Patch1:         acpica-no-compiletime.patch
+ Patch2:         wmidump_add_she_bang.patch
+ Patch3:         do_not_use_build_date_and_time.patch
++Patch4:         acpica-64bit.patch
+ Source1:        ec_access.c
+ Source2:        acpi_genl.tar.bz2
+ Source3:        acpi_validate
+ Source4:        wmidump.tar.bz2
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+-ExclusiveArch:  %ix86 ia64 x86_64 aarch64 %arm
++ExclusiveArch:  %ix86 ia64 x86_64 aarch64 %arm %mips
+ BuildRequires:  bison
+ BuildRequires:  flex
+ BuildRequires:  glibc-devel
+@@ -69,6 +70,9 @@
+ # acpitools (acpidump) from kernel sources:
+ # copy necessary files from kernel-source since we need to modify them
+ (cd /usr/src/linux ; tar -cf - COPYING CREDITS README tools include scripts Kbuild Makefile drivers/acpi lib) | tar -xf -
++(cd ..
++%patch4 -p1
++)
+ 
+ %build
+ cc %{SOURCE1} %{optflags} -o ec_access
+Index: acpica-64bit.patch
+===================================================================
+--- acpica-64bit.patch	(revision 0)
++++ acpica-64bit.patch	(working copy)
+@@ -0,0 +1,28 @@
++diff -Nrui acpica-unix2-20180105-orig/acpidump-4.12.14/include/acpi/platform/aclinux.h acpica-unix2-20180105/acpidump-4.12.14/include/acpi/platform/aclinux.h
++--- acpica-unix2-20180105-orig/acpidump-4.12.14/include/acpi/platform/aclinux.h	2018-12-27 16:07:12.602707651 +0800
+++++ acpica-unix2-20180105/acpidump-4.12.14/include/acpi/platform/aclinux.h	2018-12-27 16:08:13.048486200 +0800
++@@ -200,9 +200,7 @@
++ #define ACPI_FLUSH_CPU_CACHE()
++ #define ACPI_CAST_PTHREAD_T(pthread) ((acpi_thread_id) (pthread))
++ 
++-#if defined(__ia64__)    || defined(__x86_64__) ||\
++-	defined(__aarch64__) || defined(__PPC64__) ||\
++-	defined(__s390x__)
+++#if defined(__LP64__)
++ #define ACPI_MACHINE_WIDTH          64
++ #define COMPILER_DEPENDENT_INT64    long
++ #define COMPILER_DEPENDENT_UINT64   unsigned long
++diff -Nrui acpica-unix2-20180105-orig/source/include/platform/aclinux.h acpica-unix2-20180105/source/include/platform/aclinux.h
++--- acpica-unix2-20180105-orig/source/include/platform/aclinux.h	2018-12-27 16:07:11.942503646 +0800
+++++ acpica-unix2-20180105/source/include/platform/aclinux.h	2018-12-27 16:07:39.565595491 +0800
++@@ -207,9 +207,7 @@
++ #define ACPI_FLUSH_CPU_CACHE()
++ #define ACPI_CAST_PTHREAD_T(Pthread) ((ACPI_THREAD_ID) (Pthread))
++ 
++-#if defined(__ia64__)    || (defined(__x86_64__) && !defined(__ILP32__)) ||\
++-    defined(__aarch64__) || defined(__PPC64__) ||\
++-    defined(__s390x__)
+++#if defined(__LP64__)
++ #define ACPI_MACHINE_WIDTH          64
++ #define COMPILER_DEPENDENT_INT64    long
++ #define COMPILER_DEPENDENT_UINT64   unsigned long

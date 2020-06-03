@@ -1,0 +1,12 @@
+Index: mono-nat.spec
+===================================================================
+--- mono-nat.spec	(revision 1)
++++ mono-nat.spec	(working copy)
+@@ -30,6 +30,7 @@
+ BuildRequires:  mono-devel
+ BuildRequires:  pkg-config
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
++ExcludeArch:    %mips64
+ 
+ %package devel
+ Summary:        A .NET library for automatic port forwarding

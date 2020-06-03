@@ -1,0 +1,40 @@
+Index: mozjs52.spec
+===================================================================
+--- mozjs52.spec	(revision 1)
++++ mozjs52.spec	(working copy)
+@@ -169,7 +169,7 @@
+ cd js/src
+ # Run SpiderMonkey tests
+ tests/jstests.py -d -s -t 1800 --no-progress ../../js/src/js/src/shell/js \
+-%ifnarch s390 s390x ppc %{power64}
++%ifnarch s390 s390x ppc %{power64} %{mips}
+ ;
+ %else
+ || :
+Index: _constraints
+===================================================================
+--- _constraints	(revision 1)
++++ _constraints	(working copy)
+@@ -1,22 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<constraints>
+-  <hardware>
+-    <disk>
+-      <size unit="G">8</size>
+-    </disk>
+-    <memory>
+-      <size unit="G">4</size>
+-    </memory>
+-  </hardware>
+-  <overwrite>
+-    <conditions>
+-      <arch>ppc64</arch>
+-      <arch>ppc64le</arch>
+-    </conditions>
+-    <hardware>
+-      <memory>
+-        <size unit="G">5</size>
+-      </memory>
+-    </hardware>
+-  </overwrite>
+-</constraints>

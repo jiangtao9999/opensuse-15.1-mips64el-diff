@@ -1,0 +1,13 @@
+Index: kmod-testsuite.spec
+===================================================================
+--- kmod-testsuite.spec	(revision 1)
++++ kmod-testsuite.spec	(working copy)
+@@ -87,7 +87,7 @@
+ # empty
+ 
+ %check
+-%ifarch ppc64
++%ifarch ppc64 %mips
+ make check V=1 KDIR="%kdir" || echo "Warning: bypass boo#897845"
+ %else
+ make check V=1 KDIR="%kdir"

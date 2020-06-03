@@ -1,0 +1,13 @@
+Index: sbcl.spec
+===================================================================
+--- sbcl.spec	(revision 1)
++++ sbcl.spec	(working copy)
+@@ -95,7 +95,7 @@
+ Patch8:         fix-tests.patch
+ 
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+-ExcludeArch:    ppc64 ppc64le
++ExcludeArch:    ppc64 ppc64le %mips64
+ 
+ %description
+ Steel Bank Common Lisp (SBCL) is a high performance Common Lisp

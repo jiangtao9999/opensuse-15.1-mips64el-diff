@@ -1,0 +1,13 @@
+Index: kdepim-runtime.spec
+===================================================================
+--- kdepim-runtime.spec	(revision 1)
++++ kdepim-runtime.spec	(working copy)
+@@ -84,7 +84,7 @@
+ Obsoletes:      kdepim4-runtime < %{version}
+ Obsoletes:      kio-pimlibs < %{version}
+ # It can only build on the same platforms as Qt Webengine
+-ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 mips mips64
++ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 %mips
+ %if 0%{?suse_version} > 1325
+ BuildRequires:  libboost_program_options-devel
+ BuildRequires:  libboost_system-devel

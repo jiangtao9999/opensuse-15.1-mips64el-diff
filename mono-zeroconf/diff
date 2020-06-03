@@ -1,0 +1,12 @@
+Index: mono-zeroconf.spec
+===================================================================
+--- mono-zeroconf.spec	(revision 1)
++++ mono-zeroconf.spec	(working copy)
+@@ -26,6 +26,7 @@
+ Source0:        %{name}-%{version}.tar.bz2
+ Patch0:         mono-search-path.patch
+ BuildArch:      noarch
++ExcludeArch:    %mips64
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ BuildRequires:  mono-devel
+ Requires:       mono-zeroconf-provider

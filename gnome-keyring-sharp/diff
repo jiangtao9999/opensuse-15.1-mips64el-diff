@@ -1,0 +1,12 @@
+Index: gnome-keyring-sharp.spec
+===================================================================
+--- gnome-keyring-sharp.spec	(revision 1)
++++ gnome-keyring-sharp.spec	(working copy)
+@@ -33,6 +33,7 @@
+ Patch0:         pkgconfigdir.patch
+ Patch1:         add-delay-sign-attribute.patch
+ Patch2:         sign-delay-signed-assembly.patch
++ExcludeArch:    %mips
+ 
+ %description
+ When the gnome-keyring-daemon is running, you can use this to

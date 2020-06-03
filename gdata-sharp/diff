@@ -1,0 +1,12 @@
+Index: gdata-sharp.spec
+===================================================================
+--- gdata-sharp.spec	(revision 1)
++++ gdata-sharp.spec	(working copy)
+@@ -37,6 +37,7 @@
+ Patch2:         gdata-sharp-find-nunit.patch
+ # PATCH-FIX-UPSTREAM https://github.com/google/google-gdata/pull/725
+ Patch3:         gdata-sharp-reproducible.patch
++ExcludeArch:    %mips
+ 
+ %description
+ The GData .NET Client Library provides a library and source code

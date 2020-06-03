@@ -1,0 +1,32 @@
+Index: libproxy-plugins.spec
+===================================================================
+--- libproxy-plugins.spec	(revision 1)
++++ libproxy-plugins.spec	(working copy)
+@@ -19,7 +19,11 @@
+ %define         build_core_not_modules 0
+ %define         build_mozjs 0
+ %if 0%{?suse_version}
++%ifnarch %mips64
+ %bcond_without mono
++%else
++%bcond_with mono
++%endif
+ %else
+ %bcond_with mono
+ %endif
+Index: libproxy.spec
+===================================================================
+--- libproxy.spec	(revision 1)
++++ libproxy.spec	(working copy)
+@@ -19,7 +19,11 @@
+ %define         build_core_not_modules 1
+ %define         build_mozjs 0
+ %if 0%{?suse_version}
++%ifnarch %mips64
+ %bcond_without mono
++%else
++%bcond_with mono
++%endif
+ %else
+ %bcond_with mono
+ %endif

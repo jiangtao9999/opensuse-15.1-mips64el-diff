@@ -1,0 +1,51 @@
+Index: MozillaFirefox.spec
+===================================================================
+--- MozillaFirefox.spec	(revision 1)
++++ MozillaFirefox.spec	(working copy)
+@@ -422,6 +422,9 @@
+ %ifarch %arm aarch64 s390x %power64
+ ac_add_options --disable-webrtc
+ %endif
++%ifarch %mips
++ac_add_options --disable-ion
++%endif
+ EOF
+ ./mach build
+ 
+Index: _constraints
+===================================================================
+--- _constraints	(revision 1)
++++ _constraints	(working copy)
+@@ -1,32 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<constraints>
+-  <hardware>
+-    <disk>
+-      <size unit="G">16</size>
+-    </disk>
+-    <memory>
+-      <size unit="G">12</size>
+-    </memory>
+-  </hardware>
+-  <overwrite>
+-    <conditions>
+-      <arch>armv6l</arch>
+-      <arch>armv7l</arch>
+-    </conditions>
+-    <hardware>
+-      <memory>
+-        <size unit="M">2600</size>
+-      </memory>
+-    </hardware>
+-  </overwrite>
+-  <overwrite>
+-    <conditions>
+-      <arch>aarch64</arch>
+-    </conditions>
+-    <hardware>
+-      <memory>
+-        <size unit="G">9</size>
+-      </memory>
+-    </hardware>
+-  </overwrite>
+-</constraints>

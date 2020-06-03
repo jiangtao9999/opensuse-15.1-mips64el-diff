@@ -1,0 +1,121 @@
+Index: installation-images.spec
+===================================================================
+--- installation-images.spec	(revision 1)
++++ installation-images.spec	(working copy)
+@@ -398,7 +398,9 @@
+ BuildRequires:  plymouth-scripts
+ %endif
+ BuildRequires:  klogd
++%ifnarch %mips64
+ BuildRequires:  ltrace
++%endif
+ BuildRequires:  nscd
+ BuildRequires:  polkit
+ BuildRequires:  popt-devel
+@@ -592,6 +594,7 @@
+ Source:         installation-images-%{version}.tar.xz
+ Source1:        installation-images-rpmlintrc
+ Source2:        product_name
++Patch1:         installation-images-14.424-add-mips64el.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ %define _binary_payload w.ufdio
+ 
+@@ -666,6 +669,11 @@
+ %prep
+ %setup -n installation-images-%{version}
+ rm -f /usr/lib/build/checks/04-check-filelist
++%patch1 -p1
++ln -sv install.mips64el install.mips64
++ln -sv install.mips64el install.mips
++ln -sv install.mips64el install.mipsel
++chmod +x install.mips*
+ 
+ %build
+ echo building product "'%product_name'"
+Index: installation-images-14.424-add-mips64el.patch
+===================================================================
+--- installation-images-14.424-add-mips64el.patch	(revision 0)
++++ installation-images-14.424-add-mips64el.patch	(working copy)
+@@ -0,0 +1,70 @@
++diff -Nrui --no-dereference installation-images-14.424-orig/Makefile installation-images-14.424/Makefile
++--- installation-images-14.424-orig/Makefile	2020-03-22 11:17:31.997144489 +0800
+++++ installation-images-14.424/Makefile	2020-03-22 11:21:05.127120311 +0800
++@@ -51,6 +51,12 @@
++ BOOT_PARTS    :=
++ endif
++ 
+++ifneq ($(filter mips64 mips64el mips mipsel, $(ARCH)),)
+++ALL_TARGETS   := initrd-themes initrd $(COMMON_TARGETS)
+++INSTSYS_PARTS := $(COMMON_INSTSYS_PARTS)
+++BOOT_PARTS    :=
+++endif
+++
++ # THEMES must be a single value
++ THEMES  := openSUSE
++ DESTDIR := images/instsys
++diff -Nrui --no-dereference installation-images-14.424-orig/etc/config installation-images-14.424/etc/config
++--- installation-images-14.424-orig/etc/config	2020-03-22 11:17:32.103381789 +0800
+++++ installation-images-14.424/etc/config	2020-03-22 11:21:59.340237369 +0800
++@@ -55,6 +55,8 @@
++ aarch64 = lib64
++ s390x	= lib64
++ x86_64	= lib64
+++mips64  = lib64
+++mips64el = lib64
++ 
++ 
++ ; splash config
++diff -Nrui --no-dereference installation-images-14.424-orig/install.mips64el installation-images-14.424/install.mips64el
++--- installation-images-14.424-orig/install.mips64el	1970-01-01 08:00:00.000000000 +0800
+++++ installation-images-14.424/install.mips64el	2020-03-22 11:22:52.109411816 +0800
++@@ -0,0 +1,38 @@
+++#! /bin/sh
+++
+++# gets ARCH, THEMES, DESTDIR, INSTSYS_PARTS, BOOT_PARTS, WITH_FLOPPY via env
+++
+++set -e
+++
+++# create directory layout
+++mkdir -p $DESTDIR/CD1/boot/$ARCH
+++for theme in $THEMES ; do
+++  mkdir -p $DESTDIR/branding/$theme/CD1/boot/$ARCH
+++done
+++
+++# copy branding independent parts
+++for i in $INSTSYS_PARTS $BOOT_PARTS ; do
+++  [ -e images/$i ] && cp -r images/$i $DESTDIR/CD1/boot/$ARCH
+++done
+++
+++# copy branding dependent parts
+++for theme in $THEMES ; do
+++  for i in $INSTSYS_PARTS $BOOT_PARTS ; do
+++    [ -e images/$theme/$i ] && cp -r images/$theme/$i $DESTDIR/branding/$theme/CD1/boot/$ARCH
+++  done
+++
+++  if [ -d images/$theme/EFI ] ; then
+++    cp -r images/$theme/EFI/EFI $DESTDIR/branding/$theme/CD1
+++  fi
+++done
+++
+++mkdir -p $DESTDIR/usr/share
+++cp images/mini-iso-rmlist $DESTDIR/usr/share
+++
+++if [ -d images/tftp ] ; then
+++  dst=$DESTDIR/usr/share/tftpboot-installation
+++  mkdir -p $dst
+++  cp -a images/tftp/* $dst
+++  cp -a $DESTDIR/CD1/* $dst/*
+++  cp -a $DESTDIR/branding/$THEMES/CD1/* $dst/*
+++fi
+Index: _constraints
+===================================================================
+--- _constraints	(revision 1)
++++ _constraints	(working copy)
+@@ -1,7 +0,0 @@
+-<constraints>
+-  <hardware>
+-    <disk>
+-      <size unit="G">24</size>
+-    </disk>
+-  </hardware>
+-</constraints>

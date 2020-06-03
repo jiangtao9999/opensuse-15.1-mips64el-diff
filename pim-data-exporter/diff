@@ -1,0 +1,13 @@
+Index: pim-data-exporter.spec
+===================================================================
+--- pim-data-exporter.spec	(revision 1)
++++ pim-data-exporter.spec	(working copy)
+@@ -55,7 +55,7 @@
+ BuildRequires:  pkgconfig(Qt5Xml) >= 5.2.0
+ Requires:       kontact
+ # It can only build on the same platforms as Qt Webengine
+-ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 mips mips64
++ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 %{mips}
+ %if 0%{?suse_version} > 1325
+ BuildRequires:  libboost_headers-devel
+ %else

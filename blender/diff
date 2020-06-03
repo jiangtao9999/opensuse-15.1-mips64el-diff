@@ -1,0 +1,32 @@
+Index: blender.spec
+===================================================================
+--- blender.spec	(revision 1)
++++ blender.spec	(working copy)
+@@ -53,7 +53,9 @@
+ #!BuildIgnore:  libGLwM1
+ BuildRequires:  OpenEXR-devel
+ BuildRequires:  SDL2-devel
++%ifnarch %mips
+ BuildRequires:  binutils-gold
++%endif
+ BuildRequires:  distribution-release
+ %if 0%{?suse_version} > 1325
+ BuildRequires:  gcc-c++
+Index: _constraints
+===================================================================
+--- _constraints	(revision 1)
++++ _constraints	(working copy)
+@@ -1,13 +0,0 @@
+-<constraints>
+-  <hardware>
+-   <disk>
+-    <size unit="G">20</size>
+-   </disk>
+-   <physicalmemory>
+-      <size unit="M">1024</size>
+-   </physicalmemory>
+-   <memory>
+-      <size unit="M">2048</size>
+-   </memory>
+-  </hardware>
+-</constraints>

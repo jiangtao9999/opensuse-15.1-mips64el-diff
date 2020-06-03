@@ -1,0 +1,13 @@
+Index: bcc.spec
+===================================================================
+--- bcc.spec	(revision 1)
++++ bcc.spec	(working copy)
+@@ -47,7 +47,7 @@
+ Patch10:        %{name}-fix-compilation-error-with-latest-llvm.patch
+ Patch11:        %{name}-fix-a-compilation-error-with-latest-llvm-clang-trunk.patch
+ Patch12:        %{name}-compilation-error-with-latest-llvm.patch
+-ExcludeArch:    ppc s390
++ExcludeArch:    ppc s390 %mips
+ BuildRequires:  bison
+ BuildRequires:  cmake >= 2.8.7
+ BuildRequires:  flex

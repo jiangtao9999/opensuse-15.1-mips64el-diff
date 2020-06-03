@@ -1,0 +1,13 @@
+Index: xf86-video-ast.spec
+===================================================================
+--- xf86-video-ast.spec	(revision 1)
++++ xf86-video-ast.spec	(working copy)
+@@ -38,7 +38,7 @@
+ # This was part of the xorg-x11-driver-video package up to version 7.6
+ Conflicts:      xorg-x11-driver-video <= 7.6
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+-ExcludeArch:    s390 s390x
++ExcludeArch:    s390 s390x %mips
+ %x11_abi_videodrv_req
+ 
+ %description

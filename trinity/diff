@@ -1,0 +1,13 @@
+Index: trinity.spec
+===================================================================
+--- trinity.spec	(revision 1)
++++ trinity.spec	(working copy)
+@@ -37,7 +37,7 @@
+ %setup -q
+ 
+ %build
+-export CFLAGS="%{optflags}"
++export CFLAGS="%{optflags} -Wno-error=attributes"
+ # Not autotools configure
+ ./configure
+ make %{?_smp_mflags} V=1

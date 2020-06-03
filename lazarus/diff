@@ -1,0 +1,12 @@
+Index: lazarus.spec
+===================================================================
+--- lazarus.spec	(revision 1)
++++ lazarus.spec	(working copy)
+@@ -74,6 +74,7 @@
+ Requires(postun): desktop-file-utils
+ Requires(postun): shared-mime-info
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
++ExcludeArch:    %mips64
+ 
+ %description
+ Lazarus is a Rapid Application Development

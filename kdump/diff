@@ -1,0 +1,13 @@
+Index: kdump.spec
+===================================================================
+--- kdump.spec	(revision 1)
++++ kdump.spec	(working copy)
+@@ -87,7 +87,7 @@
+ # update should detect the split-off from kexec-tools
+ Provides:       kexec-tools:%{_initddir}/kdump
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+-ExcludeArch:    s390 ppc
++ExcludeArch:    s390 ppc %mips
+ %if %{systemd_present}
+ BuildRequires:  systemd
+ %else

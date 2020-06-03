@@ -1,0 +1,111 @@
+Index: rust.spec
+===================================================================
+--- rust.spec	(revision 1)
++++ rust.spec	(working copy)
+@@ -44,6 +44,9 @@
+ %ifarch %{ix86}
+ %global rust_arch i686
+ %endif
++%ifarch %{mips64}
++%global abi gnuabi64
++%endif
+ %global rust_triple %{rust_arch}-unknown-linux-%{abi}
+ # All sources and bootstraps are fetched form here
+ %global dl_url https://static.rust-lang.org/dist
+@@ -95,6 +98,7 @@
+ Source105:      %{dl_url}/rust-%{prev_rust}-powerpc64-unknown-linux-gnu.tar.xz
+ Source106:      %{dl_url}/rust-%{prev_rust}-powerpc64le-unknown-linux-gnu.tar.xz
+ Source107:      %{dl_url}/rust-%{prev_rust}-s390x-unknown-linux-gnu.tar.xz
++Source108:      %{dl_url}/rust-%{prev_rust}-mips64el-unknown-linux-gnuabi64.tar.xz
+ # PATCH-FIX-OPENSUSE: edit src/librustc_llvm/build.rs to ignore GCC incompatible flag
+ Patch0:         ignore-Wstring-conversion.patch
+ # Leap 42 to 42.3, SLE12 SP1, SP2
+@@ -131,7 +135,7 @@
+ Conflicts:      rustc-bootstrap
+ # Restrict the architectures as building rust relies on being initially
+ # bootstrapped before we can build the n+1 release
+-ExclusiveArch:  x86_64 %{arm} aarch64 ppc64 ppc64le s390x %{ix86}
++ExclusiveArch:  x86_64 %{arm} aarch64 ppc64 ppc64le s390x %{ix86} %{mips}
+ %ifarch %{ix86}
+ ExclusiveArch:  i686
+ %endif
+@@ -328,6 +332,9 @@
+ %ifarch s390x
+ %setup -q -T -b 107 -n rust-%{prev_rust}-%{rust_triple}
+ %endif
++%ifarch %{mips64}
++%setup -q -T -b 108 -n rust-%{prev_rust}-%{rust_triple}
++%endif
+ ./install.sh --components=cargo,rustc,rust-std-%{rust_triple} --prefix=.%{_prefix} --disable-ldconfig
+ %endif
+ 
+@@ -377,6 +384,10 @@
+ sed -i '1s|^|#!/bin/bash\n|' src/liblibc/ci/run-docker.sh
+ sed -i '1s|^|#!/bin/bash\n|' src/liblibc/ci/emscripten-entry.sh
+ sed -i '1s|^|#!/bin/bash\n|' src/stdsimd/ci/run-docker.sh
++
++%ifarch %{mips}
++sed -i 's/-Cdebuginfo=2/-Cdebuginfo=2 -C llvm-args=-mxgot/' src/bootstrap/bootstrap.py
++%endif
+ 
+ %build
+ %configure \
+Index: rust-1.32.0-mips64el-unknown-linux-gnuabi64.tar.xz
+===================================================================
+Binary file 'rust-1.32.0-mips64el-unknown-linux-gnuabi64.tar.xz' added.
+Index: _constraints
+===================================================================
+--- _constraints	(revision 1)
++++ _constraints	(working copy)
+@@ -1,51 +0,0 @@
+-<?xml version="1.0"?>
+-<constraints>
+-  <hardware>
+-    <processors>4</processors>
+-    <memory>
+-      <size unit="G">8</size>
+-    </memory>
+-    <disk>
+-      <size unit="G">20</size>
+-    </disk>
+-  </hardware>
+-  <overwrite>
+-    <conditions>
+-      <arch>i586</arch>
+-      <arch>armv6l</arch>
+-      <arch>armv7l</arch>
+-    </conditions>
+-    <hardware>
+-      <processors>2</processors>
+-      <physicalmemory>
+-        <size unit="G">4</size>
+-      </physicalmemory>
+-      <disk>
+-        <size unit="G">15</size>
+-      </disk>
+-    </hardware>
+-  </overwrite>
+-  <overwrite>
+-    <conditions>
+-      <arch>x86_64</arch>
+-    </conditions>
+-    <hardware>
+-      <physicalmemory>
+-        <size unit="G">8</size>
+-      </physicalmemory>
+-    </hardware>
+-  </overwrite>
+-  <overwrite>
+-    <conditions>
+-      <arch>aarch64</arch>
+-    </conditions>
+-    <hardware>
+-      <physicalmemory>
+-        <size unit="G">8</size>
+-      </physicalmemory>
+-      <disk>
+-        <size unit="G">10</size>
+-      </disk>
+-    </hardware>
+-  </overwrite>
+-</constraints>

@@ -1,0 +1,50 @@
+Index: fs-uae.spec
+===================================================================
+--- fs-uae.spec	(revision 1)
++++ fs-uae.spec	(working copy)
+@@ -24,6 +24,7 @@
+ Group:          System/Emulators/Other
+ URL:            http://fs-uae.net/
+ Source0:        https://fs-uae.net/stable/%{version}/%{name}-%{version}.tar.gz
++Patch1:         0001-define-unknown-CPUs-as-CPU_unknown.patch
+ BuildRequires:  fdupes
+ BuildRequires:  gcc-c++
+ BuildRequires:  hicolor-icon-theme
+@@ -67,10 +68,11 @@
+ 
+ %prep
+ %setup -q
++%patch1 -p1
+ 
+ %build
+ %configure \
+-%ifarch %arm aarch64
++%ifarch %arm aarch64 %mips
+   --disable-jit
+ %else
+   --enable-jit
+Index: 0001-define-unknown-CPUs-as-CPU_unknown.patch
+===================================================================
+--- 0001-define-unknown-CPUs-as-CPU_unknown.patch	(revision 0)
++++ 0001-define-unknown-CPUs-as-CPU_unknown.patch	(working copy)
+@@ -0,0 +1,20 @@
++Description: Define unknown host CPU types as CPU_unknown
++ The latest upstream version of fs-uae introduced new JIT
++ support for x86-based architectures. Unfortunately, this
++ change also made the build bail out if the host CPU is not
++ among the list of supported types. With this patch, unknown
++ host CPUs no longer trigger an error but will just define
++ the CPU type as 'CPU_unknown'.
++ .
++
++--- fs-uae-2.8.0+dfsg.orig/src/include/sysdeps.h
+++++ fs-uae-2.8.0+dfsg/src/include/sysdeps.h
++@@ -50,7 +50,7 @@ using namespace std;
++ #elif defined(__powerpc__) || defined(__ppc__) || defined(_M_PPC)
++ #define CPU_powerpc 1
++ #else
++-#error unrecognized CPU type
+++#define CPU_unknown 1
++ #endif
++ 
++ #ifdef _WIN32

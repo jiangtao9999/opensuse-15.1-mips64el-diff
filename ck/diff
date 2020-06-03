@@ -1,0 +1,26 @@
+Index: ck.spec
+===================================================================
+--- ck.spec	(revision 1)
++++ ck.spec	(working copy)
+@@ -27,7 +27,7 @@
+ Url:            http://concurrencykit.org/
+ Source:         http://concurrencykit.org/releases/ck-%{version}.tar.gz
+ BuildRequires:  pkgconfig
+-Excludearch:    s390 s390x 
++Excludearch:    s390 s390x %mips
+ 
+ %description
+ Concurrency primitives, safe memory reclamation mechanisms and non-blocking
+Index: _constraints
+===================================================================
+--- _constraints	(revision 1)
++++ _constraints	(working copy)
+@@ -1,8 +0,0 @@
+-<constraints>
+-  <hardware>
+-    <memory>
+-      <size unit="G">2</size>
+-    </memory>
+-    <processors>4</processors>
+-  </hardware>
+-</constraints>

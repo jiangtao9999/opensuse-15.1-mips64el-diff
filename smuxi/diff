@@ -1,0 +1,12 @@
+Index: smuxi.spec
+===================================================================
+--- smuxi.spec	(revision 1)
++++ smuxi.spec	(working copy)
+@@ -47,6 +47,7 @@
+ %endif
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ BuildArch:      noarch
++ExcludeArch:    %mips64
+ 
+ %description
+ Smuxi is an irssi-inspired, flexible, user-friendly and cross-platform

@@ -1,0 +1,39 @@
+Index: perl-TimeDate.spec
+===================================================================
+--- perl-TimeDate.spec	(revision 1)
++++ perl-TimeDate.spec	(working copy)
+@@ -26,6 +26,7 @@
+ Url:            http://search.cpan.org/dist/TimeDate/
+ Source0:        https://cpan.metacpan.org/authors/id/G/GB/GBARR/%{cpan_name}-%{version}.tar.gz
+ Source1:        cpanspec.yml
++Patch1:         perl-TimeDate-getdate.patch
+ BuildArch:      noarch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ BuildRequires:  perl
+@@ -50,6 +51,7 @@
+ 
+ %prep
+ %setup -q -n %{cpan_name}-%{version}
++%patch1 -p1
+ find . -type f ! -name \*.pl -print0 | xargs -0 chmod 644
+ 
+ %build
+Index: perl-TimeDate-getdate.patch
+===================================================================
+--- perl-TimeDate-getdate.patch	(revision 0)
++++ perl-TimeDate-getdate.patch	(working copy)
+@@ -0,0 +1,14 @@
++Index: TimeDate-2.30/t/getdate.t
++===================================================================
++--- TimeDate-2.30.orig/t/getdate.t
+++++ TimeDate-2.30/t/getdate.t
++@@ -156,7 +156,7 @@ Jul 22 10:00:00 UTC 2002         ;102733200
++ !;
++ 
++ require Time::Local;
++-my $offset = Time::Local::timegm(0,0,0,1,0,70);
+++my $offset = Time::Local::timegm(0,0,0,1,0,1970);
++ 
++ @data = split(/\n/, $data);
++ 
++

@@ -1,0 +1,30 @@
+Index: afl.spec
+===================================================================
+--- afl.spec	(revision 1)
++++ afl.spec	(working copy)
+@@ -27,7 +27,7 @@
+ Source1:        afl-rpmlintrc
+ Patch1:         afl-1.58b-fix-paths.patch
+ BuildRequires:  gcc-c++
+-ExclusiveArch:  i586 x86_64
++ExclusiveArch:  i586 x86_64 %mips
+ 
+ %description
+ American fuzzy lop is a security-oriented fuzzer that employs a novel type
+@@ -50,10 +50,16 @@
+ sed -i 's|#!/usr/bin/env bash|#!/bin/bash|g' afl-cmin
+ 
+ %build
++%ifnarch %ix86 x86_64
++export AFL_NO_X86=1
++%endif
+ export CFLAGS="$CFLAGS %{optflags}"
+ make %{?_smp_mflags} PREFIX=%{_prefix} LIBEXEC_DIR=%{_libexecdir} DOC_DIR=%{_docdir}
+ 
+ %install
++%ifnarch %ix86 x86_64
++export AFL_NO_X86=1
++%endif
+ make %{?_smp_mflags} PREFIX=%{_prefix} LIBEXEC_DIR=%{_libexecdir} DOC_DIR=%{_docdir} DESTDIR=%{buildroot} install
+ 
+ %files

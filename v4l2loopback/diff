@@ -1,0 +1,12 @@
+Index: v4l2loopback.spec
+===================================================================
+--- v4l2loopback.spec	(revision 1)
++++ v4l2loopback.spec	(working copy)
+@@ -30,6 +30,7 @@
+ BuildRequires:  help2man
+ BuildRequires:  make
+ Requires:       v4l-utils
++ExcludeArch:    %mips
+ %kernel_module_package -p %{_sourcedir}/preamble
+ 
+ %description

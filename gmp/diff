@@ -1,0 +1,14 @@
+Index: gmp.spec
+===================================================================
+--- gmp.spec	(revision 1)
++++ gmp.spec	(working copy)
+@@ -74,6 +74,9 @@
+ 
+ %build
+ export CFLAGS="%{optflags} -fexceptions"
++%ifarch %mips64
++export ABI=64
++%endif
+ %configure \
+   --enable-cxx \
+   --enable-fat

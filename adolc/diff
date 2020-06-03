@@ -1,0 +1,49 @@
+Index: adolc.spec
+===================================================================
+--- adolc.spec	(revision 1)
++++ adolc.spec	(working copy)
+@@ -26,6 +26,7 @@
+ Url:            http://projects.coin-or.org/ADOL-C
+ Source0:        http://www.coin-or.org/download/source/ADOL-C/ADOL-C-%{version}.tgz
+ Source1:        baselibs.conf
++Patch0:         ADOL-C-2.6.2-fix-mips64-boost-libdir.patch
+ BuildRequires:  ColPack-devel
+ %if 0%{?suse_version} > 1325
+ BuildRequires:  libboost_headers-devel
+@@ -104,6 +105,7 @@
+ 
+ %prep
+ %setup -q -n ADOL-C-%{version}
++%patch0 -p1
+ 
+ %build
+ # autoreconf -v --install --force
+Index: ADOL-C-2.6.2-fix-mips64-boost-libdir.patch
+===================================================================
+--- ADOL-C-2.6.2-fix-mips64-boost-libdir.patch	(revision 0)
++++ ADOL-C-2.6.2-fix-mips64-boost-libdir.patch	(working copy)
+@@ -0,0 +1,24 @@
++diff -Nuri ADOL-C-2.6.2-orig/autoconf/ax_boost_base.m4 ADOL-C-2.6.2/autoconf/ax_boost_base.m4
++--- ADOL-C-2.6.2-orig/autoconf/ax_boost_base.m4	2019-12-24 20:31:09.089102643 +0800
+++++ ADOL-C-2.6.2/autoconf/ax_boost_base.m4	2019-12-24 20:32:01.554537754 +0800
++@@ -95,7 +95,7 @@
++       x86_64)
++         libsubdirs="lib64 libx32 lib lib64"
++         ;;
++-      ppc64|s390x|sparc64|aarch64|ppc64le)
+++      ppc64|s390x|sparc64|aarch64|ppc64le|mips64)
++         libsubdirs="lib64 lib lib64 ppc64le"
++         ;;
++     esac
++diff -Nuri ADOL-C-2.6.2-orig/configure ADOL-C-2.6.2/configure
++--- ADOL-C-2.6.2-orig/configure	2019-12-24 20:31:09.089102643 +0800
+++++ ADOL-C-2.6.2/configure	2019-12-24 20:32:17.412675381 +0800
++@@ -17516,7 +17516,7 @@
++       x86_64)
++         libsubdirs="lib64 libx32 lib lib64"
++         ;;
++-      ppc64|s390x|sparc64|aarch64|ppc64le)
+++      ppc64|s390x|sparc64|aarch64|ppc64le|mips64)
++         libsubdirs="lib64 lib lib64 ppc64le"
++         ;;
++     esac

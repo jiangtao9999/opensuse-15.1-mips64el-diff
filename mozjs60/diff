@@ -1,0 +1,30 @@
+Index: mozjs60.spec
+===================================================================
+--- mozjs60.spec	(revision 1)
++++ mozjs60.spec	(working copy)
+@@ -143,6 +143,9 @@
+     --disable-jemalloc \
+     --without-system-icu \
+     --with-system-zlib \
++%ifarch %{mips64}
++    --disable-ion \
++%endif
+ 
+ # Without adding these sources resulted library has weak symbols:
+ #echo "CPPSRCS += \$(DEPTH)/mfbt/Unified_cpp_mfbt0.cpp \$(DEPTH)/../../mfbt/Compression.cpp \$(DEPTH)/../../mfbt/decimal/Decimal.cpp" >> js/src/backend.mk
+Index: _constraints
+===================================================================
+--- _constraints	(revision 1)
++++ _constraints	(working copy)
+@@ -1,11 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<constraints>
+-  <hardware>
+-    <disk>
+-      <size unit="G">8</size>
+-    </disk>
+-    <memory>
+-      <size unit="G">4</size>
+-    </memory>
+-  </hardware>
+-</constraints>

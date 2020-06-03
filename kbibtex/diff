@@ -1,0 +1,13 @@
+Index: kbibtex.spec
+===================================================================
+--- kbibtex.spec	(revision 1)
++++ kbibtex.spec	(working copy)
+@@ -57,7 +57,7 @@
+ Requires(postun): shared-mime-info
+ Recommends:     %{name}-lang
+ # Only include WebEngine for platforms that support it
+-%ifarch %{ix86} x86_64 %{arm} aarch64 mips mips64
++%ifarch %{ix86} x86_64 %{arm} aarch64 %{mips}
+ BuildRequires:  pkgconfig(Qt5WebEngineWidgets)
+ %else
+ BuildRequires:  pkgconfig(Qt5WebKitWidgets)

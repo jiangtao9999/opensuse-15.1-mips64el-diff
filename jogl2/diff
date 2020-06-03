@@ -1,0 +1,175 @@
+Index: jogl2.spec
+===================================================================
+--- jogl2.spec	(revision 1)
++++ jogl2.spec	(working copy)
+@@ -31,6 +31,8 @@
+ Patch3:         jogl2-ppc64.patch
+ Patch4:         jogl2-getPeer.patch
+ Patch5:         jogl2-nojavah.patch
++Patch6:         jogl2-mips64.patch
++Patch7:         java11.patch
+ BuildRequires:  ant >= 1.9.8
+ BuildRequires:  ant-contrib
+ BuildRequires:  eclipse-swt
+@@ -73,6 +75,8 @@
+ %patch3 -p1
+ %patch4 -p1
+ %patch5 -p1
++%patch6 -p1
++%patch7 -p1
+ 
+ # Fix wrong-script-end-of-line-encoding
+ rm make/scripts/*.bat
+Index: java11.patch
+===================================================================
+--- java11.patch	(revision 0)
++++ java11.patch	(working copy)
+@@ -0,0 +1,12 @@
++--- jogl-v2.3.2-orig/make/build-nativewindow.xml	2020-05-02 23:45:00.662131949 +0800
+++++ jogl-v2.3.2/make/build-nativewindow.xml	2020-05-03 00:03:58.086208651 +0800
++@@ -81,6 +81,9 @@
++         <property name="java.part.macosx"
++                   value="com/jogamp/nativewindow/macosx/* jogamp/nativewindow/macosx/*" />
++ 
+++        <property name="java.lib.dir.platform"
+++                  value="/usr/lib64/jvm/java/lib" />
+++
++         <!-- condition excludes -->
++ 
++         <condition property="java.excludes.awt"
+Index: jogl2-mips64.patch
+===================================================================
+--- jogl2-mips64.patch	(revision 0)
++++ jogl2-mips64.patch	(working copy)
+@@ -0,0 +1,131 @@
++diff -Nrui jogl-v2.3.2-orig/make/build-jogl.xml jogl-v2.3.2/make/build-jogl.xml
++--- jogl-v2.3.2-orig/make/build-jogl.xml	2020-05-02 22:45:14.455463050 +0800
+++++ jogl-v2.3.2/make/build-jogl.xml	2020-05-02 22:52:03.856110458 +0800
++@@ -1352,6 +1352,18 @@
++       <property name="linker.cfg.id.os"                    value="linker.cfg.linux.jogl.x11" />
++     </target>
++     
+++    <target name="c.configure.linux.mips64" if="isLinuxMips64">
+++      <echo message="Linux.MIPS64" />
+++      <property name="compiler.cfg.id"                     value="compiler.cfg.linux" />
+++      <property name="linker.cfg.id.os"                    value="linker.cfg.linux.jogl.x11" />
+++    </target>
+++
+++    <target name="c.configure.linux.mips64el" if="isLinuxMips64el">
+++      <echo message="Linux.MIPS64EL" />
+++      <property name="compiler.cfg.id"                     value="compiler.cfg.linux" />
+++      <property name="linker.cfg.id.os"                    value="linker.cfg.linux.jogl.x11" />
+++    </target>
+++    
++     <target name="c.configure.linux.ppc" if="isLinuxPpc">
++       <echo message="Linux.PPC" />
++       <property name="compiler.cfg.id"                     value="compiler.cfg.linux" />
++@@ -1382,7 +1394,7 @@
++       <property name="linker.cfg.id.os"                    value="linker.cfg.linux.jogl.x11" />
++     </target>
++ 
++-    <target name="c.configure.linux" depends="c.configure.linux.armv6,c.configure.linux.aarch64,c.configure.linux.x86,c.configure.linux.amd64,c.configure.linux.ia64,c.configure.linux.hppa,c.configure.linux.mips,c.configure.linux.mipsel,c.configure.linux.ppc,c.configure.linux.ppc64,c.configure.linux.ppc64le,c.configure.linux.s390,c.configure.linux.sparc,c.configure.x11" if="isLinux" />
+++    <target name="c.configure.linux" depends="c.configure.linux.armv6,c.configure.linux.aarch64,c.configure.linux.x86,c.configure.linux.amd64,c.configure.linux.ia64,c.configure.linux.hppa,c.configure.linux.mips,c.configure.linux.mipsel,c.configure.linux.mips64,c.configure.linux.mips64el,c.configure.linux.ppc,c.configure.linux.ppc64,c.configure.linux.ppc64le,c.configure.linux.s390,c.configure.linux.sparc,c.configure.x11" if="isLinux" />
++ 
++     <target name="c.configure.android" if="isAndroid">
++       <echo message="Android" />
++diff -Nrui jogl-v2.3.2-orig/make/build-nativewindow.xml jogl-v2.3.2/make/build-nativewindow.xml
++--- jogl-v2.3.2-orig/make/build-nativewindow.xml	2020-05-02 22:45:14.455463050 +0800
+++++ jogl-v2.3.2/make/build-nativewindow.xml	2020-05-02 22:53:06.876212110 +0800
++@@ -533,6 +533,18 @@
++       <property name="linker.cfg.id.oswin"                  value="linker.cfg.linux.nativewindow.x11" />
++     </target>
++ 
+++    <target name="c.configure.linux.mips64" if="isLinuxMips64">
+++      <echo message="Linux.MIPS64" />
+++      <property name="compiler.cfg.id"                      value="compiler.cfg.linux" />
+++      <property name="linker.cfg.id.oswin"                  value="linker.cfg.linux.nativewindow.x11" />
+++    </target>
+++
+++    <target name="c.configure.linux.mips64el" if="isLinuxMips64el">
+++      <echo message="Linux.MIPS64EL" />
+++      <property name="compiler.cfg.id"                      value="compiler.cfg.linux" />
+++      <property name="linker.cfg.id.oswin"                  value="linker.cfg.linux.nativewindow.x11" />
+++    </target>
+++
++     <target name="c.configure.linux.ppc" if="isLinuxPpc">
++       <echo message="Linux.PPC" />
++       <property name="compiler.cfg.id"                      value="compiler.cfg.linux" />
++@@ -564,7 +576,7 @@
++       <property name="linker.cfg.id.oswin"                  value="linker.cfg.linux.nativewindow.x11" />
++     </target>
++ 
++-    <target name="c.configure.linux" depends="c.configure.linux.armv6,c.configure.linux.aarch64,c.configure.linux.x86,c.configure.linux.amd64,c.configure.linux.ia64,c.configure.linux.hppa,c.configure.linux.mips,c.configure.linux.mipsel,c.configure.linux.ppc,c.configure.linux.ppc64,c.configure.linux.ppc64le,c.configure.linux.s390,c.configure.linux.sparc,c.configure.x11" if="isLinux" />
+++    <target name="c.configure.linux" depends="c.configure.linux.armv6,c.configure.linux.aarch64,c.configure.linux.x86,c.configure.linux.amd64,c.configure.linux.ia64,c.configure.linux.hppa,c.configure.linux.mips,c.configure.linux.mipsel,c.configure.linux.mips64,c.configure.linux.mips64el,c.configure.linux.ppc,c.configure.linux.ppc64,c.configure.linux.ppc64le,c.configure.linux.s390,c.configure.linux.sparc,c.configure.x11" if="isLinux" />
++ 
++     <target name="c.configure.android" if="isAndroid">
++       <echo message="Android" />
++diff -Nrui jogl-v2.3.2-orig/make/build-newt.xml jogl-v2.3.2/make/build-newt.xml
++--- jogl-v2.3.2-orig/make/build-newt.xml	2020-05-02 22:45:14.455463050 +0800
+++++ jogl-v2.3.2/make/build-newt.xml	2020-05-02 22:50:42.003899214 +0800
++@@ -493,6 +493,26 @@
++       <echo message="linker.cfg.id.oswin ${linker.cfg.id.oswin}" />
++     </target>
++ 
+++    <target name="c.configure.linux.mips64" if="isLinuxMips64">
+++      <echo message="Linux.mips64" />
+++      <property name="compiler.cfg.id"                      value="compiler.cfg.linux" />
+++      <condition property="linker.cfg.id.oswin"             value="linker.cfg.linux.newt.x11"
+++                                                            else="linker.cfg.linux">
+++          <isset property="isX11" />
+++      </condition>
+++      <echo message="linker.cfg.id.oswin ${linker.cfg.id.oswin}" />
+++    </target>
+++
+++    <target name="c.configure.linux.mips64el" if="isLinuxMips64el">
+++      <echo message="Linux.mips64" />
+++      <property name="compiler.cfg.id"                      value="compiler.cfg.linux" />
+++      <condition property="linker.cfg.id.oswin"             value="linker.cfg.linux.newt.x11"
+++                                                            else="linker.cfg.linux">
+++          <isset property="isX11" />
+++      </condition>
+++      <echo message="linker.cfg.id.oswin ${linker.cfg.id.oswin}" />
+++    </target>
+++
++     <target name="c.configure.linux.ppc" if="isLinuxPpc">
++       <echo message="Linux.ppc" />
++       <property name="compiler.cfg.id"                      value="compiler.cfg.linux" />
++@@ -549,7 +569,7 @@
++       <property name="linker.cfg.id.oswin"                  value="linker.cfg.linux.newt.x11" />
++     </target>
++ 
++-    <target name="c.configure.linux" depends="c.configure.linux.x86,c.configure.linux.amd64,c.configure.linux.armv6,c.configure.linux.aarch64,c.configure.linux.hppa,c.configure.linux.mips,c.configure.linux.mipsel,c.configure.linux.ppc,c.configure.linux.ppc64,c.configure.linux.ppc64le,c.configure.linux.s390,c.configure.linux.sparc,c.configure.linux.ia64,c.configure.x11" if="isLinux"/>
+++    <target name="c.configure.linux" depends="c.configure.linux.x86,c.configure.linux.amd64,c.configure.linux.armv6,c.configure.linux.aarch64,c.configure.linux.hppa,c.configure.linux.mips,c.configure.linux.mipsel,c.configure.linux.mips64,c.configure.linux.mips64el,c.configure.linux.ppc,c.configure.linux.ppc64,c.configure.linux.ppc64le,c.configure.linux.s390,c.configure.linux.sparc,c.configure.linux.ia64,c.configure.x11" if="isLinux"/>
++ 
++     <target name="c.configure.android" if="isAndroid">
++       <echo message="Android" />
++--- jogl-v2.3.2-orig/make/build-oculusvr.xml	2020-05-02 22:55:49.417185536 +0800
+++++ jogl-v2.3.2/make/build-oculusvr.xml	2020-05-02 23:07:13.280010267 +0800
++@@ -328,6 +328,18 @@
++       <property name="linker.cfg.id.os"                    value="linker.cfg.linux" />
++     </target>
++     
+++    <target name="c.configure.linux.mips64" if="isLinuxMips64">
+++      <echo message="Linux.MIPS64" />
+++      <property name="compiler.cfg.id"                     value="compiler.cfg.linux" />
+++      <property name="linker.cfg.id.os"                    value="linker.cfg.linux" />
+++    </target>
+++
+++    <target name="c.configure.linux.mips64el" if="isLinuxMips64el">
+++      <echo message="Linux.MIPS64EL" />
+++      <property name="compiler.cfg.id"                     value="compiler.cfg.linux" />
+++      <property name="linker.cfg.id.os"                    value="linker.cfg.linux" />
+++    </target>
+++    
++     <target name="c.configure.linux.ppc" if="isLinuxPpc">
++       <echo message="Linux.PPC" />
++       <property name="compiler.cfg.id"                     value="compiler.cfg.linux" />
++@@ -352,7 +364,7 @@
++       <property name="linker.cfg.id.os"                    value="linker.cfg.linux" />
++     </target>
++ 
++-    <target name="c.configure.linux" depends="c.configure.linux.armv6,c.configure.linux.x86,c.configure.linux.amd64,c.configure.linux.ia64,c.configure.linux.hppa,c.configure.linux.mips,c.configure.linux.mipsel,c.configure.linux.ppc,c.configure.linux.ppc64,c.configure.linux.s390,c.configure.linux.sparc,c.configure.x11" if="isLinux" />
+++    <target name="c.configure.linux" depends="c.configure.linux.armv6,c.configure.linux.x86,c.configure.linux.amd64,c.configure.linux.ia64,c.configure.linux.hppa,c.configure.linux.mips,c.configure.linux.mipsel,c.configure.linux.mips64,c.configure.linux.mips64el,c.configure.linux.ppc,c.configure.linux.ppc64,c.configure.linux.s390,c.configure.linux.sparc,c.configure.x11" if="isLinux" />
++ 
++     <target name="c.configure.android" if="isAndroid">
++       <echo message="Android" />

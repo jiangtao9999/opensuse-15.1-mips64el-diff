@@ -1,0 +1,52 @@
+Index: python3-base.spec
+===================================================================
+--- python3-base.spec	(revision 1)
++++ python3-base.spec	(working copy)
+@@ -50,6 +50,9 @@
+ # our arm has Hardware-Floatingpoint
+ %if %{_arch} == arm
+ %define armsuffix hf
++%endif
++%if %{_arch} == mips64el
++%define armsuffix abi64
+ %endif
+ # pyexpat.cpython-35m-x86_64-linux-gnu
+ # pyexpat.cpython-35m-powerpc64le-linux-gnu
+Index: python3-doc.spec
+===================================================================
+--- python3-doc.spec	(revision 1)
++++ python3-doc.spec	(working copy)
+@@ -44,6 +44,9 @@
+ # our arm has Hardware-Floatingpoint
+ %if %{_arch} == arm
+ %define armsuffix hf
++%endif
++%if %{_arch} == mips64el
++%define armsuffix abi64
+ %endif
+ # pyexpat.cpython-35m-x86_64-linux-gnu
+ # pyexpat.cpython-35m-powerpc64le-linux-gnu
+Index: python3.spec
+===================================================================
+--- python3.spec	(revision 1)
++++ python3.spec	(working copy)
+@@ -49,6 +49,9 @@
+ # our arm has Hardware-Floatingpoint
+ %if %{_arch} == arm
+ %define armsuffix hf
++%endif
++%if %{_arch} == mips64el
++%define armsuffix abi64
+ %endif
+ # pyexpat.cpython-35m-x86_64-linux-gnu
+ # pyexpat.cpython-35m-powerpc64le-linux-gnu
+@@ -273,6 +276,9 @@
+ # qemu bug (siginterrupt handling)
+ EXCLUDE="$EXCLUDE test_signal"
+ %endif
++%ifarch %mips
++EXCLUDE="$EXCLUDE test_ctypes"
++%endif
+ 
+ # This test (part of test_uuid) requires real network interfaces
+ # so that ifconfig output has "HWaddr <something>".  Some kvm instances

@@ -1,0 +1,14 @@
+Index: ghc-haskell-src-exts.spec
+===================================================================
+--- ghc-haskell-src-exts.spec	(revision 1)
++++ ghc-haskell-src-exts.spec	(working copy)
+@@ -67,6 +67,9 @@
+ %setup -q -n %{pkg_name}-%{version}
+ 
+ %build
++%ifarch %{mips}
++export CFLAGS="$RPM_OPT_FLAGS -mxgot"
++%endif
+ %ghc_lib_build
+ 
+ %install

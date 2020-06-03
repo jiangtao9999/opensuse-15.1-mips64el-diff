@@ -1,0 +1,13 @@
+Index: mozilla-jss.spec
+===================================================================
+--- mozilla-jss.spec	(revision 1)
++++ mozilla-jss.spec	(working copy)
+@@ -86,7 +86,7 @@
+ export NSS_INCLUDE_DIR=`%{_bindir}/pkg-config --cflags-only-I nss | sed 's/-I//'`
+ export NSS_LIB_DIR=`%{_bindir}/pkg-config --libs-only-L nss | sed 's/-L//'`
+ 
+-%ifarch x86_64 ppc64 ppc64le ia64 s390x sparc64 aarch64 riscv64
++%ifarch x86_64 ppc64 ppc64le ia64 s390x sparc64 aarch64 riscv64 %mips64
+ export USE_64=1
+ %endif
+ 

@@ -1,0 +1,12 @@
+Index: howl.spec
+===================================================================
+--- howl.spec	(revision 1)
++++ howl.spec	(working copy)
+@@ -31,6 +31,7 @@
+ BuildRequires:  hicolor-icon-theme
+ BuildRequires:  update-desktop-files
+ Requires:       luajit
++ExcludeArch:    %mips
+ 
+ %description
+ Howl is a general purpose editor that is customizable. It is built on

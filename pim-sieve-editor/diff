@@ -1,0 +1,13 @@
+Index: pim-sieve-editor.spec
+===================================================================
+--- pim-sieve-editor.spec	(revision 1)
++++ pim-sieve-editor.spec	(working copy)
+@@ -51,7 +51,7 @@
+ BuildRequires:  pkgconfig(Qt5Widgets) >= 5.9.0
+ Requires:       kmail
+ # It can only build on the same platforms as Qt Webengine
+-ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 mips mips64
++ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 %{mips}
+ Recommends:     %{name}-lang
+ 
+ %description

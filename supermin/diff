@@ -1,0 +1,13 @@
+Index: supermin.spec
+===================================================================
+--- supermin.spec	(revision 1)
++++ supermin.spec	(working copy)
+@@ -33,7 +33,7 @@
+ # Pending upstream review
+ Patch0:         suse_release.patch
+ %if "%{?_ignore_exclusive_arch}" == ""
+-ExclusiveArch:  x86_64 ppc64 ppc64le s390x aarch64
++ExclusiveArch:  x86_64 ppc64 ppc64le s390x aarch64 %mips
+ %endif
+ 
+ BuildRequires:  autoconf

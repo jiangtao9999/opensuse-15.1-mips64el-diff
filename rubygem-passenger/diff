@@ -1,0 +1,15 @@
+Index: rubygem-passenger.spec
+===================================================================
+--- rubygem-passenger.spec	(revision 1)
++++ rubygem-passenger.spec	(working copy)
+@@ -108,6 +108,10 @@
+ export USE_VENDORED_LIBEIO="yes"
+ %endif
+ # /MANUAL
++%ifarch mips64el
++export EXTRA_CFLAGS="%{optflags} -mxgot"
++export EXTRA_CXXFLAGS="%{optflags} -mxgot"
++%endif
+ %gem_install \
+   --symlink-binaries \
+   --doc-files="CHANGELOG LICENSE README.md" \

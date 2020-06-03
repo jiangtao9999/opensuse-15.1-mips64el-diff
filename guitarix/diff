@@ -1,0 +1,14 @@
+Index: guitarix.spec
+===================================================================
+--- guitarix.spec	(revision 1)
++++ guitarix.spec	(working copy)
+@@ -26,7 +26,9 @@
+ Source:         http://downloads.sourceforge.net/project/guitarix/guitarix/guitarix2-%{version}.tar.xz
+ Patch0:         fpexception.patch
+ %if 0%{?suse_version} > 1325
++%ifnarch %mips64
+ BuildRequires:  libboost_context-devel
++%endif
+ BuildRequires:  libboost_filesystem-devel
+ BuildRequires:  libboost_iostreams-devel
+ BuildRequires:  libboost_locale-devel

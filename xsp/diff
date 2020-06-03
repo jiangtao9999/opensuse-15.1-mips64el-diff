@@ -1,0 +1,12 @@
+Index: xsp.spec
+===================================================================
+--- xsp.spec	(revision 1)
++++ xsp.spec	(working copy)
+@@ -35,6 +35,7 @@
+ Patch3:         mono-4-install.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ BuildArch:      noarch
++ExcludeArch:    %mips64
+ BuildRequires:  autoconf
+ BuildRequires:  automake
+ BuildRequires:  fdupes

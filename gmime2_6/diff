@@ -1,0 +1,16 @@
+Index: gmime2_6.spec
+===================================================================
+--- gmime2_6.spec	(revision 1)
++++ gmime2_6.spec	(working copy)
+@@ -17,7 +17,11 @@
+ 
+ 
+ %define _name gmime
++%ifnarch %mips64
+ %bcond_without mono
++%else
++%bcond_with mono
++%endif
+ Name:           gmime2_6
+ Version:        2.6.23
+ Release:        0

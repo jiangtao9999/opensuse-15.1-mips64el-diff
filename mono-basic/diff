@@ -1,0 +1,12 @@
+Index: mono-basic.spec
+===================================================================
+--- mono-basic.spec	(revision 1)
++++ mono-basic.spec	(working copy)
+@@ -33,6 +33,7 @@
+ BuildRequires:  unzip
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ BuildArch:      noarch
++ExcludeArch:    %mips64
+ 
+ %description
+ The Mono Project is an open development initiative that is working to

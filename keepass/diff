@@ -1,0 +1,12 @@
+Index: keepass.spec
+===================================================================
+--- keepass.spec	(revision 1)
++++ keepass.spec	(working copy)
+@@ -37,6 +37,7 @@
+ BuildRequires:  xsel
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ BuildArch:      noarch
++ExcludeArch:    %mips
+ 
+ %description
+ KeePass is a password manager, which helps you to manage your

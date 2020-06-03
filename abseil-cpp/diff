@@ -1,0 +1,12 @@
+Index: abseil-cpp.spec
+===================================================================
+--- abseil-cpp.spec	(revision 1)
++++ abseil-cpp.spec	(working copy)
+@@ -42,6 +42,7 @@
+ BuildRequires:  gcc-c++
+ BuildRequires:  gtest
+ BuildRequires:  patchelf
++ExcludeArch:    %mips
+ 
+ %description
+ Abseil is a collection of C++11 libraries which augment the C++

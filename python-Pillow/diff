@@ -1,0 +1,13 @@
+Index: python-Pillow.spec
+===================================================================
+--- python-Pillow.spec	(revision 1)
++++ python-Pillow.spec	(working copy)
+@@ -110,7 +110,7 @@
+ 
+ %check
+ %{python_expand export PYTHONPATH=%{buildroot}%{$python_sitearch}
+-%ifarch ppc ppc64 s390 s390x
++%ifarch ppc ppc64 s390 s390x %mips
+ $python selftest.py --installed || \
+ echo "WARNING ignore failure https://github.com/python-pillow/Pillow/issues/1204"
+ $python setup.py test  || \

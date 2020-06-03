@@ -1,0 +1,12 @@
+Index: cloud-init.spec
+===================================================================
+--- cloud-init.spec	(revision 1)
++++ cloud-init.spec	(working copy)
+@@ -218,6 +218,7 @@
+ rm -v tests/unittests/test_datasource/test_opennebula.py
+ # To be investigated
+ rm -v tests/unittests/test_handler/test_handler_ntp.py
++rm -v tests/unittests/test_handler/test_handler_apt_source_v3.py
+ make test
+ %endif
+ 

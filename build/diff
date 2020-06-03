@@ -1,0 +1,15 @@
+Index: build.spec
+===================================================================
+--- build.spec	(revision 1)
++++ build.spec	(working copy)
+@@ -191,6 +191,10 @@
+ %endif
+ 
+ %check
++if [[ `uname -m` == mips* ]]; then
++  echo "mips*, exit."
++  exit 0
++fi
+ for i in build build-* ; do bash -n $i || exit 1 ; done
+ if [ `whoami` != "root" ]; then
+   echo "WARNING: Not building as root, tests did not run!"

@@ -1,0 +1,12 @@
+Index: bless.spec
+===================================================================
+--- bless.spec	(revision 1)
++++ bless.spec	(working copy)
+@@ -36,6 +36,7 @@
+ BuildRequires:  fdupes
+ BuildArch:      noarch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
++ExcludeArch:    %mips
+ 
+ %description
+ Bless is a hex editor written in Mono/Gtk#. It features:

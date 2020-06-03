@@ -1,0 +1,12 @@
+Index: hyena.spec
+===================================================================
+--- hyena.spec	(revision 1)
++++ hyena.spec	(working copy)
+@@ -42,6 +42,7 @@
+ Requires:       gtk-sharp2
+ Requires:       mono
+ Requires:       mono-core
++ExcludeArch:    %mips
+ 
+ %description
+ Hyena is a .NET library that powers Banshee and PDF Mod, among others.

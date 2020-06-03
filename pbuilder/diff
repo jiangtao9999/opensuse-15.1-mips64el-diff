@@ -1,0 +1,37 @@
+Index: pbuilder.spec
+===================================================================
+--- pbuilder.spec	(revision 1)
++++ pbuilder.spec	(working copy)
+@@ -32,6 +32,7 @@
+ Patch4:         bash-completion-extglob.patch
+ Patch5:         test-suite.patch
+ Patch6:         pbuilder-ppc.patch
++Patch7:         pbuilder-mips.patch
+ Requires:       debootstrap
+ Requires:       dpkg
+ Requires:       wget
+@@ -72,6 +73,7 @@
+ %patch4 -p1
+ %patch5 -p1
+ %patch6 -p1
++%patch7 -p1
+ 
+ %build
+ %{__make} %{?jobs:-j%jobs}
+Index: pbuilder-mips.patch
+===================================================================
+--- pbuilder-mips.patch	(revision 0)
++++ pbuilder-mips.patch	(working copy)
+@@ -0,0 +1,12 @@
++diff -Nrui pbuilder-0.215-orig/pbuilder-apt-config pbuilder-0.215/pbuilder-apt-config
++--- pbuilder-0.215-orig/pbuilder-apt-config	2020-05-16 10:23:14.699296502 +0800
+++++ pbuilder-0.215/pbuilder-apt-config	2020-05-16 10:24:09.325256983 +0800
++@@ -67,7 +67,7 @@
++           amd64|i386)
++             echo "ubuntu"
++           ;;
++-          armel|armhf|hppa|ia64|lpia|powerpc|sparc|ppc|ppc64|ppc64el|arm64)
+++          armel|armhf|hppa|ia64|lpia|powerpc|sparc|ppc|ppc64|ppc64el|arm64|mips*)
++             echo "ubuntu-ports"
++           ;;
++           *)

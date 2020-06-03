@@ -1,0 +1,41 @@
+Index: perftest.spec
+===================================================================
+--- perftest.spec	(revision 1)
++++ perftest.spec	(working copy)
+@@ -28,6 +28,7 @@
+ Patch1:         Add-Intel-devices-to-the-perftest-device-list.patch
+ Patch2:         perftest-add-Broadcom-s-netxtreme-pci-ids.patch
+ Patch3:         Fixed-ToS-Type-of-Service-variable-size-issue.patch
++Patch4:         perftest-4.4-mips-get_cycles.patch
+ Url:            https://github.com/linux-rdma/perftest
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ # For transition to rdma-core make sure the new packages are selected
+@@ -48,6 +49,7 @@
+ %patch1
+ %patch2
+ %patch3
++%patch4 -p1
+ 
+ %build
+ ./autogen.sh
+Index: perftest-4.4-mips-get_cycles.patch
+===================================================================
+--- perftest-4.4-mips-get_cycles.patch	(revision 0)
++++ perftest-4.4-mips-get_cycles.patch	(working copy)
+@@ -0,0 +1,16 @@
++diff -Nrui perftest-4.4-orig/src/get_clock.h perftest-4.4/src/get_clock.h
++--- perftest-4.4-orig/src/get_clock.h	2020-05-16 10:47:29.947847251 +0800
+++++ perftest-4.4/src/get_clock.h	2020-05-16 10:50:50.562924985 +0800
++@@ -104,6 +104,12 @@
++ 	asm volatile("mrs %0, cntvct_el0" : "=r" (cval));
++ 	return cval;
++ }
+++#elif defined(__mips__)
+++typedef unsigned long cycles_t;
+++static inline cycles_t get_cycles()
+++{
+++    return 0;
+++}
++ 
++ #else
++ #warning get_cycles not implemented for this architecture: attempt asm/timex.h

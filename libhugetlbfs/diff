@@ -1,0 +1,65 @@
+Index: libhugetlbfs.spec
+===================================================================
+--- libhugetlbfs.spec	(revision 1)
++++ libhugetlbfs.spec	(working copy)
+@@ -33,6 +33,7 @@
+ Patch13:        ignore-perl-modules.diff
+ Patch14:        disable-rw-on-non-ldscripts.diff
+ Patch15:        zero_filesize_segment.patch
++Patch16:        libhugetlbfs-add-mips64.patch
+ BuildRequires:  doxygen
+ BuildRequires:  glibc-devel-static
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+@@ -70,10 +71,15 @@
+ %patch13
+ %patch14
+ %patch15 -p1
++%patch16 -p1
+ 
+ %build
+ echo %{version} > version
++%ifnarch %mips
+ make %{my_make_flags}
++%else
++make V=1 BUILDTYPE=NATIVEONLY PREFIX=%{_prefix} LIBDIR32=%{_libdir} DESTDIR=%{buildroot}
++%endif
+ 
+ %install
+ make %{my_make_flags} PMDIR="%{perl_vendorlib}/TLBC" \
+Index: libhugetlbfs-add-mips64.patch
+===================================================================
+--- libhugetlbfs-add-mips64.patch	(revision 0)
++++ libhugetlbfs-add-mips64.patch	(working copy)
+@@ -0,0 +1,32 @@
++diff -Nuir libhugetlbfs-2.20-orig/Makefile libhugetlbfs-2.20/Makefile
++--- libhugetlbfs-2.20-orig/Makefile	2020-05-08 19:48:59.149899668 +0800
+++++ libhugetlbfs-2.20/Makefile	2020-05-08 20:01:59.619235563 +0800
++@@ -117,10 +117,16 @@
++ CC32 = gcc -m31
++ ELF32 = elf_s390
++ else
+++ifeq ($(ARCH),mips64)
+++CC64 = $(CC)
+++TMPLIB64 = lib64
+++CFLAGS += -DNO_ELFLINK
+++else
++ $(error "Unrecognized architecture ($(ARCH))")
++ endif
++ endif
++ endif
+++endif
++ endif
++ endif
++ endif
++diff -Nuir libhugetlbfs-2.20-orig/tests/icache-hygiene.c libhugetlbfs-2.20/tests/icache-hygiene.c
++--- libhugetlbfs-2.20-orig/tests/icache-hygiene.c	2020-05-08 19:48:59.157720728 +0800
+++++ libhugetlbfs-2.20/tests/icache-hygiene.c	2020-05-08 20:01:59.619235563 +0800
++@@ -86,7 +86,7 @@
++ 
++ static void sig_handler(int signum, siginfo_t *si, void *uc)
++ {
++-#if defined(__powerpc__) || defined(__powerpc64__) || defined(__ia64__) || \
+++#if defined(__powerpc__) || defined(__powerpc64__) || defined(__ia64__) || defined(__mips64) || \
++     defined(__s390__) || defined(__s390x__) || defined(__sparc__) || \
++     defined(__aarch64__)
++ 	/* On powerpc, ia64, s390 and Aarch64, 0 bytes are an illegal

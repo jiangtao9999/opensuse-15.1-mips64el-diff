@@ -1,0 +1,13 @@
+Index: incidenceeditor.spec
+===================================================================
+--- incidenceeditor.spec	(revision 1)
++++ incidenceeditor.spec	(working copy)
+@@ -52,7 +52,7 @@
+ BuildRequires:  pkgconfig(Qt5Widgets) >= 5.4.0
+ Recommends:     %{name}-lang
+ # It can only build on the same platforms as Qt Webengine
+-ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 mips mips64
++ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 %mips
+ 
+ %description
+ This package contains the incidenceeditor library.

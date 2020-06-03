@@ -1,0 +1,37 @@
+Index: yast2-hardware-detection.spec
+===================================================================
+--- yast2-hardware-detection.spec	(revision 1)
++++ yast2-hardware-detection.spec	(working copy)
+@@ -22,6 +22,7 @@
+ 
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ Source0:        %{name}-%{version}.tar.bz2
++Patch0:         yast2-hardware-detection-4.1.0-add-mipsel.patch
+ 
+ # obviously
+ BuildRequires:  gcc-c++
+@@ -50,6 +51,7 @@
+ 
+ %prep
+ %setup -n %{name}-%{version}
++%patch0 -p1
+ 
+ %build
+ %yast_build
+Index: yast2-hardware-detection-4.1.0-add-mipsel.patch
+===================================================================
+--- yast2-hardware-detection-4.1.0-add-mipsel.patch	(revision 0)
++++ yast2-hardware-detection-4.1.0-add-mipsel.patch	(working copy)
+@@ -0,0 +1,12 @@
++diff -Nrui yast2-hardware-detection-4.1.0-orig/agent/HwParse.cc yast2-hardware-detection-4.1.0/agent/HwParse.cc
++--- yast2-hardware-detection-4.1.0-orig/agent/HwParse.cc	2019-12-22 12:12:51.349628234 +0800
+++++ yast2-hardware-detection-4.1.0/agent/HwParse.cc	2019-12-22 12:14:34.188868146 +0800
++@@ -46,6 +46,8 @@
++ 	case arch_s390x:   s = "s390_64"; break;
++ 	case arch_ia64:    s = "ia64"; break;
++ 	case arch_mips:    s = "mips"; break;
+++	case arch_mips64el: s = "mips64el"; break;
+++	case arch_mipsel:  s = "mipsel"; break;
++ 	case arch_arm:     s = "arm"; break;
++ 	case arch_aarch64: s = "aarch64"; break;
++ 	case arch_x86_64:  s = "x86_64"; break;

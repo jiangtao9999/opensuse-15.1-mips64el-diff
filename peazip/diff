@@ -1,0 +1,12 @@
+Index: peazip.spec
+===================================================================
+--- peazip.spec	(revision 1)
++++ peazip.spec	(working copy)
+@@ -55,6 +55,7 @@
+ %if 0%{?suse_version} < 1500
+ BuildRequires:  update-desktop-files
+ %endif
++ExcludeArch:    %mips64
+ 
+ %description
+ PeaZip is a file and archive manager GUI for many formats.

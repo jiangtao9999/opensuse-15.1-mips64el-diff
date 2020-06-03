@@ -1,0 +1,12 @@
+Index: dbus-1-mono.spec
+===================================================================
+--- dbus-1-mono.spec	(revision 1)
++++ dbus-1-mono.spec	(working copy)
+@@ -33,6 +33,7 @@
+ Patch3:         dbus-mono-api-fix-thoenig-01.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ Requires:       dbus-1 >= %( echo `rpm -q --queryformat '%%{VERSION}-%%{RELEASE}' dbus-1`)
++ExcludeArch:    %mips
+ 
+ %description
+ Mono bindings for D-Bus.

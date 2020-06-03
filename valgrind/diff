@@ -1,0 +1,75 @@
+Index: valgrind.spec
+===================================================================
+--- valgrind.spec	(revision 1)
++++ valgrind.spec	(working copy)
+@@ -44,6 +44,7 @@
+ Patch11:        0001-Bug-385411-s390x-Add-z13-vector-floating-point-suppo.patch
+ Patch12:        0001-Bug-403552-s390x-Fix-vector-facility-bit-number.patch
+ Patch13:        0001-Bug-385411-s390x-Tests-and-internals-for-z13-vector-.patch
++Patch14:        valgrind-3.14.0-fix-loongson.patch
+ BuildRequires:  automake
+ BuildRequires:  docbook-xsl-stylesheets
+ BuildRequires:  docbook_4
+@@ -60,7 +61,7 @@
+ Provides:       callgrind = %{version}
+ Obsoletes:      callgrind < %{version}
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+-ExclusiveArch:  aarch64 %ix86 x86_64 ppc ppc64 ppc64le s390x armv7l armv7hl armv6l armv6hl
++ExclusiveArch:  aarch64 %ix86 x86_64 ppc ppc64 ppc64le s390x armv7l armv7hl armv6l armv6hl %mips
+ %ifarch x86_64 ppc64
+ %if 0%{?suse_version} < 1320
+ BuildRequires:  gcc8-c++-32bit
+@@ -161,6 +162,7 @@
+ %patch11 -p1
+ %patch12 -p1
+ %patch13 -p1
++%patch14 -p1
+ 
+ %build
+ %if 0%{?suse_version} < 1320
+@@ -254,6 +256,9 @@
+ %endif
+ %ifarch %arm
+ %{_libdir}/valgrind/*-arm-linux
++%endif
++%ifarch %mips
++%{_libdir}/valgrind/*-mips*-linux
+ %endif
+ %{_libdir}/valgrind/*-linux.so
+ %{_libdir}/valgrind/*.supp
+Index: valgrind-3.14.0-fix-loongson.patch
+===================================================================
+--- valgrind-3.14.0-fix-loongson.patch	(revision 0)
++++ valgrind-3.14.0-fix-loongson.patch	(working copy)
+@@ -0,0 +1,31 @@
++diff -Nrui valgrind-3.14.0-orig/VEX/priv/main_main.c valgrind-3.14.0/VEX/priv/main_main.c
++--- valgrind-3.14.0-orig/VEX/priv/main_main.c	2020-01-11 12:13:26.359812094 +0800
+++++ valgrind-3.14.0/VEX/priv/main_main.c	2020-01-11 12:14:54.925345107 +0800
++@@ -2045,6 +2045,7 @@
++             case VEX_PRID_COMP_INGENIC_E1:
++             case VEX_PRID_COMP_BROADCOM:
++             case VEX_PRID_COMP_NETLOGIC:
+++            case VEX_PRID_COMP_LEGACY:
++                return;
++             default:
++                invalid_hwcaps(arch, hwcaps, "Unsupported baseline\n");
++@@ -2055,6 +2056,7 @@
++             case VEX_PRID_COMP_MIPS:
++             case VEX_PRID_COMP_CAVIUM:
++             case VEX_PRID_COMP_NETLOGIC:
+++            case VEX_PRID_COMP_LEGACY:
++                return;
++             default:
++                invalid_hwcaps(arch, hwcaps, "Unsupported baseline\n");
++diff -Nrui valgrind-3.14.0-orig/coregrind/m_machine.c valgrind-3.14.0/coregrind/m_machine.c
++--- valgrind-3.14.0-orig/coregrind/m_machine.c	2020-01-11 12:13:26.508573497 +0800
+++++ valgrind-3.14.0/coregrind/m_machine.c	2020-01-11 12:15:17.352176690 +0800
++@@ -657,7 +657,7 @@
++    const char *search_Broadcom_str = "cpu model\t\t: Broadcom";
++    const char *search_Cavium_str= "cpu model\t\t: Cavium";
++    const char *search_Ingenic_str= "cpu model\t\t: Ingenic";
++-   const char *search_Loongson_str= "cpu model\t\t: ICT Loongson";
+++   const char *search_Loongson_str= "cpu model\t\t: Loongson";
++    const char *search_MIPS_str = "cpu model\t\t: MIPS";
++    const char *search_Netlogic_str = "cpu model\t\t: Netlogic";
++ 

@@ -1,0 +1,117 @@
+Index: mozjs38.spec
+===================================================================
+--- mozjs38.spec	(revision 1)
++++ mozjs38.spec	(working copy)
+@@ -34,6 +34,7 @@
+ Patch3:         mozjs38_avoid_strncat_warning_inline.patch
+ Patch4:         mozjs-support-48bit-va.patch
+ Patch5:         mozilla-sed43.patch
++Patch6:         fix-mips64el.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ BuildRequires:  autoconf213
+ BuildRequires:  gcc-c++
+@@ -79,6 +80,7 @@
+ %patch3 -p1
+ %patch4 -p1
+ %patch5 -p1
++%patch6 -p1
+ 
+ # Remove zlib directory (to be sure using system version)
+ rm -rf modules/zlib
+Index: fix-mips64el.patch
+===================================================================
+--- fix-mips64el.patch	(revision 0)
++++ fix-mips64el.patch	(working copy)
+@@ -0,0 +1,58 @@
++--- mozilla-esr38-orig/js/src/configure	2018-03-01 20:35:41.771071604 +0800
+++++ mozilla-esr38/js/src/configure	2018-03-01 20:39:53.659641762 +0800
++@@ -8480,6 +8480,16 @@
++ EOF
++ 
++     ;;
+++mips64*-*)
+++    ENABLE_ION=
+++    cat >> confdefs.pytmp <<\EOF
+++    (''' JS_CPU_MIPS ''', ' 1 ')
+++EOF
+++cat >> confdefs.h <<\EOF
+++#define JS_CPU_MIPS 1
+++EOF
+++
+++    ;;
++ mips*-*)
++     ENABLE_ION=1
++     cat >> confdefs.pytmp <<\EOF
++@@ -8493,6 +8503,15 @@
++ esac
++ 
++ case "$target" in
+++mips64*-*)
+++     cat >> confdefs.pytmp <<\EOF
+++    (''' JS_PUNBOX64 ''', ' 1 ')
+++EOF
+++cat >> confdefs.h <<\EOF
+++#define JS_PUNBOX64 1
+++EOF
+++
+++     ;;
++ mips*-*)
++      cat >> confdefs.pytmp <<\EOF
++     (''' JS_NUNBOX32 ''', ' 1 ')
++--- mozjs-38.0.0/js/src/configure.in.orig	2019-12-24 17:43:15.208808987 +0800
+++++ mozjs-38.0.0/js/src/configure.in	2019-12-24 17:45:27.641707565 +0800
++@@ -2117,6 +2117,10 @@
++ dnl ENABLE_ION=0
++     AC_DEFINE(JS_CPU_SPARC)
++     ;;
+++mips64*-*)
+++    ENABLE_ION=
+++    AC_DEFINE(JS_CPU_MIPS)
+++    ;;
++ mips*-*)
++     ENABLE_ION=1
++     AC_DEFINE(JS_CPU_MIPS)
++@@ -2124,6 +2128,9 @@
++ esac
++ 
++ case "$target" in
+++mips64*-*)
+++     AC_DEFINE(JS_PUNBOX64)
+++     ;;
++ mips*-*)
++      AC_DEFINE(JS_NUNBOX32)
++      ;;
+Index: _constraints
+===================================================================
+--- _constraints	(revision 1)
++++ _constraints	(working copy)
+@@ -1,29 +0,0 @@
+-<?xml version="1.0"?>
+-<constraints>
+-  <hardware>
+-    <memory>
+-      <size unit="M">3072</size>
+-    </memory>
+-  </hardware>
+-  <overwrite>
+-    <conditions>
+-      <arch>armv6l</arch>
+-      <arch>armv7l</arch>
+-    </conditions>
+-    <hardware>
+-      <memory>
+-        <size unit="M">768</size>
+-      </memory>
+-    </hardware>
+-  </overwrite>
+-  <overwrite>
+-    <conditions>
+-      <arch>ppc64le</arch>
+-    </conditions>
+-    <hardware>
+-      <memory>
+-        <size unit="M">7168</size>
+-      </memory>
+-    </hardware>
+-  </overwrite>
+-</constraints>

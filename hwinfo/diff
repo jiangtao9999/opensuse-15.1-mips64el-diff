@@ -1,0 +1,196 @@
+Index: hwinfo.spec
+===================================================================
+--- hwinfo.spec	(revision 1)
++++ hwinfo.spec	(working copy)
+@@ -39,6 +39,7 @@
+ Version:        21.64
+ Release:        0
+ Source:         %{name}-%{version}.tar.xz
++Patch:          hwinfo-21.64-add-mips3264el.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ 
+ %description
+@@ -73,6 +74,7 @@
+ 
+ %prep
+ %setup
++%patch -p1
+ 
+ %build
+   make static
+Index: hwinfo-21.64-add-mips3264el.patch
+===================================================================
+--- hwinfo-21.64-add-mips3264el.patch	(revision 0)
++++ hwinfo-21.64-add-mips3264el.patch	(working copy)
+@@ -0,0 +1,171 @@
++diff -Nrui hwinfo-21.64-orig/hwinfo.c hwinfo-21.64/hwinfo.c
++--- hwinfo-21.64-orig/hwinfo.c	2020-01-22 11:26:10.072786672 +0800
+++++ hwinfo-21.64/hwinfo.c	2020-01-22 11:27:34.376181220 +0800
++@@ -634,6 +634,12 @@
++       case arch_aarch64:
++         s = "AArch64";
++         break;
+++      case arch_mips64el:
+++        s = "MIPS64EL";
+++        break;
+++      case arch_mipsel:
+++        s = "MIPSEL";
+++        break;
++       case arch_riscv:
++         s = "RISC-V";
++         break;
++diff -Nrui hwinfo-21.64-orig/src/hd/cpu.c hwinfo-21.64/src/hd/cpu.c
++--- hwinfo-21.64-orig/src/hd/cpu.c	2020-01-22 11:26:10.072786672 +0800
+++++ hwinfo-21.64/src/hd/cpu.c	2020-01-22 11:38:10.799698844 +0800
++@@ -95,6 +95,13 @@
++   char *t0, *t;
++ #endif
++ 
+++#if defined(__mips__) && defined (__MIPSEL)
+++  char model_id[80], vendor_id[80];
+++  unsigned mhz;
+++  double bogo;
+++  char *t0, *t;
+++#endif
+++
++ #ifdef __ia64__
++   char model_id[0x100], vendor_id[80], features[0x400];
++   unsigned mhz, family, model, stepping;
++@@ -483,6 +490,72 @@
++   }
++ #endif /* __i386__ || __x86_64__ */
++ 
+++#if defined(__mips__) && defined (__MIPSEL)
+++  *model_id = *vendor_id = 0;
+++  mhz = 0;
+++  bogo = 0;
+++
+++  for(sl = hd_data->cpu; sl; sl = sl->next) {
+++    if(sscanf(sl->str, "model name : %79[^\n]", model_id) == 1);
+++    if(sscanf(sl->str, "vendor_id : %79[^\n]", vendor_id) == 1);
+++    if(sscanf(sl->str, "BogoMIPS : %lg", &bogo) == 1);
+++    if(sscanf(sl->str, "cpu MHz : %u", &mhz) == 1);
+++
+++    if(strstr(sl->str, "processor") == sl->str || !sl->next) {		/* EOF */
+++      if(*model_id || *vendor_id) {	/* at least one of those */
+++        ct = new_mem(sizeof *ct);
+++	ct->architecture = arch_mips64el;
+++        if(*model_id) ct->model_name = new_str(model_id);
+++        if(*vendor_id) ct->vend_name = new_str(vendor_id);
+++        ct->bogo = bogo;
+++	hd_data->boot = boot_unknown;
+++
+++        /* round clock to typical values */
+++        if(mhz >= 38 && mhz <= 42)
+++          mhz = 40;
+++        else if(mhz >= 88 && mhz <= 92)
+++          mhz = 90;
+++        else {
+++	  unsigned u, v;
+++
+++          u = (mhz + 2) % 100;
+++          v = (mhz + 2) / 100;
+++          if(u <= 4)
+++            u = 2;
+++          else if(u >= 25 && u <= 29)
+++            u = 25 + 2;
+++          else if(u >= 33 && u <= 37)
+++            u = 33 + 2;
+++          else if(u >= 50 && u <= 54)
+++            u = 50 + 2;
+++          else if(u >= 66 && u <= 70)
+++            u = 66 + 2;
+++          else if(u >= 75 && u <= 79)
+++            u = 75 + 2;
+++          else if(u >= 80 && u <= 84)	/* there are 180MHz PPros */
+++            u = 80 + 2;
+++          u -= 2;
+++          mhz = v * 100 + u;
+++        }
+++
+++        ct->clock = mhz;
+++
+++        hd = add_hd_entry(hd_data, __LINE__, 0);
+++        hd->base_class.id = bc_internal;
+++        hd->sub_class.id = sc_int_cpu;
+++        hd->slot = cpus;
+++        hd->detail = new_mem(sizeof *hd->detail);
+++        hd->detail->type = hd_detail_cpu;
+++        hd->detail->cpu.data = ct;
+++
+++        *model_id = *vendor_id = 0;
+++        mhz = 0;
+++        bogo = 0;
+++        cpus++;
+++      }
+++    }
+++  }
+++#endif /* mips*el */
++ 
++ #ifdef __PPC__
++   *model_id = *vendor_id = *motherboard = 0;
++diff -Nrui hwinfo-21.64-orig/src/hd/hd.c hwinfo-21.64/src/hd/hd.c
++--- hwinfo-21.64-orig/src/hd/hd.c	2020-01-22 11:26:10.072786672 +0800
+++++ hwinfo-21.64/src/hd/hd.c	2020-01-22 11:48:47.639426311 +0800
++@@ -136,10 +136,20 @@
++ #define HD_ARCH "aarch64"
++ #endif
++ 
+++#if defined(__mips__) && defined (__MIPSEL)
+++# if defined(__mips64)
+++# define HD_ARCH "mips64el"
+++# else
+++# define HD_ARCH "mipsel"
+++# endif
+++#else
+++
++ #ifdef __mips__
++ #define HD_ARCH "mips"
++ #endif
++ 
+++#endif /* __mips__ && __MIPSEL */
+++
++ #ifdef __x86_64__
++ #define HD_ARCH "x86-64"
++ #endif
++@@ -3076,6 +3086,12 @@
++   return arch_aarch64;
++ #elif defined __m68k__
++   return arch_68k;
+++#elif defined(__mips__) && defined (__MIPSEL)
+++# if defined(__mips64)
+++   return arch_mips64el;
+++# else
+++   return arch_mipsel;
+++# endif
++ #elif defined __riscv
++   return arch_riscv;
++ #else
++diff -Nrui hwinfo-21.64-orig/src/hd/hd.h hwinfo-21.64/src/hd/hd.h
++--- hwinfo-21.64-orig/src/hd/hd.h	2020-01-22 11:26:10.072786672 +0800
+++++ hwinfo-21.64/src/hd/hd.h	2020-01-22 11:49:58.991160054 +0800
++@@ -1445,6 +1445,8 @@
++   arch_s390, arch_s390x,
++   arch_arm,
++   arch_mips,
+++  arch_mips64el,
+++  arch_mipsel,
++   arch_x86_64,
++   arch_aarch64,
++   arch_riscv
++diff -Nrui hwinfo-21.64-orig/src/hd/hdp.c hwinfo-21.64/src/hd/hdp.c
++--- hwinfo-21.64-orig/src/hd/hdp.c	2020-01-22 11:26:10.072786672 +0800
+++++ hwinfo-21.64/src/hd/hdp.c	2020-01-22 11:53:09.842107806 +0800
++@@ -1117,6 +1117,12 @@
++       case arch_aarch64:
++ 	dump_line0 ("AArch64\n");
++ 	break;
+++      case arch_mips64el:
+++	dump_line0 ("MIPS64EL\n");
+++	break;
+++      case arch_mipsel:
+++	dump_line0 ("MIPSEL\n");
+++	break;
++       case arch_riscv:
++ 	dump_line0 ("RISC-V\n");
++ 	break;

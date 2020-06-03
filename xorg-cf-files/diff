@@ -1,0 +1,175 @@
+Index: xorg-cf-files.spec
+===================================================================
+--- xorg-cf-files.spec	(revision 1)
++++ xorg-cf-files.spec	(working copy)
+@@ -24,6 +24,7 @@
+ Group:          Development/Tools/Building
+ Url:            http://xorg.freedesktop.org/
+ Source0:        http://xorg.freedesktop.org/releases/individual/util/%{name}-%{version}.tar.bz2
++Patch1:         xorg-cf-files-1.0.6-add-mips64.patch
+ BuildRequires:  font-util >= 1.1
+ BuildRequires:  pkgconfig(xorg-macros) >= 1.4
+ Requires:       gccmakedep
+@@ -51,13 +52,14 @@
+ 
+ %prep
+ %setup -q
++%patch1 -p1
+ 
+ cat > host.def << EOF
+ #define ConfigDir %_configdir
+ #define XAppLoadDir /usr/share/X11/app-defaults
+ #define UseSeparateConfDir NO
+ #define ManPath /usr/share/man
+-%ifarch ppc64 s390x x86_64 sparc64
++%ifarch ppc64 s390x x86_64 sparc64 %mips64
+ #define ModuleDir /usr/lib64/xorg/modules
+ %else
+ #define ModuleDir /usr/lib/xorg/modules
+@@ -67,6 +69,10 @@
+ #define DefaultGcc2i386Opt      $RPM_OPT_FLAGS -fno-strict-aliasing
+ #endif
+ #ifdef  MipsArchitecture
++#undef  DefaultGcc2MipsOpt
++#define DefaultGcc2MipsOpt      $RPM_OPT_FLAGS -fno-strict-aliasing
++#endif
++#ifdef  Mips64Architecture
+ #undef  DefaultGcc2MipsOpt
+ #define DefaultGcc2MipsOpt      $RPM_OPT_FLAGS -fno-strict-aliasing
+ #endif
+Index: xorg-cf-files-1.0.6-add-mips64.patch
+===================================================================
+--- xorg-cf-files-1.0.6-add-mips64.patch	(revision 0)
++++ xorg-cf-files-1.0.6-add-mips64.patch	(working copy)
+@@ -0,0 +1,131 @@
++diff -Nuri xorg-cf-files-1.0.6-orig/Imake.cf xorg-cf-files-1.0.6/Imake.cf
++--- xorg-cf-files-1.0.6-orig/Imake.cf	2020-05-16 15:19:52.470012238 +0800
+++++ xorg-cf-files-1.0.6/Imake.cf	2020-05-16 15:28:35.224226776 +0800
++@@ -967,11 +967,19 @@
++ #  undef __ia64__
++ # endif
++ # if defined(mips) || defined(__mips__)
++-#  define MipsArchitecture
+++#  if !defined(__mips64)
+++#   define MipsArchitecture
+++#  else
+++#   define Mips64Architecture
+++#  endif
++ #  undef mips
++ #  undef __mips__
++ #  if defined(MIPSEL) || defined(_MIPSEL)
++-#   define MipselArchitecture
+++#   if !defined(__mips64)
+++#    define MipselArchitecture
+++#   else
+++#    define Mips64elArchitecture
+++#   endif
++ #  endif
++ #  undef MIPSEL
++ #  undef _MIPSEL
++diff -Nuri xorg-cf-files-1.0.6-orig/Imake.tmpl xorg-cf-files-1.0.6/Imake.tmpl
++--- xorg-cf-files-1.0.6-orig/Imake.tmpl	2020-05-16 15:19:52.470012238 +0800
+++++ xorg-cf-files-1.0.6/Imake.tmpl	2020-05-16 15:29:51.391430228 +0800
++@@ -500,8 +500,12 @@
++ #define ByteOrder		X_LITTLE_ENDIAN
++ #elif defined(MipsArchitecture) && defined(MipselArchitecture)
++ #define ByteOrder		X_LITTLE_ENDIAN
+++#elif defined(Mips64Architecture) && defined(Mips64elArchitecture)
+++#define ByteOrder               X_LITTLE_ENDIAN
++ #elif defined(MipsArchitecture)
++ #define ByteOrder		X_BIG_ENDIAN
+++#elif defined(Mips64Architecture)
+++#define ByteOrder               X_BIG_ENDIAN
++ #elif defined(i386Architecture)
++ #define ByteOrder		X_LITTLE_ENDIAN
++ #elif defined(ia64Architecture)
++diff -Nuri xorg-cf-files-1.0.6-orig/Mips.cf xorg-cf-files-1.0.6/Mips.cf
++--- xorg-cf-files-1.0.6-orig/Mips.cf	2020-05-16 15:19:52.473920572 +0800
+++++ xorg-cf-files-1.0.6/Mips.cf	2020-05-16 15:46:40.560862463 +0800
++@@ -27,7 +27,11 @@
++ #define UnalignedReferencesAllowed	NO     /* if arbitrary deref okay */
++ #define HasBsearch			NO
++ 
++-#define MipsArchitecture
+++#if !defined(__mips64)
+++# define MipsArchitecture
+++#else
+++# define Mips64Architecture
+++#endif
++ #define MakeEnv -e
++ 
++ #define DefaultCCOptions -signed -systype bsd43 -Olimit 2000 -Wf,-XNd8400,-XNp12000
++diff -Nuri xorg-cf-files-1.0.6-orig/linux.cf xorg-cf-files-1.0.6/linux.cf
++--- xorg-cf-files-1.0.6-orig/linux.cf	2020-05-16 15:19:52.470012238 +0800
+++++ xorg-cf-files-1.0.6/linux.cf	2020-05-16 15:41:57.473687352 +0800
++@@ -578,7 +578,7 @@
++ #define MkdirHierCmd		mkdir -p
++ 
++ #ifndef HaveLib64
++-# if defined (AMD64Architecture) || defined (s390xArchitecture) || defined (Ppc64Architecture) || defined (AArch64Architecture)
+++# if defined (AMD64Architecture) || defined (s390xArchitecture) || defined (Ppc64Architecture) || defined (AArch64Architecture) || defined(Mips64Architecture)
++ #  define HaveLib64	YES
++ # else
++ #  define HaveLib64	NO
++@@ -887,6 +887,15 @@
++ # define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
++ #endif
++ 
+++#ifdef Mips64Architecture
+++# ifndef OptimizedCDebugFlags
+++#  define OptimizedCDebugFlags  DefaultGcc2MipsOpt
+++# endif
+++# define LinuxMachineDefines    -D__mips__ -D__mips64 -D__mips64__
+++# define ServerOSDefines        XFree86ServerOSDefines -DDDXTIME
+++# define ServerExtraDefines     -DGCCUSESGAS XFree86ServerDefines
+++#endif
+++
++ #ifdef OpenRISC1000Architecture
++ # ifndef OptimizedCDebugFlags
++ #  define OptimizedCDebugFlags	DefaultGcc2OpenRISC1000Opt
++diff -Nuri xorg-cf-files-1.0.6-orig/xfree86.cf xorg-cf-files-1.0.6/xfree86.cf
++--- xorg-cf-files-1.0.6-orig/xfree86.cf	2020-05-16 15:19:52.473920572 +0800
+++++ xorg-cf-files-1.0.6/xfree86.cf	2020-05-16 15:45:35.399376034 +0800
++@@ -700,7 +700,7 @@
++ 
++ /* MIPS drivers */
++ 
++-#ifdef MipsArchitecture
+++#if defined(MipsArchitecture) || defined(Mips64Architecture)
++ # ifndef XF86Server
++ #  define XF86Server		YES
++ # endif
++diff -Nuri xorg-cf-files-1.0.6-orig/xorg.cf xorg-cf-files-1.0.6/xorg.cf
++--- xorg-cf-files-1.0.6-orig/xorg.cf	2020-05-16 15:19:52.470012238 +0800
+++++ xorg-cf-files-1.0.6/xorg.cf	2020-05-16 15:44:50.612003036 +0800
++@@ -306,7 +306,7 @@
++  */
++ #if defined(i386Architecture) || defined(ia64Architecture) || \
++     defined(AMD64Architecture) || defined(SparcArchitecture) || \
++-    defined(Sparc64Architecture) || defined(MipsArchitecture) || \
+++    defined(Sparc64Architecture) || defined(MipsArchitecture) || defined(Mips64Architecture) || \
++     defined(AlphaArchitecture) || defined(PpcArchitecture) || \
++     defined(Mc68020Architecture) || defined(Arm32Architecture) || \
++     defined(HPArchitecture) || defined(SuperHArchitecture)
++@@ -552,7 +552,7 @@
++ 
++ /* MIPS drivers */
++ 
++-#ifdef MipsArchitecture
+++#if defined(MipsArchitecture) || defined(Mips64Architecture)
++ /* vgahw module */
++ # ifndef XF86VgaHw
++ #  define XF86VgaHw		YES
++@@ -1589,6 +1589,12 @@
++ # ifndef DefaultGcc2MipsOpt
++ #  define DefaultGcc2MipsOpt -O2 GccAliasingArgs
++ # endif
+++#endif
+++
+++#if HasGcc2 && defined(Mips64Architecture)
+++# ifndef DefaultGcc2MipsOpt
+++#  define DefaultGcc2MipsOpt -O2 GccAliasingArgs
+++# endif
++ #endif
++ 
++ #if HasGcc2 && defined(OpenRISC1000Architecture)

@@ -1,0 +1,44 @@
+Index: digikam.spec
+===================================================================
+--- digikam.spec	(revision 1)
++++ digikam.spec	(working copy)
+@@ -111,7 +111,7 @@
+ Provides:       %{name}-doc = %{version}
+ Obsoletes:      %{name}-doc < %{version}
+ #This pulls in QWebEngine, which is not available on ppc64
+-%ifarch %{ix86} x86_64 %{arm} aarch64 mips mips64
++%ifarch %{ix86} x86_64 %{arm} aarch64 %{mips}
+ BuildRequires:  akonadi-contact-devel
+ BuildRequires:  pkgconfig(Qt5WebEngineWidgets)
+ %else
+@@ -170,7 +170,7 @@
+ export CC=gcc-7
+ export CXX=g++-7
+ %endif
+-%ifarch %{ix86} x86_64 %{arm} aarch64 mips mips64
++%ifarch %{ix86} x86_64 %{arm} aarch64 %{mips}
+ %cmake_kf5 -d build -- -DENABLE_APPSTYLES=ON -DENABLE_MEDIAPLAYER=ON -DENABLE_QWEBENGINE=ON
+ %else
+ %cmake_kf5 -d build -- -DENABLE_APPSTYLES=ON -DENABLE_MEDIAPLAYER=ON
+Index: _constraints
+===================================================================
+--- _constraints	(revision 1)
++++ _constraints	(working copy)
+@@ -1,17 +0,0 @@
+-<constraints>
+-  <hardware>
+-    <disk>
+-      <size unit="M">4500</size>
+-    </disk>
+-  </hardware>
+-  <overwrite>
+-    <conditions>
+-      <arch>ppc64le</arch>
+-    </conditions>
+-    <hardware>
+-       <disk>
+-         <size unit="M">6000</size>
+-       </disk>
+-    </hardware>
+-  </overwrite>
+-</constraints>

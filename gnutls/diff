@@ -1,0 +1,12 @@
+Index: gnutls.spec
+===================================================================
+--- gnutls.spec	(revision 1)
++++ gnutls.spec	(working copy)
+@@ -61,6 +61,7 @@
+ BuildRequires:  pkgconfig
+ BuildRequires:  xz
+ BuildRequires:  zlib-devel
++Requires:       libnettle6 >= 3.4.1
+ %if 0%{?suse_version} <= 1320
+ BuildRequires:  net-tools
+ %else

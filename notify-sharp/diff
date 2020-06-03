@@ -1,0 +1,12 @@
+Index: notify-sharp.spec
+===================================================================
+--- notify-sharp.spec	(revision 1)
++++ notify-sharp.spec	(working copy)
+@@ -54,6 +54,7 @@
+ BuildRequires:  monodoc
+ %endif
+ Recommends:     notification-daemon
++ExcludeArch:    %mips64
+ 
+ %description
+ notify-sharp is a C# client implementation for Desktop Notifications,

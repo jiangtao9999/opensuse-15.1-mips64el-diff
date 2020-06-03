@@ -1,0 +1,12 @@
+Index: ndesk-dbus.spec
+===================================================================
+--- ndesk-dbus.spec	(revision 1)
++++ ndesk-dbus.spec	(working copy)
+@@ -39,6 +39,7 @@
+ BuildRequires:  glib2-devel
+ %endif
+ BuildArch:      noarch
++ExcludeArch:    %mips64
+ 
+ %description
+ This is a C# implementation of D-Bus. It's often referred to as

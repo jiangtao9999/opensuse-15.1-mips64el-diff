@@ -1,0 +1,44 @@
+Index: coccinelle.spec
+===================================================================
+--- coccinelle.spec	(revision 1)
++++ coccinelle.spec	(working copy)
+@@ -27,6 +27,7 @@
+ #Git-Clone:	git://github.com/coccinelle/coccinelle
+ Source:         http://coccinelle.lip6.fr/distrib/%name-%version.tgz
+ Patch1:         kill-env.diff
++Patch2:         coccinelle-fix-disable-opt.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ BuildRequires:  autoconf
+ BuildRequires:  automake
+@@ -61,10 +62,14 @@
+ %prep
+ %setup -q
+ %patch -P 1 -p1
++%patch2 -p1
+ 
+ %build
+ autoreconf -fi
+-%configure
++%configure \
++%ifarch %mips
++  --disable-python
++%endif
+ make %{?_smp_mflags}
+ 
+ %install
+Index: coccinelle-fix-disable-opt.patch
+===================================================================
+--- coccinelle-fix-disable-opt.patch	(revision 0)
++++ coccinelle-fix-disable-opt.patch	(working copy)
+@@ -0,0 +1,11 @@
++--- coccinelle-1.0.6/configure.ac.orig	2020-04-30 17:24:19.524282810 +0800
+++++ coccinelle-1.0.6/configure.ac	2020-04-30 17:30:37.724694260 +0800
++@@ -420,8 +420,6 @@
++   ])
++ ])
++ 
++-dnl  set the default enable-opt setting
++-AC_SUBST([enable_opt], ["yes"])
++ 
++ dnl  variables depending on whether we build the optimized spatch
++ AS_IF([test "x$enable_opt" = xyes],

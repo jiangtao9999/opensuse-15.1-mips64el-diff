@@ -1,0 +1,84 @@
+Index: 0ad.spec
+===================================================================
+--- 0ad.spec	(revision 1)
++++ 0ad.spec	(working copy)
+@@ -36,6 +36,7 @@
+ Patch1:         system-tinygettext.patch
+ # PATCH-FIX-UPSTREAM fix_abs_of_unsigned_char_on_arm.patch
+ Patch2:         https://github.com/0ad/0ad/commit/0133d6070bf4c4b2c18c79bf72b53af23403a36d.patch#/fix_abs_of_unsigned_char_on_arm.patch
++Patch3:         0ad-fix-mips64el.patch
+ BuildRequires:  cmake
+ BuildRequires:  gcc-c++
+ BuildRequires:  libXcursor-devel
+@@ -84,6 +85,7 @@
+ # Do not patch files not part of the distributed source
+ sed -i -e 's@[-+]\{3\}.*/binaries/@#\0@; s@diff .*/binaries/@#\0@' %{PATCH2}
+ %patch2 -p1
++%patch3 -p1
+ 
+ # Fix usage of __DATE__ and __TIME__ macros
+ modified="$(sed -n '/^----/n;s/ - .*$//;p;q' "%{SOURCE99}")"
+Index: 0ad-fix-mips64el.patch
+===================================================================
+--- 0ad-fix-mips64el.patch	(revision 0)
++++ 0ad-fix-mips64el.patch	(working copy)
+@@ -0,0 +1,59 @@
++diff -Nrui 0ad-0.0.22-alpha-orig/build/premake/premake4.lua 0ad-0.0.22-alpha/build/premake/premake4.lua
++--- 0ad-0.0.22-alpha-orig/build/premake/premake4.lua	2020-04-28 10:30:01.084471519 +0800
+++++ 0ad-0.0.22-alpha/build/premake/premake4.lua	2020-04-28 11:19:45.323066678 +0800
++@@ -89,6 +89,8 @@
++ 			arch = "arm"
++ 		elseif string.find(machine, "aarch64") == 1 then
++ 			arch = "aarch64"
+++		elseif string.find(machine, "mips64") == 1 then
+++			arch = "mips64"
++ 		else
++ 			print("WARNING: Cannot determine architecture from GCC, assuming x86")
++ 		end
++@@ -826,6 +828,8 @@
++ 		table.insert(source_dirs, "lib/sysdep/arch/arm");
++ 	elseif arch == "aarch64" then
++ 		table.insert(source_dirs, "lib/sysdep/arch/aarch64");
+++	elseif arch == "mips64" then
+++		table.insert(source_dirs, "lib/sysdep/arch/mips64");
++ 	end
++ 
++ 	-- OS-specific
++diff -Nrui 0ad-0.0.22-alpha-orig/source/lib/sysdep/arch/mips64/mips64.cpp 0ad-0.0.22-alpha/source/lib/sysdep/arch/mips64/mips64.cpp
++--- 0ad-0.0.22-alpha-orig/source/lib/sysdep/arch/mips64/mips64.cpp	1970-01-01 08:00:00.000000000 +0800
+++++ 0ad-0.0.22-alpha/source/lib/sysdep/arch/mips64/mips64.cpp	2020-04-28 11:22:13.207021500 +0800
++@@ -0,0 +1,23 @@
+++#include "precompiled.h"
+++
+++#include "lib/sysdep/cpu.h"
+++
+++intptr_t cpu_AtomicAdd(volatile intptr_t* location, intptr_t increment)
+++{
+++	return __sync_fetch_and_add(location, increment);
+++}
+++
+++bool cpu_CAS(volatile intptr_t* location, intptr_t expected, intptr_t newValue)
+++{
+++	return __sync_bool_compare_and_swap(location, expected, newValue);
+++}
+++
+++bool cpu_CAS64(volatile i64* location, i64 expected, i64 newValue)
+++{
+++	return __sync_bool_compare_and_swap(location, expected, newValue);
+++}
+++
+++const char* cpu_IdentifierString()
+++{
+++	return "unknown"; // TODO
+++}
++diff -Nrui 0ad-0.0.22-alpha-orig/source/ps/GameSetup/HWDetect.cpp 0ad-0.0.22-alpha/source/ps/GameSetup/HWDetect.cpp
++--- 0ad-0.0.22-alpha-orig/source/ps/GameSetup/HWDetect.cpp	2020-04-28 10:30:00.278826728 +0800
+++++ 0ad-0.0.22-alpha/source/ps/GameSetup/HWDetect.cpp	2020-04-28 11:24:47.321668476 +0800
++@@ -247,6 +247,7 @@
++ 	scriptInterface.SetProperty(settings, "arch_amd64", ARCH_AMD64);
++ 	scriptInterface.SetProperty(settings, "arch_arm", ARCH_ARM);
++ 	scriptInterface.SetProperty(settings, "arch_aarch64", ARCH_AARCH64);
+++	scriptInterface.SetProperty(settings, "arch_mips", ARCH_MIPS);
++ 
++ #ifdef NDEBUG
++ 	scriptInterface.SetProperty(settings, "build_debug", 0);

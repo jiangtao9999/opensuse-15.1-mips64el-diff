@@ -1,0 +1,98 @@
+Index: benchmark.spec
+===================================================================
+--- benchmark.spec	(revision 1)
++++ benchmark.spec	(working copy)
+@@ -26,6 +26,7 @@
+ Group:          Development/Libraries/C and C++
+ Url:            https://github.com/google/benchmark
+ Source:         https://github.com/google/benchmark/archive/v%{version}.tar.gz#/%{name}-%{version}.tar.gz
++Patch1:         benchmark-fix-test-fails.patch
+ BuildRequires:  cmake
+ BuildRequires:  gcc-c++
+ BuildRequires:  git-core
+@@ -52,6 +53,7 @@
+ 
+ %prep
+ %setup -q
++%patch1 -p1
+ 
+ %build
+ %if %{__isa_bits} == 64
+Index: benchmark-fix-test-fails.patch
+===================================================================
+--- benchmark-fix-test-fails.patch	(revision 0)
++++ benchmark-fix-test-fails.patch	(working copy)
+@@ -0,0 +1,73 @@
++diff -Nuir benchmark-1.4.0-orig/test/reporter_output_test.cc benchmark-1.4.0/test/reporter_output_test.cc
++--- benchmark-1.4.0-orig/test/reporter_output_test.cc	2020-04-28 21:29:19.529347803 +0800
+++++ benchmark-1.4.0/test/reporter_output_test.cc	2020-04-28 21:39:11.923619271 +0800
++@@ -77,6 +77,7 @@
++ 
++ void BM_bytes_per_second(benchmark::State& state) {
++   for (auto _ : state) {
+++  benchmark::DoNotOptimize(state.iterations());
++   }
++   state.SetBytesProcessed(1);
++ }
++@@ -99,6 +100,7 @@
++ 
++ void BM_items_per_second(benchmark::State& state) {
++   for (auto _ : state) {
+++  benchmark::DoNotOptimize(state.iterations());
++   }
++   state.SetItemsProcessed(1);
++ }
++@@ -201,6 +203,7 @@
++ 
++ void BM_Complexity_O1(benchmark::State& state) {
++   for (auto _ : state) {
+++  benchmark::DoNotOptimize(state.iterations());
++   }
++   state.SetComplexityN(state.range(0));
++ }
++diff -Nuir benchmark-1.4.0-orig/test/user_counters_tabular_test.cc benchmark-1.4.0/test/user_counters_tabular_test.cc
++--- benchmark-1.4.0-orig/test/user_counters_tabular_test.cc	2020-04-28 21:29:19.529347803 +0800
+++++ benchmark-1.4.0/test/user_counters_tabular_test.cc	2020-04-28 21:33:06.725215174 +0800
++@@ -99,6 +99,7 @@
++ 
++ void BM_CounterRates_Tabular(benchmark::State& state) {
++   for (auto _ : state) {
+++  benchmark::DoNotOptimize(state.iterations());
++   }
++   namespace bm = benchmark;
++   state.counters.insert({
++diff -Nuir benchmark-1.4.0-orig/test/user_counters_test.cc benchmark-1.4.0/test/user_counters_test.cc
++--- benchmark-1.4.0-orig/test/user_counters_test.cc	2020-04-28 21:29:19.529347803 +0800
+++++ benchmark-1.4.0/test/user_counters_test.cc	2020-04-28 21:41:47.782032117 +0800
++@@ -52,6 +52,7 @@
++ namespace { int num_calls1 = 0; }
++ void BM_Counters_WithBytesAndItemsPSec(benchmark::State& state) {
++   for (auto _ : state) {
+++  benchmark::DoNotOptimize(state.iterations());
++   }
++   state.counters["foo"] = 1;
++   state.counters["bar"] = ++num_calls1;
++@@ -93,6 +94,7 @@
++ 
++ void BM_Counters_Rate(benchmark::State& state) {
++   for (auto _ : state) {
+++  benchmark::DoNotOptimize(state.iterations());
++   }
++   namespace bm = benchmark;
++   state.counters["foo"] = bm::Counter{1, bm::Counter::kIsRate};
++@@ -154,6 +156,7 @@
++ 
++ void BM_Counters_AvgThreads(benchmark::State& state) {
++   for (auto _ : state) {
+++  benchmark::DoNotOptimize(state.iterations());
++   }
++   namespace bm = benchmark;
++   state.counters["foo"] = bm::Counter{1, bm::Counter::kAvgThreads};
++@@ -185,6 +188,7 @@
++ 
++ void BM_Counters_AvgThreadsRate(benchmark::State& state) {
++   for (auto _ : state) {
+++  benchmark::DoNotOptimize(state.iterations());
++   }
++   namespace bm = benchmark;
++   state.counters["foo"] = bm::Counter{1, bm::Counter::kAvgThreadsRate};

@@ -1,0 +1,12 @@
+Index: fsharp.spec
+===================================================================
+--- fsharp.spec	(revision 1)
++++ fsharp.spec	(working copy)
+@@ -34,6 +34,7 @@
+ BuildRequires:  mono-winfxcore >= 4.0.0
+ BuildArch:      noarch
+ Provides:       mono(System.Collections.Immutable) = 1.2.0.0
++ExcludeArch:    %mips
+ 
+ %description
+ F# is a mature, open source, functional-first programming language

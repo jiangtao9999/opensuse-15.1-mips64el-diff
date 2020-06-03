@@ -1,0 +1,13 @@
+Index: scidavis.spec
+===================================================================
+--- scidavis.spec	(revision 1)
++++ scidavis.spec	(working copy)
+@@ -73,7 +73,7 @@
+ %ifarch x86_64 ppc64 ppc64le
+ export QMAKESPEC="linux-g++-64"
+ %endif
+-%ifarch aarch64
++%ifarch aarch64 %mips64
+ # aarch64 uses QMAKESPEC="linux-g++" but will install in lib64
+ sed -i "s/linux-g++-64: libsuff = 64/libsuff = 64/g" config.pri
+ %endif

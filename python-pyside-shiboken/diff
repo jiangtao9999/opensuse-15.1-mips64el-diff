@@ -1,0 +1,7 @@
+Index: python3-pyside-shiboken-rpmlintrc
+===================================================================
+--- python3-pyside-shiboken-rpmlintrc	(revision 0)
++++ python3-pyside-shiboken-rpmlintrc	(working copy)
+@@ -0,0 +1,2 @@
++addFilter("shlib-policy-name-error")
++

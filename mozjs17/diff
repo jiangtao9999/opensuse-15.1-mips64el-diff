@@ -1,0 +1,126 @@
+Index: mozjs17.spec
+===================================================================
+--- mozjs17.spec	(revision 1)
++++ mozjs17.spec	(working copy)
+@@ -36,6 +36,7 @@
+ Patch5:         aarch64-64k-page.patch
+ Patch6:         mozjs-support-48bit-va.patch
+ Patch7:         gcc7-fix-warning.patch
++Patch8:         mozjs17.0.0-fix-mips64el.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ BuildRequires:  autoconf213
+ BuildRequires:  gcc-c++
+@@ -83,6 +84,7 @@
+ %patch5 -p1
+ %patch6 -p1
+ %patch7 -p1
++%patch8 -p1
+ 
+ %build
+ # no need to add build time to binaries
+Index: mozjs17.0.0-fix-mips64el.patch
+===================================================================
+--- mozjs17.0.0-fix-mips64el.patch	(revision 0)
++++ mozjs17.0.0-fix-mips64el.patch	(working copy)
+@@ -0,0 +1,101 @@
++diff -Nrui mozjs17.0.0-orig/js/src/Makefile.in mozjs17.0.0/js/src/Makefile.in
++--- mozjs17.0.0-orig/js/src/Makefile.in	2019-12-24 20:02:05.793327792 +0800
+++++ mozjs17.0.0/js/src/Makefile.in	2019-12-24 20:04:03.138469693 +0800
++@@ -282,9 +282,6 @@
++ ifeq (sparc, $(findstring sparc,$(TARGET_CPU)))
++ ASFILES +=	TrampolineSparc.s
++ endif
++-ifeq (mips, $(findstring mips,$(TARGET_CPU)))
++-CPPSRCS +=	TrampolineMIPS.cpp
++-endif
++ #
++ # END enclude sources for the method JIT
++ #############################################
++@@ -328,7 +325,7 @@
++            $(NONE)
++ endif
++ 
++-ifneq (,$(filter arm% sparc %86 x86_64 mips%,$(TARGET_CPU)))
+++ifneq (,$(filter arm% sparc %86 x86_64,$(TARGET_CPU)))
++ ENABLE_YARR_JIT = 1
++ DEFINES += -DENABLE_YARR_JIT=1
++ 
++diff -Nrui mozjs17.0.0-orig/js/src/configure mozjs17.0.0/js/src/configure
++--- mozjs17.0.0-orig/js/src/configure	2019-12-24 20:02:05.789389658 +0800
+++++ mozjs17.0.0/js/src/configure	2019-12-24 20:07:44.702358288 +0800
++@@ -5757,7 +5757,7 @@
++     CPU_ARCH=arm
++     ;;
++ 
++-mips|mipsel)
+++mips|mipsel|mips64|mips64el)
++     CPU_ARCH="mips"
++     ;;
++ esac
++@@ -8359,6 +8359,26 @@
++ 
++     fi
++     ;;
+++mips64*-*)
+++    ENABLE_METHODJIT=
+++    ENABLE_MONOIC=
+++    ENABLE_POLYIC=
+++    ENABLE_METHODJIT_TYPED_ARRAY=
+++    cat >> confdefs.pytmp <<\EOF
+++        (''' JS_CPU_MIPS ''', ' 1 ')
+++EOF
+++cat >> confdefs.h <<\EOF
+++#define JS_CPU_MIPS 1
+++EOF
+++
+++    cat >> confdefs.pytmp <<\EOF
+++        (''' JS_PUNBOX64 ''', ' 1 ')
+++EOF
+++cat >> confdefs.h <<\EOF
+++#define JS_PUNBOX64 1
+++EOF
+++
+++    ;;
++ mips*-*)
++     ENABLE_METHODJIT=1
++     ENABLE_MONOIC=1
++diff -Nrui mozjs17.0.0-orig/js/src/configure.in mozjs17.0.0/js/src/configure.in
++--- mozjs17.0.0-orig/js/src/configure.in	2019-12-24 20:02:05.781513391 +0800
+++++ mozjs17.0.0/js/src/configure.in	2019-12-24 20:04:03.150195526 +0800
++@@ -1125,7 +1125,7 @@
++     CPU_ARCH=aarch64
++     ;;
++ 
++-mips|mipsel)
+++mips|mipsel|mips64|mips64el)
++     CPU_ARCH="mips"
++     ;;
++ esac
++@@ -2249,6 +2249,14 @@
++     AC_DEFINE(JS_NUNBOX32)
++     fi
++     ;;
+++mips64*-*)
+++    ENABLE_METHODJIT=
+++    ENABLE_MONOIC=
+++    ENABLE_POLYIC=
+++    ENABLE_METHODJIT_TYPED_ARRAY=
+++    AC_DEFINE(JS_CPU_MIPS)
+++    AC_DEFINE(JS_PUNBOX64)
+++    ;;
++ mips*-*)
++     ENABLE_METHODJIT=1
++     ENABLE_MONOIC=1
++diff -Nrui mozjs17.0.0-orig/js/src/gc/Heap.h mozjs17.0.0/js/src/gc/Heap.h
++--- mozjs17.0.0-orig/js/src/gc/Heap.h	2019-12-24 20:02:06.375818193 +0800
+++++ mozjs17.0.0/js/src/gc/Heap.h	2019-12-24 20:04:03.337808841 +0800
++@@ -116,6 +116,9 @@
++ #elif defined(__powerpc__) || defined(__aarch64__)
++ const size_t PageShift = 16;
++ const size_t ArenaShift = 12;
+++#elif defined(__mips__)
+++const size_t PageShift = 14;
+++const size_t ArenaShift = PageShift;
++ #else
++ const size_t PageShift = 12;
++ const size_t ArenaShift = PageShift;

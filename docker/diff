@@ -1,0 +1,303 @@
+Index: docker.spec
+===================================================================
+--- docker.spec	(revision 1)
++++ docker.spec	(working copy)
+@@ -90,6 +90,7 @@
+ # SUSE-FEATURE: Add support to mirror inofficial/private registries
+ #               (https://github.com/docker/docker/pull/34319)
+ Patch500:       private-registry-0001-Add-private-registry-mirror-support.patch
++Patch600:       docker-fix-mips64el.patch
+ BuildRequires:  audit
+ BuildRequires:  bash-completion
+ BuildRequires:  ca-certificates
+@@ -279,6 +280,9 @@
+ # PATCH-SUSE: Mirror patch.
+ %patch500 -p1
+ %endif
++%ifarch %mips
++%patch600 -p1
++%endif
+ 
+ cp %{SOURCE7} .
+ cp %{SOURCE9} .
+@@ -299,7 +303,9 @@
+ # compiled-into-the-binary GOROOT.
+ export GOROOT="$(GOROOT= go env GOROOT)"
+ # Make sure we always build PIC code. bsc#1048046
++%ifnarch %mips
+ export BUILDFLAGS="-buildmode=pie"
++%endif
+ # Specify all of the versioning information. We use SOURCE_DATE_EPOCH if it's
+ # been injected by rpmbuild, otherwise we use the hardcoded git_commit_epoch
+ # generated above. boo#1064781
+@@ -323,7 +329,9 @@
+ ./hack/make.sh dynbinary
+ # build the tests binary
+ GOPATH=$(pwd)/vendor:$(pwd)/.gopath/ go test \
++%ifnarch %mips
+ 	-buildmode=pie \
++%endif
+ 	-tags "$DOCKER_BUILDTAGS daemon autogen" \
+ 	-c github.com/docker/docker/integration-cli -o tests.main
+ popd
+@@ -333,7 +341,11 @@
+ ./scripts/build/dynbinary
+ 
+ mkdir -p ./man/man1
++%ifnarch %mips
+ go build -buildmode=pie -o gen-manpages github.com/docker/cli/man
++%else
++go build -o gen-manpages github.com/docker/cli/man
++%endif
+ ./gen-manpages --root "$(pwd)" --target "$(pwd)/man/man1"
+ ./man/md2man-all.sh
+ popd
+Index: docker-fix-mips64el.patch
+===================================================================
+--- docker-fix-mips64el.patch	(revision 0)
++++ docker-fix-mips64el.patch	(working copy)
+@@ -0,0 +1,244 @@
++--- docker-18.09.1_ce.4c52b901c6cb-orig/components/cli/vendor/github.com/docker/docker/pkg/system/stat_linux.go	2020-03-20 15:57:49.814046255 +0800
+++++ docker-18.09.1_ce.4c52b901c6cb/components/cli/vendor/github.com/docker/docker/pkg/system/stat_linux.go	2020-03-20 16:27:22.635238388 +0800
++@@ -8,7 +8,7 @@
++ 		mode: s.Mode,
++ 		uid:  s.Uid,
++ 		gid:  s.Gid,
++-		rdev: s.Rdev,
+++		rdev: uint64(s.Rdev),
++ 		mtim: s.Mtim}, nil
++ }
++ 
++--- docker-18.09.1_ce.4c52b901c6cb-orig/components/cli/vendor/github.com/docker/docker/pkg/signal/signal_linux.go	2020-03-20 15:57:49.810109906 +0800
+++++ docker-18.09.1_ce.4c52b901c6cb/components/cli/vendor/github.com/docker/docker/pkg/signal/signal_linux.go	2020-03-20 16:27:59.548795375 +0800
++@@ -32,7 +32,6 @@
++ 	"PWR":      unix.SIGPWR,
++ 	"QUIT":     unix.SIGQUIT,
++ 	"SEGV":     unix.SIGSEGV,
++-	"STKFLT":   unix.SIGSTKFLT,
++ 	"STOP":     unix.SIGSTOP,
++ 	"SYS":      unix.SIGSYS,
++ 	"TERM":     unix.SIGTERM,
++--- docker-18.09.1_ce.4c52b901c6cb-orig/components/engine/vendor/github.com/vishvananda/netns/netns_linux_mips64le.go	1970-01-01 08:00:00.000000000 +0800
+++++ docker-18.09.1_ce.4c52b901c6cb/components/engine/vendor/github.com/vishvananda/netns/netns_linux_mips64le.go	2020-03-20 16:37:09.855103397 +0800
++@@ -0,0 +1,7 @@
+++// +build linux,mips64le
+++
+++package netns
+++
+++const (
+++	SYS_SETNS = 5303
+++)
++--- docker-18.09.1_ce.4c52b901c6cb-orig/components/engine/pkg/loopback/loopback.go	2020-03-20 15:57:50.691236870 +0800
+++++ docker-18.09.1_ce.4c52b901c6cb/components/engine/pkg/loopback/loopback.go	2020-03-20 16:39:59.547556274 +0800
++@@ -54,7 +54,7 @@
++ 		}
++ 
++ 		dev, inode, err := getLoopbackBackingFile(file)
++-		if err == nil && dev == targetDevice && inode == targetInode {
+++		if err == nil && dev == uint64(targetDevice) && inode == targetInode {
++ 			return file
++ 		}
++ 		file.Close()
++--- docker-18.09.1_ce.4c52b901c6cb-orig/components/engine/vendor/github.com/containerd/containerd/signal_map_linux.go	2020-03-20 15:57:50.219296941 +0800
+++++ docker-18.09.1_ce.4c52b901c6cb/components/engine/vendor/github.com/containerd/containerd/signal_map_linux.go	2020-03-20 16:40:36.576017387 +0800
++@@ -42,7 +42,6 @@
++ 	"PWR":    unix.SIGPWR,
++ 	"QUIT":   unix.SIGQUIT,
++ 	"SEGV":   unix.SIGSEGV,
++-	"STKFLT": unix.SIGSTKFLT,
++ 	"STOP":   unix.SIGSTOP,
++ 	"SYS":    unix.SIGSYS,
++ 	"TERM":   unix.SIGTERM,
++--- docker-18.09.1_ce.4c52b901c6cb-orig/components/engine/pkg/signal/signal_linux.go	2020-03-20 17:14:45.693520063 +0800
+++++ docker-18.09.1_ce.4c52b901c6cb/components/engine/pkg/signal/signal_linux.go	2020-03-20 17:15:45.258749567 +0800
++@@ -32,7 +32,6 @@
++ 	"PWR":      unix.SIGPWR,
++ 	"QUIT":     unix.SIGQUIT,
++ 	"SEGV":     unix.SIGSEGV,
++-	"STKFLT":   unix.SIGSTKFLT,
++ 	"STOP":     unix.SIGSTOP,
++ 	"SYS":      unix.SIGSYS,
++ 	"TERM":     unix.SIGTERM,
++--- docker-18.09.1_ce.4c52b901c6cb-orig/components/engine/pkg/system/stat_linux.go	2020-03-20 17:14:45.701336531 +0800
+++++ docker-18.09.1_ce.4c52b901c6cb/components/engine/pkg/system/stat_linux.go	2020-03-20 17:15:20.531430815 +0800
++@@ -8,7 +8,7 @@
++ 		mode: s.Mode,
++ 		uid:  s.Uid,
++ 		gid:  s.Gid,
++-		rdev: s.Rdev,
+++		rdev: uint64(s.Rdev),
++ 		mtim: s.Mtim}, nil
++ }
++ 
++--- docker-18.09.1_ce.4c52b901c6cb-orig/components/engine/daemon/graphdriver/devmapper/deviceset.go	2020-03-20 17:23:07.934152052 +0800
+++++ docker-18.09.1_ce.4c52b901c6cb/components/engine/daemon/graphdriver/devmapper/deviceset.go	2020-03-20 17:26:54.324187722 +0800
++@@ -1528,8 +1528,8 @@
++ 	}
++ 
++ 	dev := stat.Rdev
++-	majorNum := major(dev)
++-	minorNum := minor(dev)
+++	majorNum := major(uint64(dev))
+++	minorNum := minor(uint64(dev))
++ 
++ 	logrus.WithField("storage-driver", "devicemapper").Debugf("Major:Minor for device: %s is:%v:%v", file.Name(), majorNum, minorNum)
++ 	return majorNum, minorNum, nil
++@@ -1738,7 +1738,7 @@
++ 	//	- Managed by docker
++ 	//	- The target of this device is at major <maj> and minor <min>
++ 	//	- If <inode> is defined, use that file inside the device as a loopback image. Otherwise use the device itself.
++-	devices.devicePrefix = fmt.Sprintf("docker-%d:%d-%d", major(st.Dev), minor(st.Dev), st.Ino)
+++	devices.devicePrefix = fmt.Sprintf("docker-%d:%d-%d", major(uint64(st.Dev)), minor(uint64(st.Dev)), st.Ino)
++ 	logger.Debugf("Generated prefix: %s", devices.devicePrefix)
++ 
++ 	// Check for the existence of the thin-pool device
++--- docker-18.09.1_ce.4c52b901c6cb-orig/components/engine/daemon/graphdriver/copy/copy.go	2020-03-20 17:23:07.930241851 +0800
+++++ docker-18.09.1_ce.4c52b901c6cb/components/engine/daemon/graphdriver/copy/copy.go	2020-03-20 17:24:48.107978784 +0800
++@@ -154,7 +154,7 @@
++ 
++ 		switch f.Mode() & os.ModeType {
++ 		case 0: // Regular file
++-			id := fileID{dev: stat.Dev, ino: stat.Ino}
+++			id := fileID{dev: uint64(stat.Dev), ino: stat.Ino}
++ 			if copyMode == Hardlink {
++ 				isHardlink = true
++ 				if err2 := os.Link(srcPath, dstPath); err2 != nil {
++--- docker-18.09.1_ce.4c52b901c6cb-orig/components/engine/vendor/github.com/kr/pty/ztypes_mips64le.go	1970-01-01 08:00:00.000000000 +0800
+++++ docker-18.09.1_ce.4c52b901c6cb/components/engine/vendor/github.com/kr/pty/ztypes_mips64le.go	2020-03-20 17:44:45.563937726 +0800
++@@ -0,0 +1,11 @@
+++// +build mips64le
+++
+++// Created by cgo -godefs - DO NOT EDIT
+++// cgo -godefs types.go
+++
+++package pty
+++
+++type (
+++	_C_int  int32
+++	_C_uint uint32
+++)
++--- docker-18.09.1_ce.4c52b901c6cb-orig/components/cli/scripts/build/dynbinary	2020-03-20 17:54:16.734177939 +0800
+++++ docker-18.09.1_ce.4c52b901c6cb/components/cli/scripts/build/dynbinary	2020-03-20 17:55:12.732998226 +0800
++@@ -9,6 +9,6 @@
++ 
++ echo "Building dynamically linked $TARGET"
++ export CGO_ENABLED=1
++-go build -o "${TARGET}" -tags pkcs11 --ldflags "${LDFLAGS}" -buildmode=pie "${SOURCE}"
+++go build -o "${TARGET}" -tags pkcs11 --ldflags "${LDFLAGS}" "${SOURCE}"
++ 
++ ln -sf "$(basename "${TARGET}")" build/docker
++--- docker-18.09.1_ce.4c52b901c6cb-orig/components/cli/vendor/github.com/containerd/continuity/sysx/xattr_linux_mips64le.go	1970-01-01 08:00:00.000000000 +0800
+++++ docker-18.09.1_ce.4c52b901c6cb/components/cli/vendor/github.com/containerd/continuity/sysx/xattr_linux_mips64le.go	2020-03-20 18:02:56.404687892 +0800
++@@ -0,0 +1,111 @@
+++// mksyscall.pl xattr_linux.go
+++// MACHINE GENERATED BY THE COMMAND ABOVE; DO NOT EDIT
+++
+++package sysx
+++
+++import (
+++	"syscall"
+++	"unsafe"
+++)
+++
+++// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT
+++
+++func llistxattr(path string, dest []byte) (sz int, err error) {
+++	var _p0 *byte
+++	_p0, err = syscall.BytePtrFromString(path)
+++	if err != nil {
+++		return
+++	}
+++	var _p1 unsafe.Pointer
+++	if len(dest) > 0 {
+++		_p1 = unsafe.Pointer(&dest[0])
+++	} else {
+++		_p1 = unsafe.Pointer(&_zero)
+++	}
+++	r0, _, e1 := syscall.Syscall(syscall.SYS_LLISTXATTR, uintptr(unsafe.Pointer(_p0)), uintptr(_p1), uintptr(len(dest)))
+++	use(unsafe.Pointer(_p0))
+++	sz = int(r0)
+++	if e1 != 0 {
+++		err = errnoErr(e1)
+++	}
+++	return
+++}
+++
+++// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT
+++
+++func lremovexattr(path string, attr string) (err error) {
+++	var _p0 *byte
+++	_p0, err = syscall.BytePtrFromString(path)
+++	if err != nil {
+++		return
+++	}
+++	var _p1 *byte
+++	_p1, err = syscall.BytePtrFromString(attr)
+++	if err != nil {
+++		return
+++	}
+++	_, _, e1 := syscall.Syscall(syscall.SYS_LREMOVEXATTR, uintptr(unsafe.Pointer(_p0)), uintptr(unsafe.Pointer(_p1)), 0)
+++	use(unsafe.Pointer(_p0))
+++	use(unsafe.Pointer(_p1))
+++	if e1 != 0 {
+++		err = errnoErr(e1)
+++	}
+++	return
+++}
+++
+++// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT
+++
+++func lsetxattr(path string, attr string, data []byte, flags int) (err error) {
+++	var _p0 *byte
+++	_p0, err = syscall.BytePtrFromString(path)
+++	if err != nil {
+++		return
+++	}
+++	var _p1 *byte
+++	_p1, err = syscall.BytePtrFromString(attr)
+++	if err != nil {
+++		return
+++	}
+++	var _p2 unsafe.Pointer
+++	if len(data) > 0 {
+++		_p2 = unsafe.Pointer(&data[0])
+++	} else {
+++		_p2 = unsafe.Pointer(&_zero)
+++	}
+++	_, _, e1 := syscall.Syscall6(syscall.SYS_LSETXATTR, uintptr(unsafe.Pointer(_p0)), uintptr(unsafe.Pointer(_p1)), uintptr(_p2), uintptr(len(data)), uintptr(flags), 0)
+++	use(unsafe.Pointer(_p0))
+++	use(unsafe.Pointer(_p1))
+++	if e1 != 0 {
+++		err = errnoErr(e1)
+++	}
+++	return
+++}
+++
+++// THIS FILE IS GENERATED BY THE COMMAND AT THE TOP; DO NOT EDIT
+++
+++func lgetxattr(path string, attr string, dest []byte) (sz int, err error) {
+++	var _p0 *byte
+++	_p0, err = syscall.BytePtrFromString(path)
+++	if err != nil {
+++		return
+++	}
+++	var _p1 *byte
+++	_p1, err = syscall.BytePtrFromString(attr)
+++	if err != nil {
+++		return
+++	}
+++	var _p2 unsafe.Pointer
+++	if len(dest) > 0 {
+++		_p2 = unsafe.Pointer(&dest[0])
+++	} else {
+++		_p2 = unsafe.Pointer(&_zero)
+++	}
+++	r0, _, e1 := syscall.Syscall6(syscall.SYS_LGETXATTR, uintptr(unsafe.Pointer(_p0)), uintptr(unsafe.Pointer(_p1)), uintptr(_p2), uintptr(len(dest)), 0, 0)
+++	use(unsafe.Pointer(_p0))
+++	use(unsafe.Pointer(_p1))
+++	sz = int(r0)
+++	if e1 != 0 {
+++		err = errnoErr(e1)
+++	}
+++	return
+++}

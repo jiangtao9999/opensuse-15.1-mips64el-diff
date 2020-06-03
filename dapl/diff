@@ -1,0 +1,62 @@
+Index: dapl-debug.spec
+===================================================================
+--- dapl-debug.spec	(revision 1)
++++ dapl-debug.spec	(working copy)
+@@ -1,7 +1,7 @@
+ #
+ # spec file for package dapl-debug
+ #
+-# Copyright (c) 2018 SUSE LINUX GmbH, Nuernberg, Germany.
++# Copyright (c) 2020 SUSE LINUX GmbH, Nuernberg, Germany.
+ #
+ # All modifications and additions to the file contributed by third parties
+ # remain the property of their copyright owners, unless otherwise agreed
+@@ -12,7 +12,7 @@
+ # license that conforms to the Open Source Definition (Version 1.9)
+ # published by the Open Source Initiative.
+ 
+-# Please submit bugfixes or comments via http://bugs.opensuse.org/
++# Please submit bugfixes or comments via https://bugs.opensuse.org/
+ #
+ 
+ 
+@@ -39,7 +39,7 @@
+ BuildRequires:  libibverbs-devel
+ BuildRequires:  librdmacm-devel
+ BuildRequires:  libtool
+-ExcludeArch:    armv7hl
++ExcludeArch:    armv7hl %mips
+ 
+ %if "%name" == "dapl"
+ Conflicts:      dapl-debug
+Index: dapl.spec
+===================================================================
+--- dapl.spec	(revision 1)
++++ dapl.spec	(working copy)
+@@ -1,7 +1,7 @@
+ #
+ # spec file for package dapl
+ #
+-# Copyright (c) 2018 SUSE LINUX GmbH, Nuernberg, Germany.
++# Copyright (c) 2020 SUSE LINUX GmbH, Nuernberg, Germany.
+ #
+ # All modifications and additions to the file contributed by third parties
+ # remain the property of their copyright owners, unless otherwise agreed
+@@ -12,7 +12,7 @@
+ # license that conforms to the Open Source Definition (Version 1.9)
+ # published by the Open Source Initiative.
+ 
+-# Please submit bugfixes or comments via http://bugs.opensuse.org/
++# Please submit bugfixes or comments via https://bugs.opensuse.org/
+ #
+ 
+ 
+@@ -39,7 +39,7 @@
+ BuildRequires:  libibverbs-devel
+ BuildRequires:  librdmacm-devel
+ BuildRequires:  libtool
+-ExcludeArch:    armv7hl
++ExcludeArch:    armv7hl %mips
+ 
+ %if "%name" == "dapl"
+ Conflicts:      dapl-debug

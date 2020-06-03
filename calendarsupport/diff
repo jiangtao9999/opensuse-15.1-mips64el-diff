@@ -1,0 +1,13 @@
+Index: calendarsupport.spec
+===================================================================
+--- calendarsupport.spec	(revision 1)
++++ calendarsupport.spec	(working copy)
+@@ -50,7 +50,7 @@
+ BuildRequires:  pkgconfig(Qt5Widgets) >= 5.4.0
+ Recommends:     %{name}-lang
+ # It can only build on the same platforms as Qt Webengine
+-ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 mips mips64
++ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 %mips
+ %if 0%{?suse_version} > 1325
+ BuildRequires:  libboost_headers-devel
+ %else

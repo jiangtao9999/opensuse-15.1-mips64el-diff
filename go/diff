@@ -1,0 +1,13 @@
+Index: go.spec
+===================================================================
+--- go.spec	(revision 1)
++++ go.spec	(working copy)
+@@ -31,7 +31,7 @@
+ Url:            http://golang.org
+ Source:         README
+ Recommends:     go-doc = %{version}
+-ExclusiveArch:  %ix86 x86_64 %arm aarch64 ppc64 ppc64le s390x
++ExclusiveArch:  %ix86 x86_64 %arm aarch64 ppc64 ppc64le s390x %mips
+ Requires:       go%{short_version}
+ 
+ %description

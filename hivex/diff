@@ -1,0 +1,14 @@
+Index: hivex.spec
+===================================================================
+--- hivex.spec	(revision 1)
++++ hivex.spec	(working copy)
+@@ -201,7 +201,9 @@
+ %files -n ocaml-hivex-devel
+ %defattr(-,root,root)
+ %{_libdir}/ocaml/hivex/*hivex.a
++%ifnarch %mips
+ %{_libdir}/ocaml/hivex/*hivex.cmx*
++%endif
+ %{_libdir}/ocaml/hivex/hivex.mli
+ %endif
+ 

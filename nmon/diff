@@ -1,0 +1,13 @@
+Index: nmon.spec
+===================================================================
+--- nmon.spec	(revision 1)
++++ nmon.spec	(working copy)
+@@ -80,7 +80,7 @@
+ cc $CFLAGS -D PPC \
+   $LDFLAGS
+ %endif
+-%ifarch s390x
++%ifarch s390x %mips
+ cc $CFLAGS -D MAINFRAME \
+   $LDFLAGS
+ %endif

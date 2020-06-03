@@ -1,0 +1,13 @@
+Index: MyGUI.spec
+===================================================================
+--- MyGUI.spec	(revision 1)
++++ MyGUI.spec	(working copy)
+@@ -138,7 +138,7 @@
+ 		-DCMAKE_INSTALL_PREFIX=%{_prefix} \
+ 		-DCMAKE_SKIP_RPATH=YES \
+ 		-DCMAKE_BUILD_TYPE=release \
+-%ifarch x86_64 aarch64 ppc64 ppc64le s390x
++%ifarch x86_64 aarch64 ppc64 ppc64le s390x %mips64
+ 		-DLIB_SUFFIX=64 \
+ %endif
+ 		-DMYGUI_STATIC=FALSE \

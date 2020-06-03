@@ -1,0 +1,3332 @@
+diff -Nuir binutils-orig/_constraints binutils/_constraints
+--- binutils-orig/_constraints	2020-06-03 10:14:30.316329266 +0800
++++ binutils/_constraints	1970-01-01 08:00:00.000000000 +0800
+@@ -1,19 +0,0 @@
+-<constraints>
+-  <hardware>
+-    <disk>
+-      <size unit="G">6</size>
+-    </disk>
+-  </hardware>
+-  <overwrite>
+-    <conditions>
+-      <arch>ppc</arch>
+-      <arch>ppc64</arch>
+-      <arch>ppc64le</arch>
+-    </conditions>
+-    <hardware>
+-      <physicalmemory>
+-        <size unit="G">4</size>
+-      </physicalmemory>
+-    </hardware>
+-  </overwrite>
+-</constraints>
+diff -Nuir binutils-orig/binutils-mips-default-n64-1.patch binutils/binutils-mips-default-n64-1.patch
+--- binutils-orig/binutils-mips-default-n64-1.patch	1970-01-01 08:00:00.000000000 +0800
++++ binutils/binutils-mips-default-n64-1.patch	2020-06-03 10:14:36.866118344 +0800
+@@ -0,0 +1,36 @@
++From 322022dc94ff33c9b84d4c889b6e5dbda9b170a8 Mon Sep 17 00:00:00 2001
++From: Chenghua Xu <xuchenghua@loongson.cn>
++Date: Thu, 7 Dec 2017 10:13:16 +0800
++Subject: [PATCH] Set gas default abi to n64
++
++---
++ gas/configure                   | 2 +-
++ ld/testsuite/config/default.exp | 2 +-
++ 2 files changed, 2 insertions(+), 2 deletions(-)
++
++diff --git a/gas/configure b/gas/configure
++index 8bbf78642c..124ddf4e29 100755
++--- a/gas/configure
+++++ b/gas/configure
++@@ -12727,7 +12727,7 @@ _ACEOF
++ 	case ${target} in
++ 	  mips64*-linux* | mips-sgi-irix6* | mips64*-freebsd* \
++ 	  | mips64*-kfreebsd*-gnu | mips64*-ps2-elf*)
++-	    mips_default_abi=N32_ABI
+++	    mips_default_abi=N64_ABI
++ 	    ;;
++ 	  mips*-linux* | mips*-freebsd* | mips*-kfreebsd*-gnu)
++ 	    mips_default_abi=O32_ABI
++diff --git a/ld/testsuite/config/default.exp b/ld/testsuite/config/default.exp
++index 704ac300e4..5ed1bc960e 100644
++--- a/ld/testsuite/config/default.exp
+++++ b/ld/testsuite/config/default.exp
++@@ -103,7 +103,7 @@ if {[istarget mips64*-*-linux*] &&
++     (![board_info [target_info name] exists multilib_flags] ||
++      ![string match "*-mabi" [board_info [target_info name] multilib_flags]])
++    } {
++-    append gcc_B_opt " -mabi=n32"
+++    append gcc_B_opt " -mabi=64"
++ }
++ 
++ if { [istarget rx-*-*] } {
+diff -Nuir binutils-orig/binutils-mips-default-n64-2.patch binutils/binutils-mips-default-n64-2.patch
+--- binutils-orig/binutils-mips-default-n64-2.patch	1970-01-01 08:00:00.000000000 +0800
++++ binutils/binutils-mips-default-n64-2.patch	2020-06-03 10:14:36.866118344 +0800
+@@ -0,0 +1,25 @@
++From e96d53abca68a14232fd715a6f2fc365bd2ca94b Mon Sep 17 00:00:00 2001
++From: Paul Hua <paul.hua.gm@gmail.com>
++Date: Mon, 5 Jun 2017 18:07:18 +0800
++Subject: [PATCH] Set ld default target to n64 abi.
++
++    ld/configure.tgt: set targ_emul to elf64ltsmip.
++---
++ ld/configure.tgt | 4 ++--
++ 1 file changed, 2 insertions(+), 2 deletions(-)
++
++diff --git a/ld/configure.tgt b/ld/configure.tgt
++index fad8b2e5c8..ad60883ac8 100644
++--- a/ld/configure.tgt
+++++ b/ld/configure.tgt
++@@ -464,8 +464,8 @@ mips*el-*-vxworks*)	targ_emul=elf32elmipvxworks
++ mips*-*-vxworks*)	targ_emul=elf32ebmipvxworks
++ 			targ_extra_emuls="elf32elmipvxworks" ;;
++ mips*-*-windiss)	targ_emul=elf32mipswindiss ;;
++-mips64*el-*-linux-*)	targ_emul=elf32ltsmipn32
++-			targ_extra_emuls="elf32btsmipn32 elf32ltsmip elf32btsmip elf64ltsmip elf64btsmip"
+++mips64*el-*-linux-*)	targ_emul=elf64ltsmip
+++			targ_extra_emuls="elf64ltsmip elf32ltsmipn32 elf32ltsmip elf32btsmipn32 elf32btsmip elf64btsmip"
++ 			targ_extra_libpath=$targ_extra_emuls ;;
++ mips64*-*-linux-*)	targ_emul=elf32btsmipn32
++ 			targ_extra_emuls="elf32ltsmipn32 elf32btsmip elf32ltsmip elf64btsmip elf64ltsmip"
+diff -Nuir binutils-orig/binutils-mips-goldld-add-gnu-hash.patch binutils/binutils-mips-goldld-add-gnu-hash.patch
+--- binutils-orig/binutils-mips-goldld-add-gnu-hash.patch	1970-01-01 08:00:00.000000000 +0800
++++ binutils/binutils-mips-goldld-add-gnu-hash.patch	2020-06-03 10:14:36.866118344 +0800
+@@ -0,0 +1,1514 @@
++diff --git a/elfcpp/elfcpp.h b/elfcpp/elfcpp.h
++index d94db26..309ad97 100644
++--- a/elfcpp/elfcpp.h
+++++ b/elfcpp/elfcpp.h
++@@ -409,6 +409,8 @@  enum SHT
++   SHT_MIPS_OPTIONS = 0x7000000d,
++   // ABI related flags section.
++   SHT_MIPS_ABIFLAGS = 0x7000002a,
+++  // MIPS specific section type - GNU hash for MIPS
+++  SHT_MIPS_XHASH = 0x7000002b,
++
++   // AARCH64-specific section type.
++   SHT_AARCH64_ATTRIBUTES = 0x70000003,
++@@ -879,6 +881,8 @@  enum DT
++   DT_MIPS_RWPLT = 0x70000034,
++   // Relative offset of run time loader map, used for debugging.
++   DT_MIPS_RLD_MAP_REL = 0x70000035,
+++  // Points to .MIPS.xhash section - MIPS GNU hash implementation.
+++  DT_MIPS_XHASH = 0x70000036,
++
++   DT_AUXILIARY = 0x7ffffffd,
++   DT_USED = 0x7ffffffe,
++diff --git a/gold/configure.ac b/gold/configure.ac
++index 76db2b7..65af346 100644
++--- a/gold/configure.ac
+++++ b/gold/configure.ac
++@@ -22,7 +22,7 @@  AC_CONFIG_SRCDIR(gold.cc)
++
++ AC_CANONICAL_TARGET
++
++-AM_INIT_AUTOMAKE([no-dist parallel-tests])
+++AM_INIT_AUTOMAKE([no-dist parallel-tests subdir-objects])
++
++ AM_CONFIG_HEADER(config.h:config.in)
++
++diff --git a/gold/dynobj.cc b/gold/dynobj.cc
++index 0a8d897..3513bba 100644
++--- a/gold/dynobj.cc
+++++ b/gold/dynobj.cc
++@@ -34,6 +34,224 @@ 
++ namespace gold
++ {
++
+++
+++// Computes number of buckets used based on hash values.
+++template <int size, bool big_endian>
+++uint32_t
+++Gnu_hash_builder<size, big_endian>::compute_bucket_count(
+++    const std::vector<uint32_t>& hashcodes)
+++{  return Dynobj::compute_bucket_count(hashcodes, true); }
+++
+++// Sets index in dynamic symbol table for a given local symbol.
+++// This is the usual behavior of GNU hash.
+++
+++template <int size, bool big_endian>
+++void
+++Gnu_hash_builder<size, big_endian>::process_local_dynsym_index(
+++    Symbol* sym, unsigned int index)
+++{ sym->set_dynsym_index(index); }
+++
+++// Sets index in dynamic symbol table for a given global symbol.
+++// This is the usual behavior of GNU hash.
+++
+++template <int size, bool big_endian>
+++void
+++Gnu_hash_builder<size, big_endian>::process_global_dynsym_index(
+++    Symbol* sym, unsigned int index)
+++{ sym->set_dynsym_index(index); }
+++
+++
+++// Creates GNU hash data and return create buffer.
+++template <int size, bool big_endian>
+++unsigned char*
+++Gnu_hash_builder<size, big_endian>::layout(
+++    const std::vector<Symbol*>& hashed_dynsyms,
+++    const std::vector<Symbol*>& unhashed_dynsyms,
+++    const std::vector<uint32_t>& dynsym_hashvals,
+++    unsigned int local_dynsym_count,
+++    unsigned int* phashlen)
+++{
+++  // Put the unhashed symbols at the start of the global portion of
+++  // the dynamic symbol table.
+++  const unsigned int unhashed_count = unhashed_dynsyms.size();
+++  unsigned int unhashed_dynsym_index = local_dynsym_count;
+++  for (unsigned int i = 0; i < unhashed_count; ++i)
+++    {
+++      this->process_local_dynsym_index(unhashed_dynsyms[i],
+++          unhashed_dynsym_index);
+++
+++      ++unhashed_dynsym_index;
+++    }
+++
+++  if(hashed_dynsyms.size() == 0)
+++    return this->layout_empty_dynhash(unhashed_dynsym_index, phashlen);
+++
+++  return this->layout_serialized_buffer(hashed_dynsyms,
+++                                        dynsym_hashvals,
+++                                        unhashed_dynsym_index,
+++                                        phashlen);
+++}
+++
+++// Create data for empty GNU hash table. It is a special case which ocurrs
+++// when there are no hashed symbols. This is just a copy
+++// of the code from the old GNU linker.
+++
+++template <int size, bool big_endian>
+++unsigned char*
+++Gnu_hash_builder<size, big_endian>::layout_empty_dynhash(
+++    unsigned int unhashed_dynsym_count,
+++    unsigned int* phashlen)
+++{
+++  *phashlen = 5 * 4 + size / 8;
+++  unsigned char* phash = new unsigned char[*phashlen];
+++  Gnu_hash_builder<size, big_endian>::layout_empty_dynhash_common(
+++      unhashed_dynsym_count,
+++      phash);
+++
+++  return phash;
+++}
+++
+++// This function performs layout of common data for empty GNU hash table.
+++// Classed inherited from Gnu_hash_builder can call this function
+++// to layout common part of empty data for GNU hash table.
+++// This is just a copy of a code from old linker.
+++
+++template <int size, bool big_endian>
+++void
+++Gnu_hash_builder<size, big_endian>::layout_empty_dynhash_common(
+++    unsigned int unhashed_dynsym_count,
+++    unsigned char* phash)
+++{
+++  elfcpp::Swap<32, big_endian>::writeval(phash, 1);
+++  // Symbol index above unhashed symbols.
+++  elfcpp::Swap<32, big_endian>::writeval(phash + 4, unhashed_dynsym_count);
+++  // One word for bitmask.
+++  elfcpp::Swap<32, big_endian>::writeval(phash + 8, 1);
+++  // Only bloom filter.
+++  elfcpp::Swap<32, big_endian>::writeval(phash + 12, 0);
+++  // No valid hashes.
+++  elfcpp::Swap<size, big_endian>::writeval(phash + 16, 0);
+++  // No hashes in only bucket.
+++  elfcpp::Swap<32, big_endian>::writeval(phash + 16 + size / 8, 0);
+++}
+++
+++// Create the actual data for a GNU hash table.  This is just a copy
+++// of the code from the old GNU linker.
+++
+++template <int size, bool big_endian>
+++unsigned char*
+++Gnu_hash_builder<size, big_endian>::layout_serialized_buffer(
+++    const std::vector<Symbol*>& hashed_dynsyms,
+++    const std::vector<uint32_t>& dynsym_hashvals,
+++    unsigned int unhashed_dynsym_count,
+++    unsigned int* phashlen)
+++{
+++  const unsigned int bucketcount =
+++    Gnu_hash_builder<size, big_endian>::compute_bucket_count(
+++        dynsym_hashvals);
+++
+++  const unsigned int nsyms = hashed_dynsyms.size();
+++
+++  uint32_t maskbitslog2 = 1;
+++  uint32_t x = nsyms >> 1;
+++  while (x != 0)
+++    {
+++      ++maskbitslog2;
+++      x >>= 1;
+++    }
+++  if (maskbitslog2 < 3)
+++    maskbitslog2 = 5;
+++  else if (((1U << (maskbitslog2 - 2)) & nsyms) != 0)
+++    maskbitslog2 += 3;
+++  else
+++    maskbitslog2 += 2;
+++
+++  uint32_t shift1;
+++  if (size == 32)
+++    shift1 = 5;
+++  else
+++    {
+++      if (maskbitslog2 == 5)
+++        maskbitslog2 = 6;
+++      shift1 = 6;
+++    }
+++  uint32_t mask = (1U << shift1) - 1U;
+++  uint32_t shift2 = maskbitslog2;
+++  uint32_t maskbits = 1U << maskbitslog2;
+++  uint32_t maskwords = 1U << (maskbitslog2 - shift1);
+++
+++  typedef typename elfcpp::Elf_types<size>::Elf_WXword Word;
+++  std::vector<Word> bitmask(maskwords);
+++  std::vector<uint32_t> counts(bucketcount);
+++  std::vector<uint32_t> indx(bucketcount);
+++  uint32_t symindx = unhashed_dynsym_count;
+++
+++  // Count the number of times each hash bucket is used.
+++  for (unsigned int i = 0; i < nsyms; ++i)
+++    ++counts[dynsym_hashvals[i] % bucketcount];
+++
+++  unsigned int cnt = symindx;
+++  for (unsigned int i = 0; i < bucketcount; ++i)
+++    {
+++      indx[i] = cnt;
+++      cnt += counts[i];
+++    }
+++
+++  unsigned char* phash = this->allocate_buffer(bucketcount, nsyms,
+++                                               maskwords * size / 8,
+++                                               phashlen);
+++
+++  elfcpp::Swap<32, big_endian>::writeval(phash, bucketcount);
+++  elfcpp::Swap<32, big_endian>::writeval(phash + 4, symindx);
+++  elfcpp::Swap<32, big_endian>::writeval(phash + 8, maskwords);
+++  elfcpp::Swap<32, big_endian>::writeval(phash + 12, shift2);
+++
+++  unsigned char* p = phash + 16 + maskbits / 8;
+++  for (unsigned int i = 0; i < bucketcount; ++i)
+++    {
+++      if (counts[i] == 0)
+++        elfcpp::Swap<32, big_endian>::writeval(p, 0);
+++      else
+++        elfcpp::Swap<32, big_endian>::writeval(p, indx[i]);
+++      p += 4;
+++    }
+++
+++  this->symindx_ = symindx;
+++  for (unsigned int i = 0; i < nsyms; ++i)
+++    {
+++      Symbol* sym = hashed_dynsyms[i];
+++      uint32_t hashval = dynsym_hashvals[i];
+++
+++      unsigned int bucket = hashval % bucketcount;
+++      unsigned int val = ((hashval >> shift1) & ((maskbits >> shift1) - 1));
+++      bitmask[val] |= (static_cast<Word>(1U)) << (hashval & mask);
+++      bitmask[val] |= (static_cast<Word>(1U)) << ((hashval >> shift2) & mask);
+++      val = hashval & ~ 1U;
+++      if (counts[bucket] == 1)
+++        {
+++          // Last element terminates the chain.
+++          val |= 1;
+++        }
+++
+++      elfcpp::Swap<32, big_endian>::writeval(p + (indx[bucket] - symindx) * 4,
+++					     val);
+++      --counts[bucket];
+++
+++      this->process_global_dynsym_index(sym, indx[bucket]);
+++      ++indx[bucket];
+++    }
+++
+++  p = phash + 16;
+++  for (unsigned int i = 0; i < maskwords; ++i)
+++    {
+++      elfcpp::Swap<size, big_endian>::writeval(p, bitmask[i]);
+++      p += size / 8;
+++    }
+++
+++  return phash;
+++}
+++
+++
++ // Class Dynobj.
++
++ // Sets up the default soname_ to use, in the (rare) cases we never
++@@ -914,6 +1132,20 @@  Dynobj::elf_hash(const char* name)
++   return h;
++ }
++
+++// The hash function used for the GNU hash table.  This hash function
+++// must not change, as the dynamic linker uses it also.
+++
+++uint32_t
+++Dynobj::gnu_hash(const char* name)
+++{
+++  const unsigned char* nameu = reinterpret_cast<const unsigned char*>(name);
+++  uint32_t h = 5381;
+++  unsigned char c;
+++  while ((c = *nameu++) != '\0')
+++    h = (h << 5) + h + c;
+++  return h;
+++}
+++
++ // Create a standard ELF hash table, setting *PPHASH and *PHASHLEN.
++ // DYNSYMS is a vector with all the global dynamic symbols.
++ // LOCAL_DYNSYM_COUNT is the number of local symbols in the dynamic
++@@ -1038,19 +1270,6 @@  Dynobj::sized_create_elf_hash_table(const std::vector<uint32_t>& bucket,
++   gold_assert(static_cast<unsigned int>(p - phash) == hashlen);
++ }
++
++-// The hash function used for the GNU hash table.  This hash function
++-// must not change, as the dynamic linker uses it also.
++-
++-uint32_t
++-Dynobj::gnu_hash(const char* name)
++-{
++-  const unsigned char* nameu = reinterpret_cast<const unsigned char*>(name);
++-  uint32_t h = 5381;
++-  unsigned char c;
++-  while ((c = *nameu++) != '\0')
++-    h = (h << 5) + h + c;
++-  return h;
++-}
++
++ // Create a GNU hash table, setting *PPHASH and *PHASHLEN.  GNU hash
++ // tables are an extension to ELF which are recognized by the GNU
++@@ -1099,16 +1318,6 @@  Dynobj::create_gnu_hash_table(const std::vector<Symbol*>& dynsyms,
++ 	}
++     }
++
++-  // Put the unhashed symbols at the start of the global portion of
++-  // the dynamic symbol table.
++-  const unsigned int unhashed_count = unhashed_dynsyms.size();
++-  unsigned int unhashed_dynsym_index = local_dynsym_count;
++-  for (unsigned int i = 0; i < unhashed_count; ++i)
++-    {
++-      unhashed_dynsyms[i]->set_dynsym_index(unhashed_dynsym_index);
++-      ++unhashed_dynsym_index;
++-    }
++-
++   // For the actual data generation we call out to a templatized
++   // function.
++   int size = parameters->target().get_size();
++@@ -1118,10 +1327,11 @@  Dynobj::create_gnu_hash_table(const std::vector<Symbol*>& dynsyms,
++       if (big_endian)
++ 	{
++ #ifdef HAVE_TARGET_32_BIG
++-	  Dynobj::sized_create_gnu_hash_table<32, true>(hashed_dynsyms,
+++	  *pphash = Dynobj::sized_create_gnu_hash_table<32, true>(
+++                        hashed_dynsyms,
+++                        unhashed_dynsyms,
++ 							dynsym_hashvals,
++-							unhashed_dynsym_index,
++-							pphash,
+++                        local_dynsym_count,
++ 							phashlen);
++ #else
++ 	  gold_unreachable();
++@@ -1130,10 +1340,11 @@  Dynobj::create_gnu_hash_table(const std::vector<Symbol*>& dynsyms,
++       else
++ 	{
++ #ifdef HAVE_TARGET_32_LITTLE
++-	  Dynobj::sized_create_gnu_hash_table<32, false>(hashed_dynsyms,
+++          *pphash = Dynobj::sized_create_gnu_hash_table<32, false>(
+++                        hashed_dynsyms,
+++                        unhashed_dynsyms,
++ 							 dynsym_hashvals,
++-							 unhashed_dynsym_index,
++-							 pphash,
+++                        local_dynsym_count,
++ 							 phashlen);
++ #else
++ 	  gold_unreachable();
++@@ -1145,10 +1356,11 @@  Dynobj::create_gnu_hash_table(const std::vector<Symbol*>& dynsyms,
++       if (big_endian)
++ 	{
++ #ifdef HAVE_TARGET_64_BIG
++-	  Dynobj::sized_create_gnu_hash_table<64, true>(hashed_dynsyms,
+++	  *pphash = Dynobj::sized_create_gnu_hash_table<64, true>(
+++                        hashed_dynsyms,
+++                        unhashed_dynsyms,
++ 							dynsym_hashvals,
++-							unhashed_dynsym_index,
++-							pphash,
+++                        local_dynsym_count,
++ 							phashlen);
++ #else
++ 	  gold_unreachable();
++@@ -1157,10 +1369,11 @@  Dynobj::create_gnu_hash_table(const std::vector<Symbol*>& dynsyms,
++       else
++ 	{
++ #ifdef HAVE_TARGET_64_LITTLE
++-	  Dynobj::sized_create_gnu_hash_table<64, false>(hashed_dynsyms,
+++	  *pphash = Dynobj::sized_create_gnu_hash_table<64, false>(
+++                        hashed_dynsyms,
+++                        unhashed_dynsyms,
++ 							 dynsym_hashvals,
++-							 unhashed_dynsym_index,
++-							 pphash,
+++                        local_dynsym_count,
++ 							 phashlen);
++ #else
++ 	  gold_unreachable();
++@@ -1171,144 +1384,34 @@  Dynobj::create_gnu_hash_table(const std::vector<Symbol*>& dynsyms,
++     gold_unreachable();
++ }
++
++-// Create the actual data for a GNU hash table.  This is just a copy
++-// of the code from the old GNU linker.
++-
+++// Create an object of class Gnu_hash_builder and build GNU hash section.
++ template<int size, bool big_endian>
++-void
+++unsigned char*
++ Dynobj::sized_create_gnu_hash_table(
++     const std::vector<Symbol*>& hashed_dynsyms,
+++    const std::vector<Symbol*>& unhashed_dynsyms,
++     const std::vector<uint32_t>& dynsym_hashvals,
++-    unsigned int unhashed_dynsym_count,
++-    unsigned char** pphash,
+++    unsigned int local_dynsym_count,
++     unsigned int* phashlen)
++ {
++-  if (hashed_dynsyms.empty())
++-    {
++-      // Special case for the empty hash table.
++-      unsigned int hashlen = 5 * 4 + size / 8;
++-      unsigned char* phash = new unsigned char[hashlen];
++-      // One empty bucket.
++-      elfcpp::Swap<32, big_endian>::writeval(phash, 1);
++-      // Symbol index above unhashed symbols.
++-      elfcpp::Swap<32, big_endian>::writeval(phash + 4, unhashed_dynsym_count);
++-      // One word for bitmask.
++-      elfcpp::Swap<32, big_endian>::writeval(phash + 8, 1);
++-      // Only bloom filter.
++-      elfcpp::Swap<32, big_endian>::writeval(phash + 12, 0);
++-      // No valid hashes.
++-      elfcpp::Swap<size, big_endian>::writeval(phash + 16, 0);
++-      // No hashes in only bucket.
++-      elfcpp::Swap<32, big_endian>::writeval(phash + 16 + size / 8, 0);
++-
++-      *phashlen = hashlen;
++-      *pphash = phash;
++-
++-      return;
++-    }
++-
++-  const unsigned int bucketcount =
++-    Dynobj::compute_bucket_count(dynsym_hashvals, true);
++-
++-  const unsigned int nsyms = hashed_dynsyms.size();
++-
++-  uint32_t maskbitslog2 = 1;
++-  uint32_t x = nsyms >> 1;
++-  while (x != 0)
++-    {
++-      ++maskbitslog2;
++-      x >>= 1;
++-    }
++-  if (maskbitslog2 < 3)
++-    maskbitslog2 = 5;
++-  else if (((1U << (maskbitslog2 - 2)) & nsyms) != 0)
++-    maskbitslog2 += 3;
++-  else
++-    maskbitslog2 += 2;
++-
++-  uint32_t shift1;
++-  if (size == 32)
++-    shift1 = 5;
++-  else
++-    {
++-      if (maskbitslog2 == 5)
++-	maskbitslog2 = 6;
++-      shift1 = 6;
++-    }
++-  uint32_t mask = (1U << shift1) - 1U;
++-  uint32_t shift2 = maskbitslog2;
++-  uint32_t maskbits = 1U << maskbitslog2;
++-  uint32_t maskwords = 1U << (maskbitslog2 - shift1);
+++  Sized_target<size, big_endian>* target =
+++    parameters->sized_target<size, big_endian>();
++
++-  typedef typename elfcpp::Elf_types<size>::Elf_WXword Word;
++-  std::vector<Word> bitmask(maskwords);
++-  std::vector<uint32_t> counts(bucketcount);
++-  std::vector<uint32_t> indx(bucketcount);
++-  uint32_t symindx = unhashed_dynsym_count;
+++  Gnu_hash_builder<size, big_endian>* gnu_hash_layout =
+++    target->create_gnu_hash_builder();
++
++-  // Count the number of times each hash bucket is used.
++-  for (unsigned int i = 0; i < nsyms; ++i)
++-    ++counts[dynsym_hashvals[i] % bucketcount];
+++  gold_assert(gnu_hash_layout != NULL);
++
++-  unsigned int cnt = symindx;
++-  for (unsigned int i = 0; i < bucketcount; ++i)
++-    {
++-      indx[i] = cnt;
++-      cnt += counts[i];
++-    }
+++  unsigned char* phash;
+++  phash = gnu_hash_layout->layout(hashed_dynsyms,
+++                                  unhashed_dynsyms,
+++                                  dynsym_hashvals,
+++                                  local_dynsym_count,
+++                                  phashlen);
++
++-  unsigned int hashlen = (4 + bucketcount + nsyms) * 4;
++-  hashlen += maskbits / 8;
++-  unsigned char* phash = new unsigned char[hashlen];
+++  delete gnu_hash_layout;
++
++-  elfcpp::Swap<32, big_endian>::writeval(phash, bucketcount);
++-  elfcpp::Swap<32, big_endian>::writeval(phash + 4, symindx);
++-  elfcpp::Swap<32, big_endian>::writeval(phash + 8, maskwords);
++-  elfcpp::Swap<32, big_endian>::writeval(phash + 12, shift2);
++-
++-  unsigned char* p = phash + 16 + maskbits / 8;
++-  for (unsigned int i = 0; i < bucketcount; ++i)
++-    {
++-      if (counts[i] == 0)
++-	elfcpp::Swap<32, big_endian>::writeval(p, 0);
++-      else
++-	elfcpp::Swap<32, big_endian>::writeval(p, indx[i]);
++-      p += 4;
++-    }
++-
++-  for (unsigned int i = 0; i < nsyms; ++i)
++-    {
++-      Symbol* sym = hashed_dynsyms[i];
++-      uint32_t hashval = dynsym_hashvals[i];
++-
++-      unsigned int bucket = hashval % bucketcount;
++-      unsigned int val = ((hashval >> shift1)
++-			  & ((maskbits >> shift1) - 1));
++-      bitmask[val] |= (static_cast<Word>(1U)) << (hashval & mask);
++-      bitmask[val] |= (static_cast<Word>(1U)) << ((hashval >> shift2) & mask);
++-      val = hashval & ~ 1U;
++-      if (counts[bucket] == 1)
++-	{
++-	  // Last element terminates the chain.
++-	  val |= 1;
++-	}
++-      elfcpp::Swap<32, big_endian>::writeval(p + (indx[bucket] - symindx) * 4,
++-					     val);
++-      --counts[bucket];
++-
++-      sym->set_dynsym_index(indx[bucket]);
++-      ++indx[bucket];
++-    }
++-
++-  p = phash + 16;
++-  for (unsigned int i = 0; i < maskwords; ++i)
++-    {
++-      elfcpp::Swap<size, big_endian>::writeval(p, bitmask[i]);
++-      p += size / 8;
++-    }
++-
++-  *phashlen = hashlen;
++-  *pphash = phash;
+++  return phash;
++ }
++
++ // Verdef methods.
++@@ -2018,4 +2121,25 @@  Versions::need_section_contents<64, true>(
++     unsigned int*) const;
++ #endif
++
+++// Instantiate templates for Gnu_hash_builder
+++#ifdef HAVE_TARGET_32_LITTLE
+++template
+++class Gnu_hash_builder<32, false>;
+++#endif
+++
+++#ifdef HAVE_TARGET_32_BIG
+++template
+++class Gnu_hash_builder<32, true>;
+++#endif
+++
+++#ifdef HAVE_TARGET_64_LITTLE
+++template
+++class Gnu_hash_builder<64, false>;
+++#endif
+++
+++#ifdef HAVE_TARGET_64_BIG
+++template
+++class Gnu_hash_builder<64, true>;
+++#endif
+++
++ } // End namespace gold.
++diff --git a/gold/dynobj.h b/gold/dynobj.h
++index 6334a09..06f33d9 100644
++--- a/gold/dynobj.h
+++++ b/gold/dynobj.h
++@@ -33,12 +33,113 @@  namespace gold
++
++ class Version_script_info;
++
+++// GNU hash builder class
+++// This class is responsible for creating data for GNU hash section.
+++// It is also responsible for setting indexes of symbols in dynamic symbol
+++// table. By inheriting from this class, architectures can modify GNU hash
+++// for specific needs.
+++template <int size, bool big_endian>
+++class Gnu_hash_builder
+++{
+++  public:
+++    virtual ~Gnu_hash_builder()
+++    { }
+++
+++    // Create data for GNU hash and store lenght of created buffer in phashlen.
+++    // hashed_dynsyms is vector of symbols indended to be hashed
+++    // unhashed_dynsyms if vector of symbols not intended to be hashed
+++    // dynsym_hashvals is a vector containing GNU hash values for symbols
+++    // passed in hashed_dynsyms vector
+++    // local_dynsym_count is number of local symbols
+++    // phashlen is a pointer to a variable in which to write length of created
+++    // data.
+++    // This function will also store index in dynamic symbol table
+++    // for each symbol in hashed_dynsyms.
+++    unsigned char*
+++    layout(const std::vector<Symbol*>& hashed_dynsyms,
+++        const std::vector<Symbol*>& unhashed_dynsyms,
+++        const std::vector<uint32_t>& dynsym_hashvals,
+++        unsigned int local_dynsym_count,
+++        unsigned int* phashlen);
+++
+++  protected:
+++    // Create data for GNU hash table when there are symbols to be hashed.
+++    // hashed_dynsyms and dynsym_hashvals are vectors of symbols and their
+++    // hash values.
+++    // unhashed_dynsym_count is used as a start index for hashed symbols
+++    // phashlen is a pointer to a variable in which to write length of created
+++    // data.
+++    unsigned char*
+++    layout_serialized_buffer(
+++        const std::vector<Symbol*>& hashed_dynsyms,
+++        const std::vector<uint32_t>& dynsym_hashvals,
+++        unsigned int unhashed_dynsym_count,
+++        unsigned int* phashlen);
+++
+++    // Allocate buffer for data for GNU hash.
+++    // Inherited classes can override this function.
+++    virtual unsigned char*
+++    allocate_buffer(unsigned int bucketcount,
+++        unsigned int nsyms,
+++        unsigned int bloom_size,
+++        unsigned int* phashlen)
+++    {
+++      *phashlen = 4 * (4 + bucketcount + nsyms) + bloom_size;
+++      return new unsigned char[*phashlen];
+++    }
+++
+++    // Create data for GNU hash table when there are no symbols to be hashed.
+++    virtual unsigned char*
+++    layout_empty_dynhash(unsigned int unhashed_dynsym_count,
+++                         unsigned int* phashlen);
+++
+++    // Process local dynamic symbol. For a regular GNU hash, this function
+++    // will store calculated index of a symbol in dynamic symbol table with
+++    // the symbol.
+++    virtual void
+++    process_local_dynsym_index(Symbol* sym,
+++                               unsigned int index);
+++
+++    // Process global dynamic symbol. For a regular GNU hash, this function
+++    // will store calculated index of a symbol in dynamic symbol table with
+++    // the symbol.
+++    virtual void
+++    process_global_dynsym_index(Symbol* sym,
+++                                unsigned int index);
+++
+++    // Layout common part of GNU hash data when there are no symbols to be
+++    // hashed.
+++    static void
+++    layout_empty_dynhash_common(unsigned int unhashed_dynsym_count,
+++                                unsigned char* phash);
+++
+++    // Offset between index of a first symbol in dynamic symbol table which
+++    // is hashed into GNU hash.
+++    unsigned int symindx_;
+++
+++  private:
+++    // Computes number of buckets used based on hash values.
+++    static uint32_t
+++    compute_bucket_count(const std::vector<uint32_t>& hashcodes);
+++};
+++
+++
++ // A dynamic object (ET_DYN).  This is an abstract base class itself.
++ // The implementations is the template class Sized_dynobj.
++
++ class Dynobj : public Object
++ {
++  public:
+++
+++  // Compute the GNU hash code for a string.
+++  static uint32_t
+++  gnu_hash(const char*);
+++
+++  // Compute the number of hash buckets to use.
+++  static unsigned int
+++  compute_bucket_count(const std::vector<uint32_t>& hashcodes,
+++		       bool for_gnu_hash_table);
+++
++   // We keep a list of all the DT_NEEDED entries we find.
++   typedef std::vector<std::string> Needed;
++
++@@ -122,14 +223,6 @@  class Dynobj : public Object
++   { this->needed_.push_back(std::string(s)); }
++
++  private:
++-  // Compute the GNU hash code for a string.
++-  static uint32_t
++-  gnu_hash(const char*);
++-
++-  // Compute the number of hash buckets to use.
++-  static unsigned int
++-  compute_bucket_count(const std::vector<uint32_t>& hashcodes,
++-		       bool for_gnu_hash_table);
++
++   // Sized version of create_elf_hash_table.
++   template<int size, bool big_endian>
++@@ -141,11 +234,11 @@  class Dynobj : public Object
++
++   // Sized version of create_gnu_hash_table.
++   template<int size, bool big_endian>
++-  static void
+++  static unsigned char*
++   sized_create_gnu_hash_table(const std::vector<Symbol*>& hashed_dynsyms,
+++                              const std::vector<Symbol*>& unhashed_dynsyms,
++ 			      const std::vector<uint32_t>& dynsym_hashvals,
++-			      unsigned int unhashed_dynsym_count,
++-			      unsigned char** pphash,
+++                              unsigned int local_dynsym_count,
++ 			      unsigned int* phashlen);
++
++   // Values for the has_unknown_needed_entries_ field.
++diff --git a/gold/layout.cc b/gold/layout.cc
++index fc7cdf8..a390235 100644
++--- a/gold/layout.cc
+++++ b/gold/layout.cc
++@@ -4759,10 +4759,15 @@  Layout::create_dynamic_symtab(const Input_objects* input_objects,
++ 				    local_symcount + forced_local_count,
++ 				    &phash, &hashlen);
++
+++      const char* gnu_hash_section_name =
+++        parameters->target().gnu_hash_section_name();
+++      const elfcpp::SHT gnu_hash_section_type =
+++        parameters->target().gnu_hash_section_type();
+++
++       Output_section* hashsec =
++-	this->choose_output_section(NULL, ".gnu.hash", elfcpp::SHT_GNU_HASH,
++-				    elfcpp::SHF_ALLOC, false,
++-				    ORDER_DYNAMIC_LINKER, false, false,
+++        this->choose_output_section(NULL, gnu_hash_section_name,
+++                                    gnu_hash_section_type, elfcpp::SHF_ALLOC,
+++                                    false, ORDER_DYNAMIC_LINKER, false, false,
++ 				    false);
++
++       Output_section_data* hashdata = new Output_data_const_buffer(phash,
++@@ -4784,7 +4789,10 @@  Layout::create_dynamic_symtab(const Input_objects* input_objects,
++ 	    hashsec->set_entsize(4);
++
++ 	  if (odyn != NULL)
++-	    odyn->add_section_address(elfcpp::DT_GNU_HASH, hashsec);
+++            {
+++              const elfcpp::DT dt = parameters->target().gnu_hash_dynamic_tag();
+++              odyn->add_section_address(dt, hashsec);
+++            }
++ 	}
++     }
++
++diff --git a/gold/mips.cc b/gold/mips.cc
++index 65572d8..77a825a 100644
++--- a/gold/mips.cc
+++++ b/gold/mips.cc
++@@ -46,6 +46,8 @@ 
++ #include "gc.h"
++ #include "attributes.h"
++ #include "nacl.h"
+++#include "dynobj.h"
+++
++
++ namespace
++ {
++@@ -424,6 +426,85 @@  is_matching_lo16_reloc(unsigned int high_reloc, unsigned int lo16_reloc)
++     }
++ }
++
+++// .gnu.hash and the MIPS ABI require .dynsym to be sorted in different
+++// ways.  .gnu.hash needs symbols to be grouped by hash code whereas the
+++// MIPS ABI requires a mapping between the GOT and the symbol table.
+++// MIPS implements GNU hash with aditional level of indirection trough
+++// XLAT - it is a table which containes dynsym indexes, and dynamic linker
+++// used GNU hash algorithm but accesses dynamic symbol by first determinating
+++// index in dynsym table from XLAT.
+++template <int size, bool big_endian>
+++class Mips_gnu_hash_builder
+++  : public Gnu_hash_builder<size, big_endian>
+++{
+++  public:
+++    Mips_gnu_hash_builder()
+++      : xlat_(NULL)
+++    { }
+++
+++  private:
+++    // Allocate buffer for MIPS GNU hash, including appended XLAT table.
+++    unsigned char*
+++    allocate_buffer(unsigned int bucket_count,
+++                    unsigned int nsyms,
+++                    unsigned int bloom_size,
+++                    unsigned int* phashlen)
+++    {
+++      gold_assert(nsyms != 0);
+++
+++      // XLAT is appended to GNU hash and it contains one word
+++      // for each hashed dynsym.
+++      size_t xlat_offset = 4 * (4 + bucket_count + nsyms) + bloom_size;
+++      *phashlen = xlat_offset + 4 * nsyms;
+++
+++      unsigned char* phash = new unsigned char[*phashlen];
+++      this->xlat_ = phash + xlat_offset;
+++
+++      return phash;
+++    }
+++
+++    // For MIPS we need additional word for XLAT when there are no
+++    // hashed symbols. First part remains the same as original GNU hash.
+++    unsigned char*
+++    layout_empty_dynhash(unsigned int unhashed_dynsym_count,
+++                         unsigned int* phashlen)
+++    {
+++      *phashlen = 6 * 4 + size / 8;
+++      unsigned char* phash = new unsigned char[*phashlen];
+++
+++      Gnu_hash_builder<size, big_endian>::layout_empty_dynhash_common(
+++          unhashed_dynsym_count,
+++          phash);
+++
+++      // Write 0 to XLAT
+++      elfcpp::Swap<32, big_endian>::writeval(
+++          phash + 20 + size / 8, 0);
+++
+++      return phash;
+++    }
+++
+++    // For MIPS we do not want to change already set dynsym indexes -
+++    // this function only does sanity checks.
+++    void
+++    process_local_dynsym_index(Symbol* sym, unsigned int index)
+++    {
+++      gold_assert(sym->needs_dynsym_value() == false);
+++      gold_assert(index != 0);
+++    }
+++
+++    // Write already determined dynsym index of a symbol to XLAT
+++    void
+++    process_global_dynsym_index(Symbol* sym, unsigned int dynsym_index)
+++    {
+++      elfcpp::Swap<32, big_endian>::writeval(
+++          this->xlat_ + 4 * (dynsym_index - this->symindx_),
+++          sym->dynsym_index());
+++    }
+++
+++    // pointer to start of MIPS specific XLAT part of GNU hash section
+++    unsigned char* xlat_;
+++};
+++
++ // This class is used to hold information about one GOT entry.
++ // There are three types of entry:
++ //
++@@ -3348,6 +3429,11 @@  class Target_mips : public Sized_target<size, big_endian>
++   make_symbol(const char*, elfcpp::STT, Object*, unsigned int, uint64_t)
++   { return new Mips_symbol<size>(); }
++
+++  // Create MIPS customized Gnu_hash_builder object
+++  Gnu_hash_builder<size, big_endian>*
+++  create_gnu_hash_builder() const
+++  { return new Mips_gnu_hash_builder<size, big_endian>(); }
+++
++   // Process the relocations to determine unreferenced sections for
++   // garbage collection.
++   void
++@@ -3561,6 +3647,18 @@  class Target_mips : public Sized_target<size, big_endian>
++   do_has_custom_set_dynsym_indexes() const
++   { return true; }
++
+++  const char*
+++  do_gnu_hash_section_name() const
+++  { return ".MIPS.xhash"; }
+++
+++  elfcpp::SHT
+++  do_gnu_hash_section_type() const
+++  { return elfcpp::SHT_MIPS_XHASH; }
+++
+++  elfcpp::DT
+++  do_gnu_hash_dynamic_tag() const
+++  { return elfcpp::DT_MIPS_XHASH; }
+++
++   // Don't emit input .reginfo/.MIPS.abiflags sections to
++   // output .reginfo/.MIPS.abiflags.
++   bool
++@@ -9567,6 +9665,11 @@  Target_mips<size, big_endian>::do_adjust_elf_header(
++           || this->abiflags_->fp_abi == elfcpp::Val_GNU_MIPS_ABI_FP_64A))
++     ei_abiversion = 3;
++
+++  if(strcmp(parameters->options().hash_style(), "gnu") == 0)
+++  {
+++    ei_abiversion = 5;
+++  }
+++
++   e_ident[elfcpp::EI_ABIVERSION] = ei_abiversion;
++   elfcpp::Ehdr_write<size, big_endian> oehdr(view);
++   oehdr.put_e_ident(e_ident);
++@@ -9639,16 +9742,6 @@  Target_mips<size, big_endian>::do_finalize_sections(Layout* layout,
++   this->entry_symbol_is_compressed_ = (entry != NULL && (entry->is_mips16()
++                                        || entry->is_micromips()));
++
++-  if (!parameters->doing_static_link()
++-      && (strcmp(parameters->options().hash_style(), "gnu") == 0
++-          || strcmp(parameters->options().hash_style(), "both") == 0))
++-    {
++-      // .gnu.hash and the MIPS ABI require .dynsym to be sorted in different
++-      // ways.  .gnu.hash needs symbols to be grouped by hash code whereas the
++-      // MIPS ABI requires a mapping between the GOT and the symbol table.
++-      gold_error(".gnu.hash is incompatible with the MIPS ABI");
++-    }
++-
++   // Check whether the final section that was scanned has HI16 or GOT16
++   // relocations without the corresponding LO16 part.
++   if (this->got16_addends_.size() > 0)
++diff --git a/gold/target.cc b/gold/target.cc
++index 17c85a0..bcbc85b 100644
++--- a/gold/target.cc
+++++ b/gold/target.cc
++@@ -239,6 +239,14 @@  Sized_target<size, big_endian>::do_adjust_elf_header(unsigned char* view,
++     }
++ }
++
+++template<int size, bool big_endian>
+++Gnu_hash_builder<size, big_endian>*
+++Sized_target<size, big_endian>::create_gnu_hash_builder() const
+++{
+++  return new Gnu_hash_builder<size, big_endian>();
+++}
+++
+++
++ #ifdef HAVE_TARGET_32_LITTLE
++ template
++ class Sized_target<32, false>;
++diff --git a/gold/target.h b/gold/target.h
++index 087a323..3e903be 100644
++--- a/gold/target.h
+++++ b/gold/target.h
++@@ -64,6 +64,10 @@  class Task;
++ struct Symbol_location;
++ class Versions;
++
+++
+++template <int size, bool big_endian>
+++class Gnu_hash_builder;
+++
++ // The abstract class for target specific handling.
++
++ class Target
++@@ -484,6 +488,18 @@  class Target
++   has_custom_set_dynsym_indexes() const
++   { return this->do_has_custom_set_dynsym_indexes(); }
++
+++  const char*
+++  gnu_hash_section_name() const
+++  { return this->do_gnu_hash_section_name(); }
+++
+++  elfcpp::SHT
+++  gnu_hash_section_type() const
+++  { return this->do_gnu_hash_section_type(); }
+++
+++  elfcpp::DT
+++  gnu_hash_dynamic_tag() const
+++  { return do_gnu_hash_dynamic_tag(); }
+++
++   // Custom set_dynsym_indexes method for a target.
++   unsigned int
++   set_dynsym_indexes(std::vector<Symbol*>* dyn_symbols, unsigned int index,
++@@ -798,6 +814,19 @@  class Target
++   do_has_custom_set_dynsym_indexes() const
++   { return false; }
++
+++  virtual const char*
+++  do_gnu_hash_section_name() const
+++  { return ".gnu.hash"; }
+++
+++  virtual elfcpp::SHT
+++  do_gnu_hash_section_type() const
+++  { return elfcpp::SHT_GNU_HASH; }
+++
+++  virtual elfcpp::DT
+++  do_gnu_hash_dynamic_tag() const
+++  { return elfcpp::DT_GNU_HASH; }
+++
+++
++   // This may be overridden by the child class.
++   virtual unsigned int
++   do_set_dynsym_indexes(std::vector<Symbol*>*, unsigned int,
++@@ -865,6 +894,10 @@  class Sized_target : public Target
++   make_symbol(const char*, elfcpp::STT, Object*, unsigned int, uint64_t)
++   { gold_unreachable(); }
++
+++  virtual Gnu_hash_builder<size, big_endian>*
+++  create_gnu_hash_builder() const;
+++
+++
++   // Resolve a symbol for the target.  This should be overridden by a
++   // target which needs to take special action.  TO is the
++   // pre-existing symbol.  SYM is the new symbol, seen in OBJECT.
++diff --git a/gold/testsuite/Makefile.am b/gold/testsuite/Makefile.am
++index 4c26f33..c97236a 100644
++--- a/gold/testsuite/Makefile.am
+++++ b/gold/testsuite/Makefile.am
++@@ -72,6 +72,7 @@  TEST_STRIP = $(top_builddir)/../binutils/strip-new
++ TEST_AR = $(top_builddir)/../binutils/ar
++ TEST_NM = $(top_builddir)/../binutils/nm-new
++ TEST_AS = $(top_builddir)/../gas/as-new
+++TEST_CXXCOMPILE ?= $(CXXCOMPILE)
++
++ if PLUGINS
++ LIBDL = -ldl
++@@ -167,6 +168,16 @@  overflow_unittest_LDADD = libgoldtest.a ../libgold.a ../../libiberty/libiberty.a
++ overflow_unittest.o: overflow_unittest.cc
++ 	$(CXXCOMPILE) -O3 -c -o $@ $<
++
+++check_PROGRAMS += mips_gnu_hash_unittest
+++mips_gnu_hash_unittest_SOURCES = mips_gnu_hash_unittest.cc mips.cc
+++mips_gnu_hash_unittest_LDFLAGS = $(THREADFLAGS)
+++mips_gnu_hash_unittest_LDADD = libgoldtest.a ../libgold.a ../../libiberty/libiberty.a $(LIBINTL) \
+++	$(THREADLIBS) $(LIBDL) $(ZLIB)
+++mips_gnu_hash_unittest.o: mips_gnu_hash_unittest.cc
+++	$(CXXCOMPILE) -O3 -c -o $@ $<
+++mips.o: ../mips.cc
+++	$(CXXCOMPILE) -O3 -c -o $@ $<
+++
++ endif NATIVE_OR_CROSS_LINKER
++
++ # ---------------------------------------------------------------------
++diff --git a/gold/testsuite/mips_gnu_hash_unittest.cc b/gold/testsuite/mips_gnu_hash_unittest.cc
++new file mode 100644
++index 0000000..c4371d9
++--- /dev/null
+++++ b/gold/testsuite/mips_gnu_hash_unittest.cc
++@@ -0,0 +1,483 @@ 
+++// mips_gnu_hash_unittest.cc -- test Gnu_hash_builder and
+++// Mips_gnu_hash_builder, etc.
+++
+++// Copyright (C) 2006-2019 Free Software Foundation, Inc.
+++// Written by Sava Jakovljev <sava.jakovljev@rt-rk.com>.
+++
+++// This file is part of gold.
+++
+++// This program is free software; you can redistribute it and/or modify
+++// it under the terms of the GNU General Public License as published by
+++// the Free Software Foundation; either version 3 of the License, or
+++// (at your option) any later version.
+++
+++// This program is distributed in the hope that it will be useful,
+++// but WITHOUT ANY WARRANTY; without even the implied warranty of
+++// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+++// GNU General Public License for more details.
+++
+++// You should have received a copy of the GNU General Public License
+++// along with this program; if not, write to the Free Software
+++// Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston,
+++// MA 02110-1301, USA.
+++
+++#include "gold.h"
+++
+++#include "elfcpp.h"
+++
+++#include "object.h"
+++#include "options.h"
+++#include "parameters.h"
+++#include "dynobj.h"
+++#include "symtab.h"
+++#include "target.h"
+++#include "target-select.h"
+++
+++#include "test.h"
+++#include "testfile.h"
+++
+++#include <string>
+++
+++namespace gold_testsuite
+++{
+++
+++using namespace gold;
+++
+++
+++// Mocking Symbol class
+++// This is necessary in order to avoid full-time symbol insantiation process,
+++// which involves parsing elfcpp::Sym of raw byte stream.
+++// In this way, we can elegantly define set of test symbols for testing.
+++class Test_symbol : public Symbol
+++{
+++  public:
+++    ~Test_symbol()
+++    { }
+++
+++    Test_symbol(const std::string& name,
+++                const std::string& version,
+++                elfcpp::STT type,
+++                elfcpp::STB binding,
+++                elfcpp::STV visibility,
+++                unsigned char nonvis,
+++                uint32_t dynsym_index,
+++                uint32_t hash) : gnu_hash_(hash), name_(name),
+++    dynsym_index_(dynsym_index)
+++    {
+++      this->init_fields(this->name_.c_str(), version.c_str(), type, binding,
+++                        visibility, nonvis);
+++      this->set_dynsym_index(dynsym_index);
+++    }
+++
+++    uint32_t
+++    gnu_hash() const
+++    { return this->gnu_hash_; }
+++
+++    void
+++    reset_dynsym_index()
+++    { this->set_dynsym_index(this->dynsym_index_); }
+++
+++  private:
+++    // we must keep name of the symbol here, because Symbol class doesn't
+++    // actually contain name, but it keeps a pointer to it.
+++
+++    // For testing purposes, we caclulate hash value by hand and pass it to
+++    // the constructor.
+++    uint32_t gnu_hash_;
+++    std::string name_;
+++    uint32_t dynsym_index_;
+++};
+++
+++
+++// This class abstracts internal testing mechanisms.
+++// We need it give it a vector of symbols intended to be hashed,
+++// and vector of unhashed symbols.
+++template <int size, bool big_endian>
+++class Mips_gnu_hash_tester
+++{
+++  public:
+++    Mips_gnu_hash_tester(const std::vector<Symbol*>& hashed_dynsyms,
+++                         const std::vector<Symbol*>& unhashed_dynsyms) :
+++      hashed_dynsyms_(hashed_dynsyms), unhashed_dynsyms_(unhashed_dynsyms),
+++      gnu_hash_builder_(NULL)
+++    {
+++      // we need to create MIPS target in order to create an object of class
+++      // Mips_gnu_hash_builder. There is no need to do this more than once,
+++      // so we keep its address as a class variable.
+++      Target* base_target = this->create_mips_target();
+++      Sized_target<size, big_endian>* mips_target =
+++        dynamic_cast<Sized_target<size, big_endian>*>(base_target);
+++
+++      this->gnu_hash_builder_ = mips_target->create_gnu_hash_builder();
+++      CHECK(this->gnu_hash_builder_ != NULL);
+++
+++      // use gold code to calculate hash values.
+++      // We will compare these values with ours(passed in constructor of
+++      // Test_symbol) during tests execution.
+++      this->hashvals_.reserve(hashed_dynsyms.size());
+++      for(std::vector<Symbol*>::const_iterator it = hashed_dynsyms.begin();
+++          it != hashed_dynsyms.end();
+++          ++it)
+++      {
+++        this->hashvals_.push_back(Dynobj::gnu_hash((*it)->name()));
+++      }
+++
+++      delete base_target;
+++    }
+++
+++    ~Mips_gnu_hash_tester()
+++    {
+++      this->reset_dynsym_indexes();
+++      delete this->gnu_hash_builder_;
+++    }
+++
+++    void run_tests()
+++    {
+++      this->run_common_gnu_hash_test();
+++      this->run_xlat_size_test();
+++      this->run_xlat_contents_test();
+++      this->run_empty_gnu_hash_test();
+++    }
+++
+++  private:
+++    static Target*
+++    create_mips_target();
+++
+++    void
+++    run_xlat_size_test();
+++
+++    void
+++    run_xlat_contents_test();
+++
+++    void
+++    run_empty_gnu_hash_test();
+++
+++    void
+++    run_common_gnu_hash_test();
+++
+++    void
+++    reset_dynsym_indexes()
+++    {
+++      for(std::vector<Symbol*>::iterator it = this->hashed_dynsyms_.begin();
+++          it != this->hashed_dynsyms_.end();
+++          ++it)
+++      {
+++        Test_symbol* sym = static_cast<Test_symbol*>(*it);
+++        sym->reset_dynsym_index();
+++      }
+++    }
+++
+++    // State of the tester is determined by these vectors - it contains
+++    // information required by GNU hash builder to create layout.
+++    std::vector<Symbol*> hashed_dynsyms_;
+++    std::vector<Symbol*> unhashed_dynsyms_;
+++    std::vector<uint32_t> hashvals_;
+++
+++    // This will be MIPS derived version.
+++    Gnu_hash_builder<size, big_endian>* gnu_hash_builder_;
+++};
+++
+++
+++
+++template <int size, bool big_endian>
+++Target*
+++Mips_gnu_hash_tester<size, big_endian>::create_mips_target()
+++{
+++  std::string mips_target_name;
+++
+++  if(size == 32)
+++  {
+++    if(big_endian == true)
+++      mips_target_name = "elf32-tradbigmips";
+++    else
+++      mips_target_name = "elf32-tradlittlemips";
+++  }
+++  else
+++  {
+++    if(big_endian == true)
+++      mips_target_name = "elf64-tradbigmips";
+++    else
+++      mips_target_name = "elf64-tradlittlemips";
+++  }
+++
+++  parameters_clear_target();
+++  Target* base_target =
+++    select_target_by_bfd_name(mips_target_name.c_str());
+++
+++  return base_target;
+++}
+++
+++// Difference between regular GNU hash section and MIPS xhash section is
+++// additional xlat area, which occupies 4 * nsyms, where nsyms is a number
+++// of hashed symbols.
+++// This tests creates regular GNU hash layout and MIPS xhash layout and
+++// compares sizes of created byte streams.
+++// MIPS xhash should be greater for 4 * nsyms.
+++template <int size, bool big_endian>
+++void Mips_gnu_hash_tester<size, big_endian>::run_xlat_size_test()
+++{
+++  // this can be any number
+++  const uint32_t local_dynsym_count = 4;
+++
+++  // no need to use new operator for regular GNU hash builder object
+++  Gnu_hash_builder<size, big_endian> regular_gnu_hash;
+++  unsigned int regular_gnu_hash_size;
+++  unsigned char* regular_gnu_hash_data =
+++    regular_gnu_hash.layout(this->hashed_dynsyms_,
+++                            this->unhashed_dynsyms_,
+++                            this->hashvals_,
+++                            local_dynsym_count,
+++                            &regular_gnu_hash_size);
+++
+++  this->reset_dynsym_indexes();
+++
+++  unsigned int mips_gnu_hash_size;
+++  unsigned char* mips_gnu_hash_data =
+++    this->gnu_hash_builder_->layout(this->hashed_dynsyms_,
+++                                    this->unhashed_dynsyms_,
+++                                    this->hashvals_,
+++                                    local_dynsym_count,
+++                                    &mips_gnu_hash_size);
+++
+++  CHECK((mips_gnu_hash_size - regular_gnu_hash_size) ==
+++      4 * this->hashed_dynsyms_.size());
+++
+++  this->reset_dynsym_indexes();
+++
+++  delete[] regular_gnu_hash_data;
+++  delete[] mips_gnu_hash_data;
+++}
+++
+++// This test checks xlat contents. It is expected that one xlat entry
+++// contains dynsym index.
+++template <int size, bool big_endian>
+++void Mips_gnu_hash_tester<size, big_endian>::run_xlat_contents_test()
+++{
+++  typedef typename elfcpp::Swap<32, big_endian>::Valtype Valtype32;
+++
+++  unsigned int mips_gnu_hash_size;
+++  unsigned char* mips_gnu_hash_data =
+++    this->gnu_hash_builder_->layout(this->hashed_dynsyms_,
+++                                    this->unhashed_dynsyms_,
+++                                    this->hashvals_,
+++                                    3,
+++                                    &mips_gnu_hash_size);
+++
+++  // Number of buckets is stored as first word in created buffer.
+++  const uint32_t nbuckets = elfcpp::Swap<32, big_endian>::readval(
+++      mips_gnu_hash_data);
+++
+++  // We know xlat is the last part of the buffer and that its length is
+++  // 4 * nsyms, where nsyms is number of hashed symbols.
+++  unsigned char* xlat_start = (mips_gnu_hash_data + mips_gnu_hash_size)
+++    - (uint8_t)(4 * this->hashed_dynsyms_.size());
+++
+++  // Chain part comes before xlat
+++  unsigned char* chain_start = (mips_gnu_hash_data + mips_gnu_hash_size)
+++    - (uint8_t)(8 * this->hashed_dynsyms_.size());
+++
+++  // Iterate over each entry in xlat and extract dynsym index from xlat
+++  // and hash value from chain
+++  uint32_t current_bucket = 0;
+++  for(uint32_t i = 0; i < this->hashed_dynsyms_.size(); ++i)
+++  {
+++    Valtype32 dynsym_index = elfcpp::Swap<32, big_endian>::readval(
+++        xlat_start + 4 * i);
+++
+++    Valtype32 hashval = elfcpp::Swap<32, big_endian>::readval(
+++        chain_start + 4 * i);
+++
+++    // find corresponding symbol - hash values must match
+++    std::vector<Symbol*>::iterator it = this->hashed_dynsyms_.begin();
+++    for(;it != this->hashed_dynsyms_.end();
+++        ++it)
+++    {
+++      // ignore the last bit used to indicate end of chain
+++      Test_symbol* dynsym = static_cast<Test_symbol*>(*it);
+++      if((dynsym->gnu_hash() | 0x01) == (hashval | 0x01))
+++      {
+++        // specified dynsym index must match entry in xlat
+++        CHECK(dynsym_index == dynsym->dynsym_index());
+++
+++        // bucket must go sequentually
+++        uint32_t bucket = dynsym->gnu_hash()  % nbuckets;
+++        CHECK((bucket == current_bucket) || (bucket == current_bucket + 1));
+++        current_bucket = bucket;
+++        break;
+++      }
+++    }
+++
+++    // it is an error if we didn't find corresponding symbol for xlat entry
+++    CHECK(it != this->hashed_dynsyms_.end());
+++  }
+++
+++  delete[] mips_gnu_hash_data;
+++
+++  this->reset_dynsym_indexes();
+++}
+++
+++
+++// This test checks whether empty GNU hash contents is correctly constructed.
+++// We check the difference between lenghts of created buffers with regular
+++// GNU hash and MIPS xhash. Difference should be in one word reserved for
+++// (empty) xlat: 4 bytes.
+++template <int size, bool big_endian>
+++void Mips_gnu_hash_tester<size, big_endian>::run_empty_gnu_hash_test()
+++{
+++  typedef typename elfcpp::Swap<32, big_endian>::Valtype Valtype32;
+++
+++  // We construct empty vectors to be passed to GNU hash builder.
+++  std::vector<Symbol*> hashed_dynsyms;
+++  std::vector<Symbol*> unhashed_dynsyms;
+++  std::vector<uint32_t> hashvals;
+++
+++  unsigned int mips_empty_data_len = 0;
+++  unsigned char* mips_empty_gnu_hash_data  =
+++    this->gnu_hash_builder_->layout(hashed_dynsyms,
+++                                    unhashed_dynsyms,
+++                                    hashvals,
+++                                    1, &mips_empty_data_len);
+++
+++  CHECK(mips_empty_data_len != 0);
+++  CHECK(mips_empty_gnu_hash_data != NULL);
+++
+++
+++  Gnu_hash_builder<size, big_endian> gnu_hash_builder;
+++
+++  unsigned int empty_data_len = 0;
+++  unsigned char* empty_gnu_hash_data =
+++    gnu_hash_builder.layout(hashed_dynsyms,
+++                            unhashed_dynsyms, hashvals,
+++                            1, &empty_data_len);
+++
+++
+++  CHECK(empty_data_len != 0);
+++  CHECK(empty_gnu_hash_data != NULL);
+++  CHECK((mips_empty_data_len - empty_data_len) == 4);
+++  CHECK(memcmp(empty_gnu_hash_data, mips_empty_gnu_hash_data,
+++               empty_data_len) == 0);
+++
+++  Valtype32 xlat_word = elfcpp::Swap<32, big_endian>::readval(
+++      mips_empty_gnu_hash_data + 20 + size / 8);
+++
+++  CHECK(xlat_word == 0);
+++
+++  delete[] empty_gnu_hash_data;
+++  delete[] mips_empty_gnu_hash_data;
+++}
+++
+++template <int size, bool big_endian>
+++void Mips_gnu_hash_tester<size, big_endian>::run_common_gnu_hash_test()
+++{
+++  // this can be any number
+++  const uint32_t local_dynsym_count = 4;
+++
+++  // no need to use new operator for regular GNU hash builder object
+++  Gnu_hash_builder<size, big_endian> regular_gnu_hash;
+++  unsigned int regular_gnu_hash_size;
+++  unsigned char* regular_gnu_hash_data =
+++    regular_gnu_hash.layout(this->hashed_dynsyms_,
+++                            this->unhashed_dynsyms_,
+++                            this->hashvals_,
+++                            local_dynsym_count,
+++                            &regular_gnu_hash_size);
+++
+++  this->reset_dynsym_indexes();
+++
+++  unsigned int mips_gnu_hash_size;
+++  unsigned char* mips_gnu_hash_data =
+++    this->gnu_hash_builder_->layout(this->hashed_dynsyms_,
+++                                    this->unhashed_dynsyms_,
+++                                    this->hashvals_,
+++                                    local_dynsym_count,
+++                                    &mips_gnu_hash_size);
+++
+++  CHECK(memcmp(regular_gnu_hash_data, mips_gnu_hash_data,
+++        regular_gnu_hash_size) == 0);
+++
+++  this->reset_dynsym_indexes();
+++
+++  delete[] regular_gnu_hash_data;
+++  delete[] mips_gnu_hash_data;
+++}
+++
+++bool
+++Mips_hash_builder_run_tests()
+++{
+++  // here we create our test setup - construct symbols which represent dynamic
+++  // hash symbols.
+++  std::vector<Symbol*> hashed_dynsyms;
+++
+++  hashed_dynsyms.push_back(new Test_symbol("", "",
+++                           elfcpp::STT_FUNC, elfcpp::STB_GLOBAL,
+++                           elfcpp::STV_DEFAULT, 0, 5, 0x00001505));
+++
+++  hashed_dynsyms.push_back(new Test_symbol("printf", "",
+++                           elfcpp::STT_FUNC, elfcpp::STB_GLOBAL,
+++                           elfcpp::STV_DEFAULT, 0, 3, 0x156b2bb8));
+++
+++  hashed_dynsyms.push_back(new Test_symbol("exit", "",
+++                           elfcpp::STT_FUNC, elfcpp::STB_GLOBAL,
+++                           elfcpp::STV_DEFAULT, 0, 20, 0x7c967e3f));
+++
+++  hashed_dynsyms.push_back(new Test_symbol("syscall", "",
+++                           elfcpp::STT_FUNC, elfcpp::STB_GLOBAL,
+++                           elfcpp::STV_DEFAULT, 0, 11, 0xbac212a0));
+++
+++  hashed_dynsyms.push_back(new Test_symbol("flapenguin.me", "",
+++                           elfcpp::STT_FUNC, elfcpp::STB_GLOBAL,
+++                           elfcpp::STV_DEFAULT, 0, 2, 0x8ae9f18e));
+++
+++  std::vector<Symbol*> unhashed_dynsyms;
+++
+++  unhashed_dynsyms.push_back(new Test_symbol("kill", "",
+++                             elfcpp::STT_FUNC, elfcpp::STB_GLOBAL,
+++                             elfcpp::STV_DEFAULT, 0, 10, 0x7c998911));
+++  unhashed_dynsyms.push_back(new Test_symbol("malloc", "",
+++                             elfcpp::STT_FUNC, elfcpp::STB_GLOBAL,
+++                             elfcpp::STV_DEFAULT, 0, 13, 0xd39ad3d));
+++
+++#ifdef HAVE_TARGET_32_BIG
+++  Mips_gnu_hash_tester<32, true> tester_32_be(hashed_dynsyms,
+++                                              unhashed_dynsyms);
+++  tester_32_be.run_tests();
+++#endif
+++
+++#ifdef HAVE_TARGET_32_LITTLE
+++  Mips_gnu_hash_tester<32, false> tester_32_le(hashed_dynsyms,
+++                                               unhashed_dynsyms);
+++  tester_32_le.run_tests();
+++#endif
+++
+++#ifdef HAVE_TARGET_64_BIG
+++  Mips_gnu_hash_tester<64, true> tester_64_be(hashed_dynsyms,
+++                                              unhashed_dynsyms);
+++  tester_64_be.run_tests();
+++#endif
+++
+++#ifdef HAVE_TARGET_64_LITTLE
+++  Mips_gnu_hash_tester<64, false> tester_64_le(hashed_dynsyms,
+++                                               unhashed_dynsyms);
+++  tester_64_le.run_tests();
+++#endif
+++
+++  return true;
+++}
+++
+++bool
+++Mips_gnu_hash_builder_test(Test_report*)
+++{
+++  General_options options;
+++
+++  set_parameters_options(&options);
+++
+++  Mips_hash_builder_run_tests();
+++
+++  return true;
+++}
+++
+++
+++Register_test object_register("Mips_gnu_hash_builder",
+++                              Mips_gnu_hash_builder_test);
+++
+++} // End namespace gold_testsuite.
+diff -Nuir binutils-orig/binutils-mips-goldld.patch binutils/binutils-mips-goldld.patch
+--- binutils-orig/binutils-mips-goldld.patch	1970-01-01 08:00:00.000000000 +0800
++++ binutils/binutils-mips-goldld.patch	2020-06-03 10:14:36.866118344 +0800
+@@ -0,0 +1,39 @@
++# DP: Fix gold on mips64 targets.
++
++gold/
++
++2016-08-09  Aurelien Jarno  <aurelien@aurel32.net>
++
++	* configure.tgt: Add mips64el*-*-*|mips64le*-*-* and mips64*-*-*.
++
++ 
++--- a/gold/configure.tgt
+++++ b/gold/configure.tgt
++@@ -153,6 +153,13 @@ aarch64*-*)
++  targ_big_endian=false
++  targ_extra_big_endian=true
++  ;;
+++mips*64*el*-*-*|mips*64*le*-*-*)
+++ targ_obj=mips
+++ targ_machine=EM_MIPS_RS3_LE
+++ targ_size=64
+++ targ_big_endian=false
+++ targ_extra_big_endian=true
+++ ;;
++ mips*el*-*-*|mips*le*-*-*)
++  targ_obj=mips
++  targ_machine=EM_MIPS_RS3_LE
++@@ -160,6 +167,13 @@ mips*el*-*-*|mips*le*-*-*)
++  targ_big_endian=false
++  targ_extra_big_endian=true
++  ;;
+++mips*64*-*-*)
+++ targ_obj=mips
+++ targ_machine=EM_MIPS
+++ targ_size=64
+++ targ_big_endian=true
+++ targ_extra_big_endian=false
+++ ;;
++ mips*-*-*)
++  targ_obj=mips
++  targ_machine=EM_MIPS
+diff -Nuir binutils-orig/binutils.spec binutils/binutils.spec
+--- binutils-orig/binutils.spec	2020-06-03 10:14:30.351328153 +0800
++++ binutils/binutils.spec	2020-06-03 10:14:36.866118344 +0800
+@@ -1,7 +1,7 @@
+ #
+ # spec file for package binutils
+ #
+-# Copyright (c) 2019 SUSE LINUX GmbH, Nuernberg, Germany.
++# Copyright (c) 2020 SUSE LINUX GmbH, Nuernberg, Germany.
+ #
+ # All modifications and additions to the file contributed by third parties
+ # remain the property of their copyright owners, unless otherwise agreed
+@@ -44,7 +44,7 @@
+ #
+ # handle test suite failures
+ #
+-%ifarch alpha %arm aarch64 hppa mips sh4 %sparc
++%ifarch alpha %arm aarch64 hppa %mips sh4 %sparc
+ %define	make_check_handling	true
+ %else
+ # XXX check again
+@@ -98,6 +98,11 @@
+ Patch90:        cross-avr-nesc-as.patch
+ Patch92:        cross-avr-omit_section_dynsym.patch
+ Patch93:        cross-avr-size.patch
++#mips64el
++Patch901:       binutils-mips-default-n64-1.patch
++Patch902:       binutils-mips-default-n64-2.patch
++Patch903:       binutils-mips-goldld.patch
++Patch904:       binutils-mips-goldld-add-gnu-hash.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ PreReq:         update-alternatives
+ 
+@@ -115,7 +120,7 @@
+ PreReq:         update-alternatives
+ %if 0%{suse_version} > 1100
+ %if 0%{!?cross:1}
+-%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc
++%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc %mips
+ %endif
+ %endif
+ 
+@@ -173,6 +178,10 @@
+ %patch92
+ %patch93 -p1
+ %endif
++%patch901 -p1
++%patch902 -p1
++%patch903 -p1
++%patch904 -p1
+ #
+ # test_vanilla
+ %endif
+@@ -251,9 +260,7 @@
+ 	--disable-separate-code \
+ %endif
+ 	--enable-new-dtags \
+-%if "%{TARGET}" != "mips"
+ 	--enable-default-hash-style=both \
+-%endif
+ 	--enable-shared
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring (???)
+@@ -319,9 +326,7 @@
+ %else
+   --with-sysroot=%{_prefix}/%{TARGET_OS}/sys-root \
+ %endif
+-%if "%{TARGET}" != "mips"
+   --enable-default-hash-style=both \
+-%endif
+   ${EXTRA_TARGETS:+--enable-targets="${EXTRA_TARGETS#,}"}
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring
+diff -Nuir binutils-orig/cross-aarch64-binutils.spec binutils/cross-aarch64-binutils.spec
+--- binutils-orig/cross-aarch64-binutils.spec	2020-06-03 10:14:30.351328153 +0800
++++ binutils/cross-aarch64-binutils.spec	2020-06-03 10:14:36.866118344 +0800
+@@ -1,7 +1,7 @@
+ #
+ # spec file for package cross-aarch64-binutils
+ #
+-# Copyright (c) 2019 SUSE LINUX GmbH, Nuernberg, Germany.
++# Copyright (c) 2020 SUSE LINUX GmbH, Nuernberg, Germany.
+ #
+ # All modifications and additions to the file contributed by third parties
+ # remain the property of their copyright owners, unless otherwise agreed
+@@ -47,7 +47,7 @@
+ #
+ # handle test suite failures
+ #
+-%ifarch alpha %arm aarch64 hppa mips sh4 %sparc
++%ifarch alpha %arm aarch64 hppa %mips sh4 %sparc
+ %define	make_check_handling	true
+ %else
+ # XXX check again
+@@ -101,6 +101,11 @@
+ Patch90:        cross-avr-nesc-as.patch
+ Patch92:        cross-avr-omit_section_dynsym.patch
+ Patch93:        cross-avr-size.patch
++#mips64el
++Patch901:       binutils-mips-default-n64-1.patch
++Patch902:       binutils-mips-default-n64-2.patch
++Patch903:       binutils-mips-goldld.patch
++Patch904:       binutils-mips-goldld-add-gnu-hash.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ PreReq:         update-alternatives
+ 
+@@ -118,7 +123,7 @@
+ PreReq:         update-alternatives
+ %if 0%{suse_version} > 1100
+ %if 0%{!?cross:1}
+-%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc
++%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc %mips
+ %endif
+ %endif
+ 
+@@ -176,6 +181,10 @@
+ %patch92
+ %patch93 -p1
+ %endif
++%patch901 -p1
++%patch902 -p1
++%patch903 -p1
++%patch904 -p1
+ #
+ # test_vanilla
+ %endif
+@@ -254,9 +263,7 @@
+ 	--disable-separate-code \
+ %endif
+ 	--enable-new-dtags \
+-%if "%{TARGET}" != "mips"
+ 	--enable-default-hash-style=both \
+-%endif
+ 	--enable-shared
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring (???)
+@@ -322,9 +329,7 @@
+ %else
+   --with-sysroot=%{_prefix}/%{TARGET_OS}/sys-root \
+ %endif
+-%if "%{TARGET}" != "mips"
+   --enable-default-hash-style=both \
+-%endif
+   ${EXTRA_TARGETS:+--enable-targets="${EXTRA_TARGETS#,}"}
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring
+diff -Nuir binutils-orig/cross-arm-binutils.spec binutils/cross-arm-binutils.spec
+--- binutils-orig/cross-arm-binutils.spec	2020-06-03 10:14:30.351328153 +0800
++++ binutils/cross-arm-binutils.spec	2020-06-03 10:14:36.866118344 +0800
+@@ -1,7 +1,7 @@
+ #
+ # spec file for package cross-arm-binutils
+ #
+-# Copyright (c) 2019 SUSE LINUX GmbH, Nuernberg, Germany.
++# Copyright (c) 2020 SUSE LINUX GmbH, Nuernberg, Germany.
+ #
+ # All modifications and additions to the file contributed by third parties
+ # remain the property of their copyright owners, unless otherwise agreed
+@@ -47,7 +47,7 @@
+ #
+ # handle test suite failures
+ #
+-%ifarch alpha %arm aarch64 hppa mips sh4 %sparc
++%ifarch alpha %arm aarch64 hppa %mips sh4 %sparc
+ %define	make_check_handling	true
+ %else
+ # XXX check again
+@@ -101,6 +101,11 @@
+ Patch90:        cross-avr-nesc-as.patch
+ Patch92:        cross-avr-omit_section_dynsym.patch
+ Patch93:        cross-avr-size.patch
++#mips64el
++Patch901:       binutils-mips-default-n64-1.patch
++Patch902:       binutils-mips-default-n64-2.patch
++Patch903:       binutils-mips-goldld.patch
++Patch904:       binutils-mips-goldld-add-gnu-hash.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ PreReq:         update-alternatives
+ 
+@@ -118,7 +123,7 @@
+ PreReq:         update-alternatives
+ %if 0%{suse_version} > 1100
+ %if 0%{!?cross:1}
+-%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc
++%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc %mips
+ %endif
+ %endif
+ 
+@@ -176,6 +181,10 @@
+ %patch92
+ %patch93 -p1
+ %endif
++%patch901 -p1
++%patch902 -p1
++%patch903 -p1
++%patch904 -p1
+ #
+ # test_vanilla
+ %endif
+@@ -254,9 +263,7 @@
+ 	--disable-separate-code \
+ %endif
+ 	--enable-new-dtags \
+-%if "%{TARGET}" != "mips"
+ 	--enable-default-hash-style=both \
+-%endif
+ 	--enable-shared
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring (???)
+@@ -322,9 +329,7 @@
+ %else
+   --with-sysroot=%{_prefix}/%{TARGET_OS}/sys-root \
+ %endif
+-%if "%{TARGET}" != "mips"
+   --enable-default-hash-style=both \
+-%endif
+   ${EXTRA_TARGETS:+--enable-targets="${EXTRA_TARGETS#,}"}
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring
+diff -Nuir binutils-orig/cross-avr-binutils.spec binutils/cross-avr-binutils.spec
+--- binutils-orig/cross-avr-binutils.spec	2020-06-03 10:14:30.352328121 +0800
++++ binutils/cross-avr-binutils.spec	2020-06-03 10:14:36.866118344 +0800
+@@ -1,7 +1,7 @@
+ #
+ # spec file for package cross-avr-binutils
+ #
+-# Copyright (c) 2019 SUSE LINUX GmbH, Nuernberg, Germany.
++# Copyright (c) 2020 SUSE LINUX GmbH, Nuernberg, Germany.
+ #
+ # All modifications and additions to the file contributed by third parties
+ # remain the property of their copyright owners, unless otherwise agreed
+@@ -47,7 +47,7 @@
+ #
+ # handle test suite failures
+ #
+-%ifarch alpha %arm aarch64 hppa mips sh4 %sparc
++%ifarch alpha %arm aarch64 hppa %mips sh4 %sparc
+ %define	make_check_handling	true
+ %else
+ # XXX check again
+@@ -101,6 +101,11 @@
+ Patch90:        cross-avr-nesc-as.patch
+ Patch92:        cross-avr-omit_section_dynsym.patch
+ Patch93:        cross-avr-size.patch
++#mips64el
++Patch901:       binutils-mips-default-n64-1.patch
++Patch902:       binutils-mips-default-n64-2.patch
++Patch903:       binutils-mips-goldld.patch
++Patch904:       binutils-mips-goldld-add-gnu-hash.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ PreReq:         update-alternatives
+ 
+@@ -118,7 +123,7 @@
+ PreReq:         update-alternatives
+ %if 0%{suse_version} > 1100
+ %if 0%{!?cross:1}
+-%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc
++%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc %mips
+ %endif
+ %endif
+ 
+@@ -176,6 +181,10 @@
+ %patch92
+ %patch93 -p1
+ %endif
++%patch901 -p1
++%patch902 -p1
++%patch903 -p1
++%patch904 -p1
+ #
+ # test_vanilla
+ %endif
+@@ -254,9 +263,7 @@
+ 	--disable-separate-code \
+ %endif
+ 	--enable-new-dtags \
+-%if "%{TARGET}" != "mips"
+ 	--enable-default-hash-style=both \
+-%endif
+ 	--enable-shared
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring (???)
+@@ -322,9 +329,7 @@
+ %else
+   --with-sysroot=%{_prefix}/%{TARGET_OS}/sys-root \
+ %endif
+-%if "%{TARGET}" != "mips"
+   --enable-default-hash-style=both \
+-%endif
+   ${EXTRA_TARGETS:+--enable-targets="${EXTRA_TARGETS#,}"}
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring
+diff -Nuir binutils-orig/cross-epiphany-binutils.spec binutils/cross-epiphany-binutils.spec
+--- binutils-orig/cross-epiphany-binutils.spec	2020-06-03 10:14:30.352328121 +0800
++++ binutils/cross-epiphany-binutils.spec	2020-06-03 10:14:36.866118344 +0800
+@@ -1,7 +1,7 @@
+ #
+ # spec file for package cross-epiphany-binutils
+ #
+-# Copyright (c) 2019 SUSE LINUX GmbH, Nuernberg, Germany.
++# Copyright (c) 2020 SUSE LINUX GmbH, Nuernberg, Germany.
+ #
+ # All modifications and additions to the file contributed by third parties
+ # remain the property of their copyright owners, unless otherwise agreed
+@@ -47,7 +47,7 @@
+ #
+ # handle test suite failures
+ #
+-%ifarch alpha %arm aarch64 hppa mips sh4 %sparc
++%ifarch alpha %arm aarch64 hppa %mips sh4 %sparc
+ %define	make_check_handling	true
+ %else
+ # XXX check again
+@@ -101,6 +101,11 @@
+ Patch90:        cross-avr-nesc-as.patch
+ Patch92:        cross-avr-omit_section_dynsym.patch
+ Patch93:        cross-avr-size.patch
++#mips64el
++Patch901:       binutils-mips-default-n64-1.patch
++Patch902:       binutils-mips-default-n64-2.patch
++Patch903:       binutils-mips-goldld.patch
++Patch904:       binutils-mips-goldld-add-gnu-hash.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ PreReq:         update-alternatives
+ 
+@@ -118,7 +123,7 @@
+ PreReq:         update-alternatives
+ %if 0%{suse_version} > 1100
+ %if 0%{!?cross:1}
+-%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc
++%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc %mips
+ %endif
+ %endif
+ 
+@@ -176,6 +181,10 @@
+ %patch92
+ %patch93 -p1
+ %endif
++%patch901 -p1
++%patch902 -p1
++%patch903 -p1
++%patch904 -p1
+ #
+ # test_vanilla
+ %endif
+@@ -254,9 +263,7 @@
+ 	--disable-separate-code \
+ %endif
+ 	--enable-new-dtags \
+-%if "%{TARGET}" != "mips"
+ 	--enable-default-hash-style=both \
+-%endif
+ 	--enable-shared
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring (???)
+@@ -322,9 +329,7 @@
+ %else
+   --with-sysroot=%{_prefix}/%{TARGET_OS}/sys-root \
+ %endif
+-%if "%{TARGET}" != "mips"
+   --enable-default-hash-style=both \
+-%endif
+   ${EXTRA_TARGETS:+--enable-targets="${EXTRA_TARGETS#,}"}
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring
+diff -Nuir binutils-orig/cross-hppa-binutils.spec binutils/cross-hppa-binutils.spec
+--- binutils-orig/cross-hppa-binutils.spec	2020-06-03 10:14:30.352328121 +0800
++++ binutils/cross-hppa-binutils.spec	2020-06-03 10:14:36.866118344 +0800
+@@ -1,7 +1,7 @@
+ #
+ # spec file for package cross-hppa-binutils
+ #
+-# Copyright (c) 2019 SUSE LINUX GmbH, Nuernberg, Germany.
++# Copyright (c) 2020 SUSE LINUX GmbH, Nuernberg, Germany.
+ #
+ # All modifications and additions to the file contributed by third parties
+ # remain the property of their copyright owners, unless otherwise agreed
+@@ -47,7 +47,7 @@
+ #
+ # handle test suite failures
+ #
+-%ifarch alpha %arm aarch64 hppa mips sh4 %sparc
++%ifarch alpha %arm aarch64 hppa %mips sh4 %sparc
+ %define	make_check_handling	true
+ %else
+ # XXX check again
+@@ -101,6 +101,11 @@
+ Patch90:        cross-avr-nesc-as.patch
+ Patch92:        cross-avr-omit_section_dynsym.patch
+ Patch93:        cross-avr-size.patch
++#mips64el
++Patch901:       binutils-mips-default-n64-1.patch
++Patch902:       binutils-mips-default-n64-2.patch
++Patch903:       binutils-mips-goldld.patch
++Patch904:       binutils-mips-goldld-add-gnu-hash.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ PreReq:         update-alternatives
+ 
+@@ -118,7 +123,7 @@
+ PreReq:         update-alternatives
+ %if 0%{suse_version} > 1100
+ %if 0%{!?cross:1}
+-%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc
++%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc %mips
+ %endif
+ %endif
+ 
+@@ -176,6 +181,10 @@
+ %patch92
+ %patch93 -p1
+ %endif
++%patch901 -p1
++%patch902 -p1
++%patch903 -p1
++%patch904 -p1
+ #
+ # test_vanilla
+ %endif
+@@ -254,9 +263,7 @@
+ 	--disable-separate-code \
+ %endif
+ 	--enable-new-dtags \
+-%if "%{TARGET}" != "mips"
+ 	--enable-default-hash-style=both \
+-%endif
+ 	--enable-shared
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring (???)
+@@ -322,9 +329,7 @@
+ %else
+   --with-sysroot=%{_prefix}/%{TARGET_OS}/sys-root \
+ %endif
+-%if "%{TARGET}" != "mips"
+   --enable-default-hash-style=both \
+-%endif
+   ${EXTRA_TARGETS:+--enable-targets="${EXTRA_TARGETS#,}"}
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring
+diff -Nuir binutils-orig/cross-hppa64-binutils.spec binutils/cross-hppa64-binutils.spec
+--- binutils-orig/cross-hppa64-binutils.spec	2020-06-03 10:14:30.352328121 +0800
++++ binutils/cross-hppa64-binutils.spec	2020-06-03 10:14:36.866118344 +0800
+@@ -1,7 +1,7 @@
+ #
+ # spec file for package cross-hppa64-binutils
+ #
+-# Copyright (c) 2019 SUSE LINUX GmbH, Nuernberg, Germany.
++# Copyright (c) 2020 SUSE LINUX GmbH, Nuernberg, Germany.
+ #
+ # All modifications and additions to the file contributed by third parties
+ # remain the property of their copyright owners, unless otherwise agreed
+@@ -47,7 +47,7 @@
+ #
+ # handle test suite failures
+ #
+-%ifarch alpha %arm aarch64 hppa mips sh4 %sparc
++%ifarch alpha %arm aarch64 hppa %mips sh4 %sparc
+ %define	make_check_handling	true
+ %else
+ # XXX check again
+@@ -101,6 +101,11 @@
+ Patch90:        cross-avr-nesc-as.patch
+ Patch92:        cross-avr-omit_section_dynsym.patch
+ Patch93:        cross-avr-size.patch
++#mips64el
++Patch901:       binutils-mips-default-n64-1.patch
++Patch902:       binutils-mips-default-n64-2.patch
++Patch903:       binutils-mips-goldld.patch
++Patch904:       binutils-mips-goldld-add-gnu-hash.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ PreReq:         update-alternatives
+ 
+@@ -118,7 +123,7 @@
+ PreReq:         update-alternatives
+ %if 0%{suse_version} > 1100
+ %if 0%{!?cross:1}
+-%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc
++%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc %mips
+ %endif
+ %endif
+ 
+@@ -176,6 +181,10 @@
+ %patch92
+ %patch93 -p1
+ %endif
++%patch901 -p1
++%patch902 -p1
++%patch903 -p1
++%patch904 -p1
+ #
+ # test_vanilla
+ %endif
+@@ -254,9 +263,7 @@
+ 	--disable-separate-code \
+ %endif
+ 	--enable-new-dtags \
+-%if "%{TARGET}" != "mips"
+ 	--enable-default-hash-style=both \
+-%endif
+ 	--enable-shared
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring (???)
+@@ -322,9 +329,7 @@
+ %else
+   --with-sysroot=%{_prefix}/%{TARGET_OS}/sys-root \
+ %endif
+-%if "%{TARGET}" != "mips"
+   --enable-default-hash-style=both \
+-%endif
+   ${EXTRA_TARGETS:+--enable-targets="${EXTRA_TARGETS#,}"}
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring
+diff -Nuir binutils-orig/cross-i386-binutils.spec binutils/cross-i386-binutils.spec
+--- binutils-orig/cross-i386-binutils.spec	2020-06-03 10:14:30.352328121 +0800
++++ binutils/cross-i386-binutils.spec	2020-06-03 10:14:36.866118344 +0800
+@@ -1,7 +1,7 @@
+ #
+ # spec file for package cross-i386-binutils
+ #
+-# Copyright (c) 2019 SUSE LINUX GmbH, Nuernberg, Germany.
++# Copyright (c) 2020 SUSE LINUX GmbH, Nuernberg, Germany.
+ #
+ # All modifications and additions to the file contributed by third parties
+ # remain the property of their copyright owners, unless otherwise agreed
+@@ -47,7 +47,7 @@
+ #
+ # handle test suite failures
+ #
+-%ifarch alpha %arm aarch64 hppa mips sh4 %sparc
++%ifarch alpha %arm aarch64 hppa %mips sh4 %sparc
+ %define	make_check_handling	true
+ %else
+ # XXX check again
+@@ -101,6 +101,11 @@
+ Patch90:        cross-avr-nesc-as.patch
+ Patch92:        cross-avr-omit_section_dynsym.patch
+ Patch93:        cross-avr-size.patch
++#mips64el
++Patch901:       binutils-mips-default-n64-1.patch
++Patch902:       binutils-mips-default-n64-2.patch
++Patch903:       binutils-mips-goldld.patch
++Patch904:       binutils-mips-goldld-add-gnu-hash.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ PreReq:         update-alternatives
+ 
+@@ -118,7 +123,7 @@
+ PreReq:         update-alternatives
+ %if 0%{suse_version} > 1100
+ %if 0%{!?cross:1}
+-%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc
++%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc %mips
+ %endif
+ %endif
+ 
+@@ -176,6 +181,10 @@
+ %patch92
+ %patch93 -p1
+ %endif
++%patch901 -p1
++%patch902 -p1
++%patch903 -p1
++%patch904 -p1
+ #
+ # test_vanilla
+ %endif
+@@ -254,9 +263,7 @@
+ 	--disable-separate-code \
+ %endif
+ 	--enable-new-dtags \
+-%if "%{TARGET}" != "mips"
+ 	--enable-default-hash-style=both \
+-%endif
+ 	--enable-shared
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring (???)
+@@ -322,9 +329,7 @@
+ %else
+   --with-sysroot=%{_prefix}/%{TARGET_OS}/sys-root \
+ %endif
+-%if "%{TARGET}" != "mips"
+   --enable-default-hash-style=both \
+-%endif
+   ${EXTRA_TARGETS:+--enable-targets="${EXTRA_TARGETS#,}"}
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring
+diff -Nuir binutils-orig/cross-ia64-binutils.spec binutils/cross-ia64-binutils.spec
+--- binutils-orig/cross-ia64-binutils.spec	2020-06-03 10:14:30.353328089 +0800
++++ binutils/cross-ia64-binutils.spec	2020-06-03 10:14:36.867118311 +0800
+@@ -1,7 +1,7 @@
+ #
+ # spec file for package cross-ia64-binutils
+ #
+-# Copyright (c) 2019 SUSE LINUX GmbH, Nuernberg, Germany.
++# Copyright (c) 2020 SUSE LINUX GmbH, Nuernberg, Germany.
+ #
+ # All modifications and additions to the file contributed by third parties
+ # remain the property of their copyright owners, unless otherwise agreed
+@@ -47,7 +47,7 @@
+ #
+ # handle test suite failures
+ #
+-%ifarch alpha %arm aarch64 hppa mips sh4 %sparc
++%ifarch alpha %arm aarch64 hppa %mips sh4 %sparc
+ %define	make_check_handling	true
+ %else
+ # XXX check again
+@@ -101,6 +101,11 @@
+ Patch90:        cross-avr-nesc-as.patch
+ Patch92:        cross-avr-omit_section_dynsym.patch
+ Patch93:        cross-avr-size.patch
++#mips64el
++Patch901:       binutils-mips-default-n64-1.patch
++Patch902:       binutils-mips-default-n64-2.patch
++Patch903:       binutils-mips-goldld.patch
++Patch904:       binutils-mips-goldld-add-gnu-hash.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ PreReq:         update-alternatives
+ 
+@@ -118,7 +123,7 @@
+ PreReq:         update-alternatives
+ %if 0%{suse_version} > 1100
+ %if 0%{!?cross:1}
+-%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc
++%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc %mips
+ %endif
+ %endif
+ 
+@@ -176,6 +181,10 @@
+ %patch92
+ %patch93 -p1
+ %endif
++%patch901 -p1
++%patch902 -p1
++%patch903 -p1
++%patch904 -p1
+ #
+ # test_vanilla
+ %endif
+@@ -254,9 +263,7 @@
+ 	--disable-separate-code \
+ %endif
+ 	--enable-new-dtags \
+-%if "%{TARGET}" != "mips"
+ 	--enable-default-hash-style=both \
+-%endif
+ 	--enable-shared
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring (???)
+@@ -322,9 +329,7 @@
+ %else
+   --with-sysroot=%{_prefix}/%{TARGET_OS}/sys-root \
+ %endif
+-%if "%{TARGET}" != "mips"
+   --enable-default-hash-style=both \
+-%endif
+   ${EXTRA_TARGETS:+--enable-targets="${EXTRA_TARGETS#,}"}
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring
+diff -Nuir binutils-orig/cross-m68k-binutils.spec binutils/cross-m68k-binutils.spec
+--- binutils-orig/cross-m68k-binutils.spec	2020-06-03 10:14:30.353328089 +0800
++++ binutils/cross-m68k-binutils.spec	2020-06-03 10:14:36.867118311 +0800
+@@ -1,7 +1,7 @@
+ #
+ # spec file for package cross-m68k-binutils
+ #
+-# Copyright (c) 2019 SUSE LINUX GmbH, Nuernberg, Germany.
++# Copyright (c) 2020 SUSE LINUX GmbH, Nuernberg, Germany.
+ #
+ # All modifications and additions to the file contributed by third parties
+ # remain the property of their copyright owners, unless otherwise agreed
+@@ -47,7 +47,7 @@
+ #
+ # handle test suite failures
+ #
+-%ifarch alpha %arm aarch64 hppa mips sh4 %sparc
++%ifarch alpha %arm aarch64 hppa %mips sh4 %sparc
+ %define	make_check_handling	true
+ %else
+ # XXX check again
+@@ -101,6 +101,11 @@
+ Patch90:        cross-avr-nesc-as.patch
+ Patch92:        cross-avr-omit_section_dynsym.patch
+ Patch93:        cross-avr-size.patch
++#mips64el
++Patch901:       binutils-mips-default-n64-1.patch
++Patch902:       binutils-mips-default-n64-2.patch
++Patch903:       binutils-mips-goldld.patch
++Patch904:       binutils-mips-goldld-add-gnu-hash.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ PreReq:         update-alternatives
+ 
+@@ -118,7 +123,7 @@
+ PreReq:         update-alternatives
+ %if 0%{suse_version} > 1100
+ %if 0%{!?cross:1}
+-%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc
++%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc %mips
+ %endif
+ %endif
+ 
+@@ -176,6 +181,10 @@
+ %patch92
+ %patch93 -p1
+ %endif
++%patch901 -p1
++%patch902 -p1
++%patch903 -p1
++%patch904 -p1
+ #
+ # test_vanilla
+ %endif
+@@ -254,9 +263,7 @@
+ 	--disable-separate-code \
+ %endif
+ 	--enable-new-dtags \
+-%if "%{TARGET}" != "mips"
+ 	--enable-default-hash-style=both \
+-%endif
+ 	--enable-shared
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring (???)
+@@ -322,9 +329,7 @@
+ %else
+   --with-sysroot=%{_prefix}/%{TARGET_OS}/sys-root \
+ %endif
+-%if "%{TARGET}" != "mips"
+   --enable-default-hash-style=both \
+-%endif
+   ${EXTRA_TARGETS:+--enable-targets="${EXTRA_TARGETS#,}"}
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring
+diff -Nuir binutils-orig/cross-mips-binutils.spec binutils/cross-mips-binutils.spec
+--- binutils-orig/cross-mips-binutils.spec	2020-06-03 10:14:30.353328089 +0800
++++ binutils/cross-mips-binutils.spec	2020-06-03 10:14:36.867118311 +0800
+@@ -1,7 +1,7 @@
+ #
+ # spec file for package cross-mips-binutils
+ #
+-# Copyright (c) 2019 SUSE LINUX GmbH, Nuernberg, Germany.
++# Copyright (c) 2020 SUSE LINUX GmbH, Nuernberg, Germany.
+ #
+ # All modifications and additions to the file contributed by third parties
+ # remain the property of their copyright owners, unless otherwise agreed
+@@ -47,7 +47,7 @@
+ #
+ # handle test suite failures
+ #
+-%ifarch alpha %arm aarch64 hppa mips sh4 %sparc
++%ifarch alpha %arm aarch64 hppa %mips sh4 %sparc
+ %define	make_check_handling	true
+ %else
+ # XXX check again
+@@ -101,6 +101,11 @@
+ Patch90:        cross-avr-nesc-as.patch
+ Patch92:        cross-avr-omit_section_dynsym.patch
+ Patch93:        cross-avr-size.patch
++#mips64el
++Patch901:       binutils-mips-default-n64-1.patch
++Patch902:       binutils-mips-default-n64-2.patch
++Patch903:       binutils-mips-goldld.patch
++Patch904:       binutils-mips-goldld-add-gnu-hash.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ PreReq:         update-alternatives
+ 
+@@ -118,7 +123,7 @@
+ PreReq:         update-alternatives
+ %if 0%{suse_version} > 1100
+ %if 0%{!?cross:1}
+-%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc
++%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc %mips
+ %endif
+ %endif
+ 
+@@ -176,6 +181,10 @@
+ %patch92
+ %patch93 -p1
+ %endif
++%patch901 -p1
++%patch902 -p1
++%patch903 -p1
++%patch904 -p1
+ #
+ # test_vanilla
+ %endif
+@@ -254,9 +263,7 @@
+ 	--disable-separate-code \
+ %endif
+ 	--enable-new-dtags \
+-%if "%{TARGET}" != "mips"
+ 	--enable-default-hash-style=both \
+-%endif
+ 	--enable-shared
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring (???)
+@@ -322,9 +329,7 @@
+ %else
+   --with-sysroot=%{_prefix}/%{TARGET_OS}/sys-root \
+ %endif
+-%if "%{TARGET}" != "mips"
+   --enable-default-hash-style=both \
+-%endif
+   ${EXTRA_TARGETS:+--enable-targets="${EXTRA_TARGETS#,}"}
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring
+diff -Nuir binutils-orig/cross-ppc-binutils.spec binutils/cross-ppc-binutils.spec
+--- binutils-orig/cross-ppc-binutils.spec	2020-06-03 10:14:30.353328089 +0800
++++ binutils/cross-ppc-binutils.spec	2020-06-03 10:14:36.867118311 +0800
+@@ -1,7 +1,7 @@
+ #
+ # spec file for package cross-ppc-binutils
+ #
+-# Copyright (c) 2019 SUSE LINUX GmbH, Nuernberg, Germany.
++# Copyright (c) 2020 SUSE LINUX GmbH, Nuernberg, Germany.
+ #
+ # All modifications and additions to the file contributed by third parties
+ # remain the property of their copyright owners, unless otherwise agreed
+@@ -47,7 +47,7 @@
+ #
+ # handle test suite failures
+ #
+-%ifarch alpha %arm aarch64 hppa mips sh4 %sparc
++%ifarch alpha %arm aarch64 hppa %mips sh4 %sparc
+ %define	make_check_handling	true
+ %else
+ # XXX check again
+@@ -101,6 +101,11 @@
+ Patch90:        cross-avr-nesc-as.patch
+ Patch92:        cross-avr-omit_section_dynsym.patch
+ Patch93:        cross-avr-size.patch
++#mips64el
++Patch901:       binutils-mips-default-n64-1.patch
++Patch902:       binutils-mips-default-n64-2.patch
++Patch903:       binutils-mips-goldld.patch
++Patch904:       binutils-mips-goldld-add-gnu-hash.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ PreReq:         update-alternatives
+ 
+@@ -118,7 +123,7 @@
+ PreReq:         update-alternatives
+ %if 0%{suse_version} > 1100
+ %if 0%{!?cross:1}
+-%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc
++%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc %mips
+ %endif
+ %endif
+ 
+@@ -176,6 +181,10 @@
+ %patch92
+ %patch93 -p1
+ %endif
++%patch901 -p1
++%patch902 -p1
++%patch903 -p1
++%patch904 -p1
+ #
+ # test_vanilla
+ %endif
+@@ -254,9 +263,7 @@
+ 	--disable-separate-code \
+ %endif
+ 	--enable-new-dtags \
+-%if "%{TARGET}" != "mips"
+ 	--enable-default-hash-style=both \
+-%endif
+ 	--enable-shared
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring (???)
+@@ -322,9 +329,7 @@
+ %else
+   --with-sysroot=%{_prefix}/%{TARGET_OS}/sys-root \
+ %endif
+-%if "%{TARGET}" != "mips"
+   --enable-default-hash-style=both \
+-%endif
+   ${EXTRA_TARGETS:+--enable-targets="${EXTRA_TARGETS#,}"}
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring
+diff -Nuir binutils-orig/cross-ppc64-binutils.spec binutils/cross-ppc64-binutils.spec
+--- binutils-orig/cross-ppc64-binutils.spec	2020-06-03 10:14:30.354328058 +0800
++++ binutils/cross-ppc64-binutils.spec	2020-06-03 10:14:36.867118311 +0800
+@@ -1,7 +1,7 @@
+ #
+ # spec file for package cross-ppc64-binutils
+ #
+-# Copyright (c) 2019 SUSE LINUX GmbH, Nuernberg, Germany.
++# Copyright (c) 2020 SUSE LINUX GmbH, Nuernberg, Germany.
+ #
+ # All modifications and additions to the file contributed by third parties
+ # remain the property of their copyright owners, unless otherwise agreed
+@@ -47,7 +47,7 @@
+ #
+ # handle test suite failures
+ #
+-%ifarch alpha %arm aarch64 hppa mips sh4 %sparc
++%ifarch alpha %arm aarch64 hppa %mips sh4 %sparc
+ %define	make_check_handling	true
+ %else
+ # XXX check again
+@@ -101,6 +101,11 @@
+ Patch90:        cross-avr-nesc-as.patch
+ Patch92:        cross-avr-omit_section_dynsym.patch
+ Patch93:        cross-avr-size.patch
++#mips64el
++Patch901:       binutils-mips-default-n64-1.patch
++Patch902:       binutils-mips-default-n64-2.patch
++Patch903:       binutils-mips-goldld.patch
++Patch904:       binutils-mips-goldld-add-gnu-hash.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ PreReq:         update-alternatives
+ 
+@@ -118,7 +123,7 @@
+ PreReq:         update-alternatives
+ %if 0%{suse_version} > 1100
+ %if 0%{!?cross:1}
+-%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc
++%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc %mips
+ %endif
+ %endif
+ 
+@@ -176,6 +181,10 @@
+ %patch92
+ %patch93 -p1
+ %endif
++%patch901 -p1
++%patch902 -p1
++%patch903 -p1
++%patch904 -p1
+ #
+ # test_vanilla
+ %endif
+@@ -254,9 +263,7 @@
+ 	--disable-separate-code \
+ %endif
+ 	--enable-new-dtags \
+-%if "%{TARGET}" != "mips"
+ 	--enable-default-hash-style=both \
+-%endif
+ 	--enable-shared
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring (???)
+@@ -322,9 +329,7 @@
+ %else
+   --with-sysroot=%{_prefix}/%{TARGET_OS}/sys-root \
+ %endif
+-%if "%{TARGET}" != "mips"
+   --enable-default-hash-style=both \
+-%endif
+   ${EXTRA_TARGETS:+--enable-targets="${EXTRA_TARGETS#,}"}
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring
+diff -Nuir binutils-orig/cross-ppc64le-binutils.spec binutils/cross-ppc64le-binutils.spec
+--- binutils-orig/cross-ppc64le-binutils.spec	2020-06-03 10:14:30.354328058 +0800
++++ binutils/cross-ppc64le-binutils.spec	2020-06-03 10:14:36.867118311 +0800
+@@ -1,7 +1,7 @@
+ #
+ # spec file for package cross-ppc64le-binutils
+ #
+-# Copyright (c) 2019 SUSE LINUX GmbH, Nuernberg, Germany.
++# Copyright (c) 2020 SUSE LINUX GmbH, Nuernberg, Germany.
+ #
+ # All modifications and additions to the file contributed by third parties
+ # remain the property of their copyright owners, unless otherwise agreed
+@@ -47,7 +47,7 @@
+ #
+ # handle test suite failures
+ #
+-%ifarch alpha %arm aarch64 hppa mips sh4 %sparc
++%ifarch alpha %arm aarch64 hppa %mips sh4 %sparc
+ %define	make_check_handling	true
+ %else
+ # XXX check again
+@@ -101,6 +101,11 @@
+ Patch90:        cross-avr-nesc-as.patch
+ Patch92:        cross-avr-omit_section_dynsym.patch
+ Patch93:        cross-avr-size.patch
++#mips64el
++Patch901:       binutils-mips-default-n64-1.patch
++Patch902:       binutils-mips-default-n64-2.patch
++Patch903:       binutils-mips-goldld.patch
++Patch904:       binutils-mips-goldld-add-gnu-hash.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ PreReq:         update-alternatives
+ 
+@@ -118,7 +123,7 @@
+ PreReq:         update-alternatives
+ %if 0%{suse_version} > 1100
+ %if 0%{!?cross:1}
+-%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc
++%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc %mips
+ %endif
+ %endif
+ 
+@@ -176,6 +181,10 @@
+ %patch92
+ %patch93 -p1
+ %endif
++%patch901 -p1
++%patch902 -p1
++%patch903 -p1
++%patch904 -p1
+ #
+ # test_vanilla
+ %endif
+@@ -254,9 +263,7 @@
+ 	--disable-separate-code \
+ %endif
+ 	--enable-new-dtags \
+-%if "%{TARGET}" != "mips"
+ 	--enable-default-hash-style=both \
+-%endif
+ 	--enable-shared
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring (???)
+@@ -322,9 +329,7 @@
+ %else
+   --with-sysroot=%{_prefix}/%{TARGET_OS}/sys-root \
+ %endif
+-%if "%{TARGET}" != "mips"
+   --enable-default-hash-style=both \
+-%endif
+   ${EXTRA_TARGETS:+--enable-targets="${EXTRA_TARGETS#,}"}
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring
+diff -Nuir binutils-orig/cross-riscv64-binutils.spec binutils/cross-riscv64-binutils.spec
+--- binutils-orig/cross-riscv64-binutils.spec	2020-06-03 10:14:30.354328058 +0800
++++ binutils/cross-riscv64-binutils.spec	2020-06-03 10:14:36.867118311 +0800
+@@ -1,7 +1,7 @@
+ #
+ # spec file for package cross-riscv64-binutils
+ #
+-# Copyright (c) 2019 SUSE LINUX GmbH, Nuernberg, Germany.
++# Copyright (c) 2020 SUSE LINUX GmbH, Nuernberg, Germany.
+ #
+ # All modifications and additions to the file contributed by third parties
+ # remain the property of their copyright owners, unless otherwise agreed
+@@ -47,7 +47,7 @@
+ #
+ # handle test suite failures
+ #
+-%ifarch alpha %arm aarch64 hppa mips sh4 %sparc
++%ifarch alpha %arm aarch64 hppa %mips sh4 %sparc
+ %define	make_check_handling	true
+ %else
+ # XXX check again
+@@ -101,6 +101,11 @@
+ Patch90:        cross-avr-nesc-as.patch
+ Patch92:        cross-avr-omit_section_dynsym.patch
+ Patch93:        cross-avr-size.patch
++#mips64el
++Patch901:       binutils-mips-default-n64-1.patch
++Patch902:       binutils-mips-default-n64-2.patch
++Patch903:       binutils-mips-goldld.patch
++Patch904:       binutils-mips-goldld-add-gnu-hash.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ PreReq:         update-alternatives
+ 
+@@ -118,7 +123,7 @@
+ PreReq:         update-alternatives
+ %if 0%{suse_version} > 1100
+ %if 0%{!?cross:1}
+-%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc
++%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc %mips
+ %endif
+ %endif
+ 
+@@ -176,6 +181,10 @@
+ %patch92
+ %patch93 -p1
+ %endif
++%patch901 -p1
++%patch902 -p1
++%patch903 -p1
++%patch904 -p1
+ #
+ # test_vanilla
+ %endif
+@@ -254,9 +263,7 @@
+ 	--disable-separate-code \
+ %endif
+ 	--enable-new-dtags \
+-%if "%{TARGET}" != "mips"
+ 	--enable-default-hash-style=both \
+-%endif
+ 	--enable-shared
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring (???)
+@@ -322,9 +329,7 @@
+ %else
+   --with-sysroot=%{_prefix}/%{TARGET_OS}/sys-root \
+ %endif
+-%if "%{TARGET}" != "mips"
+   --enable-default-hash-style=both \
+-%endif
+   ${EXTRA_TARGETS:+--enable-targets="${EXTRA_TARGETS#,}"}
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring
+diff -Nuir binutils-orig/cross-rx-binutils.spec binutils/cross-rx-binutils.spec
+--- binutils-orig/cross-rx-binutils.spec	2020-06-03 10:14:30.354328058 +0800
++++ binutils/cross-rx-binutils.spec	2020-06-03 10:14:36.867118311 +0800
+@@ -1,7 +1,7 @@
+ #
+ # spec file for package cross-rx-binutils
+ #
+-# Copyright (c) 2019 SUSE LINUX GmbH, Nuernberg, Germany.
++# Copyright (c) 2020 SUSE LINUX GmbH, Nuernberg, Germany.
+ #
+ # All modifications and additions to the file contributed by third parties
+ # remain the property of their copyright owners, unless otherwise agreed
+@@ -47,7 +47,7 @@
+ #
+ # handle test suite failures
+ #
+-%ifarch alpha %arm aarch64 hppa mips sh4 %sparc
++%ifarch alpha %arm aarch64 hppa %mips sh4 %sparc
+ %define	make_check_handling	true
+ %else
+ # XXX check again
+@@ -101,6 +101,11 @@
+ Patch90:        cross-avr-nesc-as.patch
+ Patch92:        cross-avr-omit_section_dynsym.patch
+ Patch93:        cross-avr-size.patch
++#mips64el
++Patch901:       binutils-mips-default-n64-1.patch
++Patch902:       binutils-mips-default-n64-2.patch
++Patch903:       binutils-mips-goldld.patch
++Patch904:       binutils-mips-goldld-add-gnu-hash.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ PreReq:         update-alternatives
+ 
+@@ -118,7 +123,7 @@
+ PreReq:         update-alternatives
+ %if 0%{suse_version} > 1100
+ %if 0%{!?cross:1}
+-%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc
++%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc %mips
+ %endif
+ %endif
+ 
+@@ -176,6 +181,10 @@
+ %patch92
+ %patch93 -p1
+ %endif
++%patch901 -p1
++%patch902 -p1
++%patch903 -p1
++%patch904 -p1
+ #
+ # test_vanilla
+ %endif
+@@ -254,9 +263,7 @@
+ 	--disable-separate-code \
+ %endif
+ 	--enable-new-dtags \
+-%if "%{TARGET}" != "mips"
+ 	--enable-default-hash-style=both \
+-%endif
+ 	--enable-shared
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring (???)
+@@ -322,9 +329,7 @@
+ %else
+   --with-sysroot=%{_prefix}/%{TARGET_OS}/sys-root \
+ %endif
+-%if "%{TARGET}" != "mips"
+   --enable-default-hash-style=both \
+-%endif
+   ${EXTRA_TARGETS:+--enable-targets="${EXTRA_TARGETS#,}"}
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring
+diff -Nuir binutils-orig/cross-s390-binutils.spec binutils/cross-s390-binutils.spec
+--- binutils-orig/cross-s390-binutils.spec	2020-06-03 10:14:30.354328058 +0800
++++ binutils/cross-s390-binutils.spec	2020-06-03 10:14:36.867118311 +0800
+@@ -1,7 +1,7 @@
+ #
+ # spec file for package cross-s390-binutils
+ #
+-# Copyright (c) 2019 SUSE LINUX GmbH, Nuernberg, Germany.
++# Copyright (c) 2020 SUSE LINUX GmbH, Nuernberg, Germany.
+ #
+ # All modifications and additions to the file contributed by third parties
+ # remain the property of their copyright owners, unless otherwise agreed
+@@ -47,7 +47,7 @@
+ #
+ # handle test suite failures
+ #
+-%ifarch alpha %arm aarch64 hppa mips sh4 %sparc
++%ifarch alpha %arm aarch64 hppa %mips sh4 %sparc
+ %define	make_check_handling	true
+ %else
+ # XXX check again
+@@ -101,6 +101,11 @@
+ Patch90:        cross-avr-nesc-as.patch
+ Patch92:        cross-avr-omit_section_dynsym.patch
+ Patch93:        cross-avr-size.patch
++#mips64el
++Patch901:       binutils-mips-default-n64-1.patch
++Patch902:       binutils-mips-default-n64-2.patch
++Patch903:       binutils-mips-goldld.patch
++Patch904:       binutils-mips-goldld-add-gnu-hash.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ PreReq:         update-alternatives
+ 
+@@ -118,7 +123,7 @@
+ PreReq:         update-alternatives
+ %if 0%{suse_version} > 1100
+ %if 0%{!?cross:1}
+-%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc
++%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc %mips
+ %endif
+ %endif
+ 
+@@ -176,6 +181,10 @@
+ %patch92
+ %patch93 -p1
+ %endif
++%patch901 -p1
++%patch902 -p1
++%patch903 -p1
++%patch904 -p1
+ #
+ # test_vanilla
+ %endif
+@@ -254,9 +263,7 @@
+ 	--disable-separate-code \
+ %endif
+ 	--enable-new-dtags \
+-%if "%{TARGET}" != "mips"
+ 	--enable-default-hash-style=both \
+-%endif
+ 	--enable-shared
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring (???)
+@@ -322,9 +329,7 @@
+ %else
+   --with-sysroot=%{_prefix}/%{TARGET_OS}/sys-root \
+ %endif
+-%if "%{TARGET}" != "mips"
+   --enable-default-hash-style=both \
+-%endif
+   ${EXTRA_TARGETS:+--enable-targets="${EXTRA_TARGETS#,}"}
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring
+diff -Nuir binutils-orig/cross-s390x-binutils.spec binutils/cross-s390x-binutils.spec
+--- binutils-orig/cross-s390x-binutils.spec	2020-06-03 10:14:30.355328026 +0800
++++ binutils/cross-s390x-binutils.spec	2020-06-03 10:14:36.867118311 +0800
+@@ -1,7 +1,7 @@
+ #
+ # spec file for package cross-s390x-binutils
+ #
+-# Copyright (c) 2019 SUSE LINUX GmbH, Nuernberg, Germany.
++# Copyright (c) 2020 SUSE LINUX GmbH, Nuernberg, Germany.
+ #
+ # All modifications and additions to the file contributed by third parties
+ # remain the property of their copyright owners, unless otherwise agreed
+@@ -47,7 +47,7 @@
+ #
+ # handle test suite failures
+ #
+-%ifarch alpha %arm aarch64 hppa mips sh4 %sparc
++%ifarch alpha %arm aarch64 hppa %mips sh4 %sparc
+ %define	make_check_handling	true
+ %else
+ # XXX check again
+@@ -101,6 +101,11 @@
+ Patch90:        cross-avr-nesc-as.patch
+ Patch92:        cross-avr-omit_section_dynsym.patch
+ Patch93:        cross-avr-size.patch
++#mips64el
++Patch901:       binutils-mips-default-n64-1.patch
++Patch902:       binutils-mips-default-n64-2.patch
++Patch903:       binutils-mips-goldld.patch
++Patch904:       binutils-mips-goldld-add-gnu-hash.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ PreReq:         update-alternatives
+ 
+@@ -118,7 +123,7 @@
+ PreReq:         update-alternatives
+ %if 0%{suse_version} > 1100
+ %if 0%{!?cross:1}
+-%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc
++%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc %mips
+ %endif
+ %endif
+ 
+@@ -176,6 +181,10 @@
+ %patch92
+ %patch93 -p1
+ %endif
++%patch901 -p1
++%patch902 -p1
++%patch903 -p1
++%patch904 -p1
+ #
+ # test_vanilla
+ %endif
+@@ -254,9 +263,7 @@
+ 	--disable-separate-code \
+ %endif
+ 	--enable-new-dtags \
+-%if "%{TARGET}" != "mips"
+ 	--enable-default-hash-style=both \
+-%endif
+ 	--enable-shared
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring (???)
+@@ -322,9 +329,7 @@
+ %else
+   --with-sysroot=%{_prefix}/%{TARGET_OS}/sys-root \
+ %endif
+-%if "%{TARGET}" != "mips"
+   --enable-default-hash-style=both \
+-%endif
+   ${EXTRA_TARGETS:+--enable-targets="${EXTRA_TARGETS#,}"}
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring
+diff -Nuir binutils-orig/cross-sparc-binutils.spec binutils/cross-sparc-binutils.spec
+--- binutils-orig/cross-sparc-binutils.spec	2020-06-03 10:14:30.355328026 +0800
++++ binutils/cross-sparc-binutils.spec	2020-06-03 10:14:36.867118311 +0800
+@@ -1,7 +1,7 @@
+ #
+ # spec file for package cross-sparc-binutils
+ #
+-# Copyright (c) 2019 SUSE LINUX GmbH, Nuernberg, Germany.
++# Copyright (c) 2020 SUSE LINUX GmbH, Nuernberg, Germany.
+ #
+ # All modifications and additions to the file contributed by third parties
+ # remain the property of their copyright owners, unless otherwise agreed
+@@ -47,7 +47,7 @@
+ #
+ # handle test suite failures
+ #
+-%ifarch alpha %arm aarch64 hppa mips sh4 %sparc
++%ifarch alpha %arm aarch64 hppa %mips sh4 %sparc
+ %define	make_check_handling	true
+ %else
+ # XXX check again
+@@ -101,6 +101,11 @@
+ Patch90:        cross-avr-nesc-as.patch
+ Patch92:        cross-avr-omit_section_dynsym.patch
+ Patch93:        cross-avr-size.patch
++#mips64el
++Patch901:       binutils-mips-default-n64-1.patch
++Patch902:       binutils-mips-default-n64-2.patch
++Patch903:       binutils-mips-goldld.patch
++Patch904:       binutils-mips-goldld-add-gnu-hash.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ PreReq:         update-alternatives
+ 
+@@ -118,7 +123,7 @@
+ PreReq:         update-alternatives
+ %if 0%{suse_version} > 1100
+ %if 0%{!?cross:1}
+-%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc
++%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc %mips
+ %endif
+ %endif
+ 
+@@ -176,6 +181,10 @@
+ %patch92
+ %patch93 -p1
+ %endif
++%patch901 -p1
++%patch902 -p1
++%patch903 -p1
++%patch904 -p1
+ #
+ # test_vanilla
+ %endif
+@@ -254,9 +263,7 @@
+ 	--disable-separate-code \
+ %endif
+ 	--enable-new-dtags \
+-%if "%{TARGET}" != "mips"
+ 	--enable-default-hash-style=both \
+-%endif
+ 	--enable-shared
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring (???)
+@@ -322,9 +329,7 @@
+ %else
+   --with-sysroot=%{_prefix}/%{TARGET_OS}/sys-root \
+ %endif
+-%if "%{TARGET}" != "mips"
+   --enable-default-hash-style=both \
+-%endif
+   ${EXTRA_TARGETS:+--enable-targets="${EXTRA_TARGETS#,}"}
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring
+diff -Nuir binutils-orig/cross-sparc64-binutils.spec binutils/cross-sparc64-binutils.spec
+--- binutils-orig/cross-sparc64-binutils.spec	2020-06-03 10:14:30.355328026 +0800
++++ binutils/cross-sparc64-binutils.spec	2020-06-03 10:14:36.867118311 +0800
+@@ -1,7 +1,7 @@
+ #
+ # spec file for package cross-sparc64-binutils
+ #
+-# Copyright (c) 2019 SUSE LINUX GmbH, Nuernberg, Germany.
++# Copyright (c) 2020 SUSE LINUX GmbH, Nuernberg, Germany.
+ #
+ # All modifications and additions to the file contributed by third parties
+ # remain the property of their copyright owners, unless otherwise agreed
+@@ -47,7 +47,7 @@
+ #
+ # handle test suite failures
+ #
+-%ifarch alpha %arm aarch64 hppa mips sh4 %sparc
++%ifarch alpha %arm aarch64 hppa %mips sh4 %sparc
+ %define	make_check_handling	true
+ %else
+ # XXX check again
+@@ -101,6 +101,11 @@
+ Patch90:        cross-avr-nesc-as.patch
+ Patch92:        cross-avr-omit_section_dynsym.patch
+ Patch93:        cross-avr-size.patch
++#mips64el
++Patch901:       binutils-mips-default-n64-1.patch
++Patch902:       binutils-mips-default-n64-2.patch
++Patch903:       binutils-mips-goldld.patch
++Patch904:       binutils-mips-goldld-add-gnu-hash.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ PreReq:         update-alternatives
+ 
+@@ -118,7 +123,7 @@
+ PreReq:         update-alternatives
+ %if 0%{suse_version} > 1100
+ %if 0%{!?cross:1}
+-%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc
++%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc %mips
+ %endif
+ %endif
+ 
+@@ -176,6 +181,10 @@
+ %patch92
+ %patch93 -p1
+ %endif
++%patch901 -p1
++%patch902 -p1
++%patch903 -p1
++%patch904 -p1
+ #
+ # test_vanilla
+ %endif
+@@ -254,9 +263,7 @@
+ 	--disable-separate-code \
+ %endif
+ 	--enable-new-dtags \
+-%if "%{TARGET}" != "mips"
+ 	--enable-default-hash-style=both \
+-%endif
+ 	--enable-shared
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring (???)
+@@ -322,9 +329,7 @@
+ %else
+   --with-sysroot=%{_prefix}/%{TARGET_OS}/sys-root \
+ %endif
+-%if "%{TARGET}" != "mips"
+   --enable-default-hash-style=both \
+-%endif
+   ${EXTRA_TARGETS:+--enable-targets="${EXTRA_TARGETS#,}"}
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring
+diff -Nuir binutils-orig/cross-spu-binutils.spec binutils/cross-spu-binutils.spec
+--- binutils-orig/cross-spu-binutils.spec	2020-06-03 10:14:30.355328026 +0800
++++ binutils/cross-spu-binutils.spec	2020-06-03 10:14:36.867118311 +0800
+@@ -1,7 +1,7 @@
+ #
+ # spec file for package cross-spu-binutils
+ #
+-# Copyright (c) 2019 SUSE LINUX GmbH, Nuernberg, Germany.
++# Copyright (c) 2020 SUSE LINUX GmbH, Nuernberg, Germany.
+ #
+ # All modifications and additions to the file contributed by third parties
+ # remain the property of their copyright owners, unless otherwise agreed
+@@ -47,7 +47,7 @@
+ #
+ # handle test suite failures
+ #
+-%ifarch alpha %arm aarch64 hppa mips sh4 %sparc
++%ifarch alpha %arm aarch64 hppa %mips sh4 %sparc
+ %define	make_check_handling	true
+ %else
+ # XXX check again
+@@ -101,6 +101,11 @@
+ Patch90:        cross-avr-nesc-as.patch
+ Patch92:        cross-avr-omit_section_dynsym.patch
+ Patch93:        cross-avr-size.patch
++#mips64el
++Patch901:       binutils-mips-default-n64-1.patch
++Patch902:       binutils-mips-default-n64-2.patch
++Patch903:       binutils-mips-goldld.patch
++Patch904:       binutils-mips-goldld-add-gnu-hash.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ PreReq:         update-alternatives
+ 
+@@ -118,7 +123,7 @@
+ PreReq:         update-alternatives
+ %if 0%{suse_version} > 1100
+ %if 0%{!?cross:1}
+-%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc
++%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc %mips
+ %endif
+ %endif
+ 
+@@ -176,6 +181,10 @@
+ %patch92
+ %patch93 -p1
+ %endif
++%patch901 -p1
++%patch902 -p1
++%patch903 -p1
++%patch904 -p1
+ #
+ # test_vanilla
+ %endif
+@@ -254,9 +263,7 @@
+ 	--disable-separate-code \
+ %endif
+ 	--enable-new-dtags \
+-%if "%{TARGET}" != "mips"
+ 	--enable-default-hash-style=both \
+-%endif
+ 	--enable-shared
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring (???)
+@@ -322,9 +329,7 @@
+ %else
+   --with-sysroot=%{_prefix}/%{TARGET_OS}/sys-root \
+ %endif
+-%if "%{TARGET}" != "mips"
+   --enable-default-hash-style=both \
+-%endif
+   ${EXTRA_TARGETS:+--enable-targets="${EXTRA_TARGETS#,}"}
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring
+diff -Nuir binutils-orig/cross-x86_64-binutils.spec binutils/cross-x86_64-binutils.spec
+--- binutils-orig/cross-x86_64-binutils.spec	2020-06-03 10:14:30.355328026 +0800
++++ binutils/cross-x86_64-binutils.spec	2020-06-03 10:14:36.867118311 +0800
+@@ -1,7 +1,7 @@
+ #
+ # spec file for package cross-x86_64-binutils
+ #
+-# Copyright (c) 2019 SUSE LINUX GmbH, Nuernberg, Germany.
++# Copyright (c) 2020 SUSE LINUX GmbH, Nuernberg, Germany.
+ #
+ # All modifications and additions to the file contributed by third parties
+ # remain the property of their copyright owners, unless otherwise agreed
+@@ -47,7 +47,7 @@
+ #
+ # handle test suite failures
+ #
+-%ifarch alpha %arm aarch64 hppa mips sh4 %sparc
++%ifarch alpha %arm aarch64 hppa %mips sh4 %sparc
+ %define	make_check_handling	true
+ %else
+ # XXX check again
+@@ -101,6 +101,11 @@
+ Patch90:        cross-avr-nesc-as.patch
+ Patch92:        cross-avr-omit_section_dynsym.patch
+ Patch93:        cross-avr-size.patch
++#mips64el
++Patch901:       binutils-mips-default-n64-1.patch
++Patch902:       binutils-mips-default-n64-2.patch
++Patch903:       binutils-mips-goldld.patch
++Patch904:       binutils-mips-goldld-add-gnu-hash.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ PreReq:         update-alternatives
+ 
+@@ -118,7 +123,7 @@
+ PreReq:         update-alternatives
+ %if 0%{suse_version} > 1100
+ %if 0%{!?cross:1}
+-%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc
++%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc %mips
+ %endif
+ %endif
+ 
+@@ -176,6 +181,10 @@
+ %patch92
+ %patch93 -p1
+ %endif
++%patch901 -p1
++%patch902 -p1
++%patch903 -p1
++%patch904 -p1
+ #
+ # test_vanilla
+ %endif
+@@ -254,9 +263,7 @@
+ 	--disable-separate-code \
+ %endif
+ 	--enable-new-dtags \
+-%if "%{TARGET}" != "mips"
+ 	--enable-default-hash-style=both \
+-%endif
+ 	--enable-shared
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring (???)
+@@ -322,9 +329,7 @@
+ %else
+   --with-sysroot=%{_prefix}/%{TARGET_OS}/sys-root \
+ %endif
+-%if "%{TARGET}" != "mips"
+   --enable-default-hash-style=both \
+-%endif
+   ${EXTRA_TARGETS:+--enable-targets="${EXTRA_TARGETS#,}"}
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring
+diff -Nuir binutils-orig/cross-xtensa-binutils.spec binutils/cross-xtensa-binutils.spec
+--- binutils-orig/cross-xtensa-binutils.spec	2020-06-03 10:14:30.356327994 +0800
++++ binutils/cross-xtensa-binutils.spec	2020-06-03 10:14:36.867118311 +0800
+@@ -1,7 +1,7 @@
+ #
+ # spec file for package cross-xtensa-binutils
+ #
+-# Copyright (c) 2019 SUSE LINUX GmbH, Nuernberg, Germany.
++# Copyright (c) 2020 SUSE LINUX GmbH, Nuernberg, Germany.
+ #
+ # All modifications and additions to the file contributed by third parties
+ # remain the property of their copyright owners, unless otherwise agreed
+@@ -47,7 +47,7 @@
+ #
+ # handle test suite failures
+ #
+-%ifarch alpha %arm aarch64 hppa mips sh4 %sparc
++%ifarch alpha %arm aarch64 hppa %mips sh4 %sparc
+ %define	make_check_handling	true
+ %else
+ # XXX check again
+@@ -101,6 +101,11 @@
+ Patch90:        cross-avr-nesc-as.patch
+ Patch92:        cross-avr-omit_section_dynsym.patch
+ Patch93:        cross-avr-size.patch
++#mips64el
++Patch901:       binutils-mips-default-n64-1.patch
++Patch902:       binutils-mips-default-n64-2.patch
++Patch903:       binutils-mips-goldld.patch
++Patch904:       binutils-mips-goldld-add-gnu-hash.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ PreReq:         update-alternatives
+ 
+@@ -118,7 +123,7 @@
+ PreReq:         update-alternatives
+ %if 0%{suse_version} > 1100
+ %if 0%{!?cross:1}
+-%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc
++%define gold_archs %ix86 aarch64 %arm x86_64 ppc ppc64 ppc64le s390x %sparc %mips
+ %endif
+ %endif
+ 
+@@ -176,6 +181,10 @@
+ %patch92
+ %patch93 -p1
+ %endif
++%patch901 -p1
++%patch902 -p1
++%patch903 -p1
++%patch904 -p1
+ #
+ # test_vanilla
+ %endif
+@@ -254,9 +263,7 @@
+ 	--disable-separate-code \
+ %endif
+ 	--enable-new-dtags \
+-%if "%{TARGET}" != "mips"
+ 	--enable-default-hash-style=both \
+-%endif
+ 	--enable-shared
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring (???)
+@@ -322,9 +329,7 @@
+ %else
+   --with-sysroot=%{_prefix}/%{TARGET_OS}/sys-root \
+ %endif
+-%if "%{TARGET}" != "mips"
+   --enable-default-hash-style=both \
+-%endif
+   ${EXTRA_TARGETS:+--enable-targets="${EXTRA_TARGETS#,}"}
+ make %{?_smp_mflags} all-bfd TARGET-bfd=headers
+ # force reconfiguring

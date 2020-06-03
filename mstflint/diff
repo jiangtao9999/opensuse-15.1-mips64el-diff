@@ -1,0 +1,124 @@
+Index: mstflint.spec
+===================================================================
+--- mstflint.spec	(revision 1)
++++ mstflint.spec	(working copy)
+@@ -32,6 +32,7 @@
+ Patch3:         Add-armv6-and-armv7-support.patch
+ Patch4:         Fix-gcc7-and-gcc8.patch
+ Patch5:         fix-race-condition-during-install.patch
++Patch6:         Add-mips-support.patch
+ BuildRequires:  gcc-c++
+ BuildRequires:  infiniband-diags-devel
+ BuildRequires:  libibverbs-devel
+@@ -56,6 +57,7 @@
+ %patch3
+ %patch4
+ %patch5
++%patch6 -p1
+ 
+ %build
+ ./autogen.sh
+Index: Add-mips-support.patch
+===================================================================
+--- Add-mips-support.patch	(revision 0)
++++ Add-mips-support.patch	(working copy)
+@@ -0,0 +1,99 @@
++diff -Nrui mstflint-4.11.0-orig/common/compatibility.h mstflint-4.11.0/common/compatibility.h
++--- mstflint-4.11.0-orig/common/compatibility.h	2020-05-13 11:34:23.366752917 +0800
+++++ mstflint-4.11.0/common/compatibility.h	2020-05-13 11:37:53.771094052 +0800
++@@ -69,6 +69,10 @@
++ #       define ARCH_s390x
++ #   elif defined(__s390__)
++ #       define ARCH_s390
+++#   elif defined(__mips64)
+++#       define ARCH_mips64
+++#   elif defined(__mips__)
+++#       define ARCH_mips
++ #   else
++ #       error Unknown CPU architecture using the linux OS
++ #   endif
++@@ -100,7 +104,7 @@
++ #define U16H_FMT    "0x%04x"
++ #define U8H_FMT     "0x%02x"
++ 
++-#if defined(ARCH_x86) || defined(ARCH_ppc) || defined(UEFI_BUILD) || defined(ARCH_arm6l) || defined(ARCH_s390) || defined(ARCH_arm7)
+++#if defined(ARCH_x86) || defined(ARCH_ppc) || defined(UEFI_BUILD) || defined(ARCH_arm6l) || defined(ARCH_s390) || defined(ARCH_arm7) || defined(ARCH_mips)
++ #   if defined(__MINGW32__) || defined(__MINGW64__)
++ #       include <inttypes.h>
++ #       define U64D_FMT    "0x%" PRId64
++@@ -115,7 +119,7 @@
++ #       define U48H_FMT     "0x%012llx"
++ #       define U64D_FMT_GEN "llu"
++ #   endif
++-#elif defined(ARCH_ia64) || defined(ARCH_x86_64) || defined(ARCH_ppc64) || defined(ARCH_arm64) || defined(ARCH_s390x)
+++#elif defined(ARCH_ia64) || defined(ARCH_x86_64) || defined(ARCH_ppc64) || defined(ARCH_arm64) || defined(ARCH_s390x) || defined(ARCH_mips64)
++ #    define U64D_FMT     "%lu"
++ #    define U64H_FMT     "0x%016lx"
++ #    define U48H_FMT     "0x%012lx"
++diff -Nrui mstflint-4.11.0-orig/mtcr_ul/packets_common.h mstflint-4.11.0/mtcr_ul/packets_common.h
++--- mstflint-4.11.0-orig/mtcr_ul/packets_common.h	2020-05-13 11:34:23.366752917 +0800
+++++ mstflint-4.11.0/mtcr_ul/packets_common.h	2020-05-13 11:41:31.400096157 +0800
++@@ -158,6 +158,10 @@
++ #       define ARCH_s390x
++ #   elif defined(__s390__)
++ #       define ARCH_s390
+++#   elif defined(__mips64)
+++#       define ARCH_mips64
+++#   elif defined(__mips__)
+++#       define ARCH_mips
++ #   else
++ #       error Unknown CPU architecture using the linux OS
++ #   endif
++@@ -169,9 +173,9 @@
++ 
++ /**********************************/
++ /* define macros for print fields */
++-//#if defined (ARCH_ia64) || defined(ARCH_x86_64) || defined(ARCH_ppc64) || defined(__MINGW64__) || defined(ARCH_s390x)
+++//#if defined (ARCH_ia64) || defined(ARCH_x86_64) || defined(ARCH_ppc64) || defined(__MINGW64__) || defined(ARCH_s390x) || defined(ARCH_mips64)
++ /*
++- #if !defined(UEFI_BUILD) && (defined (ARCH_ia64) || defined(ARCH_x86_64) || defined(ARCH_ppc64) || defined(__MINGW64__) || defined(ARCH_s390x) || defined(ARCH_arm7))
+++ #if !defined(UEFI_BUILD) && (defined (ARCH_ia64) || defined(ARCH_x86_64) || defined(ARCH_ppc64) || defined(__MINGW64__) || defined(ARCH_s390x) || defined(ARCH_arm7) || defined(ARCH_mips64))
++  #   define U64H_FMT "0x%016lx"
++  #   define U64D_FMT "%lu"
++  #   define U32H_FMT "0x%08x"
++@@ -179,7 +183,7 @@
++  #   define U8H_FMT  "0x%02x"
++  #   define U32D_FMT "%u"
++  #   define STR_FMT "%s"
++- #elif defined(ARCH_x86) || defined(ARCH_ppc) || defined(__MINGW32__) || defined(UEFI_BUILD) || defined(ARCH_arm6l)) || defined(ARCH_s390)
+++ #elif defined(ARCH_x86) || defined(ARCH_ppc) || defined(__MINGW32__) || defined(UEFI_BUILD) || defined(ARCH_arm6l)) || defined(ARCH_s390) || defined(ARCH_mips)
++  #   define U64H_FMT "0x%016llx"
++  #   define U64D_FMT "%llu"
++  #   define U32H_FMT "0x%08x"
++diff -Nrui mstflint-4.11.0-orig/tools_layouts/adb_to_c_utils.h mstflint-4.11.0/tools_layouts/adb_to_c_utils.h
++--- mstflint-4.11.0-orig/tools_layouts/adb_to_c_utils.h	2020-05-13 11:34:23.417587160 +0800
+++++ mstflint-4.11.0/tools_layouts/adb_to_c_utils.h	2020-05-13 11:44:37.728374872 +0800
++@@ -143,6 +143,10 @@
++ #       define ARCH_s390x
++ #   elif defined(__s390__)
++ #       define ARCH_s390
+++#   elif defined(__mips64)
+++#       define ARCH_mips64
+++#   elif defined(__mips__)
+++#       define ARCH_mips
++ #   else
++ #       error Unknown CPU architecture using the linux OS
++ #   endif
++@@ -175,7 +179,7 @@
++ #define U16H_FMT    "0x%04x"
++ #define U8H_FMT     "0x%02x"
++ 
++-#if defined(ARCH_x86) || defined(ARCH_ppc) || defined(UEFI_BUILD) || defined(ARCH_arm6l) || defined(ARCH_arm7) || defined(ARCH_s390)
+++#if defined(ARCH_x86) || defined(ARCH_ppc) || defined(UEFI_BUILD) || defined(ARCH_arm6l) || defined(ARCH_arm7) || defined(ARCH_s390) || defined(ARCH_mips)
++ #   if defined(__MINGW32__) || defined(__MINGW64__)
++ #       include <inttypes.h>
++ #       define U64D_FMT    "0x%" PRId64
++@@ -186,7 +190,7 @@
++ #       define U64H_FMT    "0x%016llx"
++ #       define U48H_FMT    "0x%012llx"
++ #   endif
++-#elif defined (ARCH_ia64) || defined(ARCH_x86_64) || defined(ARCH_ppc64) || defined(ARCH_arm64) || defined(ARCH_s390x)
+++#elif defined (ARCH_ia64) || defined(ARCH_x86_64) || defined(ARCH_ppc64) || defined(ARCH_arm64) || defined(ARCH_s390x) || defined(ARCH_mips64)
++ #    define U64D_FMT    "%lu"
++ #    define U64H_FMT    "0x%016lx"
++ #	 define U48H_FMT	"0x%012lx" 

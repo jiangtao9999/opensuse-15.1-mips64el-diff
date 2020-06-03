@@ -1,0 +1,13 @@
+Index: akonadi-calendar.spec
+===================================================================
+--- akonadi-calendar.spec	(revision 1)
++++ akonadi-calendar.spec	(working copy)
+@@ -44,7 +44,7 @@
+ BuildRequires:  pkgconfig
+ BuildRequires:  pkgconfig(Qt5Test)
+ # It can only build on the same platforms as Qt Webengine
+-ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 mips mips64
++ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 %mips
+ 
+ %description
+ This library provides calendar integration for Akonadi based Applications.

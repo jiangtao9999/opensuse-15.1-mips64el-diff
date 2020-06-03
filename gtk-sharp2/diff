@@ -1,0 +1,12 @@
+Index: gtk-sharp2.spec
+===================================================================
+--- gtk-sharp2.spec	(revision 1)
++++ gtk-sharp2.spec	(working copy)
+@@ -44,6 +44,7 @@
+ # PATCH-FIX-OPENSUSE fix "64bit-portability-issue" error at windowmanager.c:113
+ Patch1:         fix-64bit-portability-issue.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
++ExcludeArch:    %mips64
+ 
+ %description
+ This package contains Mono bindings for gtk+, gdk, atk, and pango.

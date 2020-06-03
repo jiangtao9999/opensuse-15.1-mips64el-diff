@@ -1,0 +1,69 @@
+Index: graphviz-addons.spec
+===================================================================
+--- graphviz-addons.spec	(revision 1)
++++ graphviz-addons.spec	(working copy)
+@@ -49,6 +49,7 @@
+ #PATCH-FIX-UPSTREAM Don't warn about harmless issues with swig generated code
+ Patch7:         graphviz-useless_warnings.patch
+ Patch8:         graphviz-no_strict_aliasing.patch
++Patch9:         graphviz-fix-mips64el.patch
+ BuildRequires:  autoconf
+ BuildRequires:  automake
+ BuildRequires:  bison
+@@ -285,6 +286,7 @@
+ %patch6
+ %patch7
+ %patch8
++%patch9 -p1
+ 
+ rm -f contrib/gprof2dot.awk
+ 
+Index: graphviz.spec
+===================================================================
+--- graphviz.spec	(revision 1)
++++ graphviz.spec	(working copy)
+@@ -49,6 +49,7 @@
+ #PATCH-FIX-UPSTREAM Don't warn about harmless issues with swig generated code
+ Patch7:         graphviz-useless_warnings.patch
+ Patch8:         graphviz-no_strict_aliasing.patch
++Patch9:         graphviz-fix-mips64el.patch
+ BuildRequires:  autoconf
+ BuildRequires:  automake
+ BuildRequires:  bison
+@@ -285,6 +286,7 @@
+ %patch6
+ %patch7
+ %patch8
++%patch9 -p1
+ 
+ rm -f contrib/gprof2dot.awk
+ 
+Index: graphviz-fix-mips64el.patch
+===================================================================
+--- graphviz-fix-mips64el.patch	(revision 0)
++++ graphviz-fix-mips64el.patch	(working copy)
+@@ -0,0 +1,24 @@
++diff -Nrui graphviz-2.40.1-orig/configure graphviz-2.40.1/configure
++--- graphviz-2.40.1-orig/configure	2020-02-27 23:33:03.412967488 +0800
+++++ graphviz-2.40.1/configure	2020-02-27 23:34:49.403408818 +0800
++@@ -3551,7 +3551,7 @@
++   case "${host_os}" in
++     *linux* )
++       case "${host_cpu}" in
++-        aarch64 | powerpc64 | powerpc64le | s390x | x86_64 | sparc64 )
+++        aarch64 | powerpc64 | powerpc64le | s390x | x86_64 | sparc64 | mips64* )
++           LIBPOSTFIX="64"
++           INTGOSIZE=64
++           ;;
++diff -Nrui graphviz-2.40.1-orig/configure.ac graphviz-2.40.1/configure.ac
++--- graphviz-2.40.1-orig/configure.ac	2020-02-27 23:33:03.608660236 +0800
+++++ graphviz-2.40.1/configure.ac	2020-02-27 23:34:26.505545990 +0800
++@@ -112,7 +112,7 @@
++   case "${host_os}" in
++     *linux* )
++       case "${host_cpu}" in
++-        aarch64 | powerpc64 | powerpc64le | s390x | x86_64 | sparc64 )
+++        aarch64 | powerpc64 | powerpc64le | s390x | x86_64 | sparc64 | mips64* )
++           LIBPOSTFIX="64"
++           INTGOSIZE=64
++           ;;

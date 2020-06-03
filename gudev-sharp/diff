@@ -1,0 +1,12 @@
+Index: gudev-sharp.spec
+===================================================================
+--- gudev-sharp.spec	(revision 1)
++++ gudev-sharp.spec	(working copy)
+@@ -25,6 +25,7 @@
+ Url:            http://github.com/mono/gudev-sharp
+ Source:         %{name}-%{version}.tar.bz2
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
++ExcludeArch:    %mips
+ 
+ BuildRequires:  glib2-devel >= 2.6
+ BuildRequires:  glib-sharp2

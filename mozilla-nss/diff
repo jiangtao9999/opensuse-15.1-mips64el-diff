@@ -1,0 +1,13 @@
+Index: mozilla-nss.spec
+===================================================================
+--- mozilla-nss.spec	(revision 1)
++++ mozilla-nss.spec	(working copy)
+@@ -215,7 +215,7 @@
+ export NSPR_LIB_DIR=`nspr-config --libdir`
+ export OPT_FLAGS="%{optflags} -fno-strict-aliasing"
+ export LIBDIR=%{_libdir}
+-%ifarch x86_64 s390x ppc64 ppc64le ia64 aarch64
++%ifarch x86_64 s390x ppc64 ppc64le ia64 aarch64 %mips64
+ export USE_64=1
+ %endif
+ export NSS_USE_SYSTEM_SQLITE=1

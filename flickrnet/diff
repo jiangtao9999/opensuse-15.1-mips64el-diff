@@ -1,0 +1,12 @@
+Index: flickrnet.spec
+===================================================================
+--- flickrnet.spec	(revision 1)
++++ flickrnet.spec	(working copy)
+@@ -27,6 +27,7 @@
+ BuildRequires:  mono-devel
+ BuildRequires:  unzip
+ BuildArch:      noarch
++ExcludeArch:    %mips
+ 
+ %description
+ The Flickr.Net API is a .Net Library for accessing the Flickr API. Written entirely in C# it can be accessed from with any .Net language.

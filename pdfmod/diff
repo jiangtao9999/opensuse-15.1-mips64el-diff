@@ -1,0 +1,12 @@
+Index: pdfmod.spec
+===================================================================
+--- pdfmod.spec	(revision 1)
++++ pdfmod.spec	(working copy)
+@@ -55,6 +55,7 @@
+ Requires:       %(rpm -qa libpoppler-glib[0-9]* --qf "%%{name}")
+ Recommends:     %{name}-lang
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
++ExcludeArch:    %mips64
+ 
+ %description
+ PDF Mod is a simple tool for modifying your PDFs: moving, removing,

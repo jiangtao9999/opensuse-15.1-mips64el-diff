@@ -1,0 +1,49 @@
+Index: OpenImageIO.spec
+===================================================================
+--- OpenImageIO.spec	(revision 1)
++++ OpenImageIO.spec	(working copy)
+@@ -36,6 +36,7 @@
+ Patch1:         oiio-detectplatform-others.patch
+ Patch2:         oiio_gcc6_missleading_indentation.patch
+ Patch3:         oiio-add-libdl-for-plugin.patch
++Patch4:         oiio-Release-1.8.10-add-mips.patch
+ BuildRequires:  cmake
+ BuildRequires:  doxygen
+ BuildRequires:  fdupes
+@@ -144,6 +145,7 @@
+ %patch1
+ %patch2
+ %patch3
++%patch4 -p1
+ echo "gcc version %{gccv}"
+ 
+ # Make sure that bundled libraries are not used
+Index: oiio-Release-1.8.10-add-mips.patch
+===================================================================
+--- oiio-Release-1.8.10-add-mips.patch	(revision 0)
++++ oiio-Release-1.8.10-add-mips.patch	(working copy)
+@@ -0,0 +1,24 @@
++--- oiio-Release-1.8.10-orig/src/make/detectplatform.mk	2020-05-15 00:13:54.672934077 +0800
+++++ oiio-Release-1.8.10/src/make/detectplatform.mk	2020-05-15 00:17:38.242213779 +0800
++@@ -33,7 +33,11 @@
++                   ifneq (${hw},s390x)
++                     ifneq (${hw},armv7l)
++                       ifneq (${hw},armv6l)
+++                        ifneq (${hw},mips)
+++                          ifneq (${hw},mips64)
++                         $(error "ERROR: Unknown hardware architecture")
+++                          endif
+++                        endif
++                       endif
++                     endif
++                   endif
++@@ -72,6 +76,9 @@
++     ifeq (${hw},s390x)
++       platform := linux64
++     endif
+++    ifeq (${hw},mips64)
+++      platform := linux64
+++    endif
++   endif
++ 
++   # Windows

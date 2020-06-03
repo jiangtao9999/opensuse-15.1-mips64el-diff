@@ -1,0 +1,12 @@
+Index: soup-sharp.spec
+===================================================================
+--- soup-sharp.spec	(revision 1)
++++ soup-sharp.spec	(working copy)
+@@ -32,6 +32,7 @@
+ BuildRequires:  pkgconfig(libsoup-2.4)
+ BuildRequires:  pkgconfig(mono) >= 1.0
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
++ExcludeArch:    %mips64
+ 
+ %description
+ Libsoup is an HTTP client/server library for GNOME. It uses GObjects

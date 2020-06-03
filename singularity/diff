@@ -1,0 +1,112 @@
+Index: singularity.spec
+===================================================================
+--- singularity.spec	(revision 1)
++++ singularity.spec	(working copy)
+@@ -41,6 +41,7 @@
+ Source:         https://github.com/singularityware/%{name}/archive/%{github_ref}.tar.gz#/%{name}-%{version}.tar.gz
+ Source1:        README.SUSE
+ Source5:        singularity-rpmlintrc
++Patch1:         ftbfs_mips
+ BuildRequires:  autoconf
+ BuildRequires:  automake
+ BuildRequires:  libtool
+@@ -79,6 +80,7 @@
+ 
+ %prep
+ %setup -q -n %{name}-%{github_ref}
++%patch1 -p1
+ cp %{S:1} .
+ 
+ %build
+Index: ftbfs_mips
+===================================================================
+--- ftbfs_mips	(revision 0)
++++ ftbfs_mips	(working copy)
+@@ -0,0 +1,87 @@
++Description: Fix FTBFS on mips*
++Author: James Cowgill <jcowgill@debian.org>
++Last-Update: 2017-12-04
++Bug-Debian: https://bugs.debian.org/883466
++
++--- singularity-container.orig/src/util/setns.c
+++++ singularity-container/src/util/setns.c
++@@ -24,7 +24,29 @@
++ 
++ #if defined (SINGULARITY_NO_SETNS) && defined (SINGULARITY_SETNS_SYSCALL)
++ 
++-#include "util/setns.h"
+++#ifndef __NR_setns
+++#  if defined (__x86_64__)
+++#    define __NR_setns 308
+++#  elif defined (__i386__)
+++#    define __NR_setns 346
+++#  elif defined (__alpha__)
+++#    define __NR_setns 501
+++#  elif defined (__arm__)
+++#    define __NR_setns 375
+++#  elif defined (__aarch64__)
+++#    define __NR_setns 375
+++#  elif defined (__ia64__)
+++#    define __NR_setns 1330
+++#  elif defined (__sparc__)
+++#    define __NR_setns 337
+++#  elif defined (__powerpc__)
+++#    define __NR_setns 350
+++#  elif defined (__s390__)
+++#    define __NR_setns 339
+++#  else
+++#    error Please determine the syscall number for setns on your architecture
+++#  endif
+++#endif
++ 
++ int setns(int fd, int nstype) {
++     singularity_message(DEBUG, "Using syscall() wrapped __NR_setns\n");
++--- singularity-container.orig/src/util/setns.h
+++++ singularity-container/src/util/setns.h
++@@ -17,34 +17,6 @@
++ #ifndef __SETNS_H_
++ #define __SETNS_H_
++ 
++-#ifndef __NR_setns
++-#  if defined (__x86_64__)
++-#    define __NR_setns 308
++-#  elif defined (__i386__)
++-#    define __NR_setns 346
++-#  elif defined (__alpha__)
++-#    define __NR_setns 501
++-#  elif defined (__arm__)
++-#    define __NR_setns 375
++-#  elif defined (__aarch64__)
++-#    define __NR_setns 375
++-#  elif defined (__ia64__)
++-#    define __NR_setns 1330
++-#  elif defined (__sparc__)
++-#    define __NR_setns 337
++-#  elif defined (__powerpc__)
++-#    define __NR_setns 350
++-#  elif defined (__s390__)
++-#    define __NR_setns 339
++-#  endif
++-#endif
++-
++-#ifdef __NR_setns
++-
++ extern int setns(int fd, int nstype);
++ 
++-#else /* !__NR_setns */
++-#  error Please determine the syscall number for setns on your architecture
++-#endif
++-
++ #endif /* __SETNS_H_ */
++--- singularity-container.orig/src/util/signal.c
+++++ singularity-container/src/util/signal.c
++@@ -37,7 +37,9 @@
++     SIGPIPE,
++     SIGALRM,
++     SIGTERM,
+++#ifdef SIGSTKFLT
++     SIGSTKFLT,
+++#endif
++     SIGCHLD,
++     SIGCONT,
++     SIGTSTP,

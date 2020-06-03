@@ -1,0 +1,13 @@
+Index: libkgapi.spec
+===================================================================
+--- libkgapi.spec	(revision 1)
++++ libkgapi.spec	(working copy)
+@@ -40,7 +40,7 @@
+ BuildRequires:  pkgconfig(Qt5Test) >= 5.2.0
+ BuildRequires:  pkgconfig(Qt5WebEngineWidgets) >= 5.6.0
+ # It can only build on the same platforms as Qt Webengine
+-ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 mips mips64
++ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 %{mips}
+ 
+ %description
+ An extension for accessing some Google services, such as Google Calendar, Google Contacts and Google tasks.

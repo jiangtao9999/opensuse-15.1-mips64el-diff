@@ -1,0 +1,13 @@
+Index: libksieve.spec
+===================================================================
+--- libksieve.spec	(revision 1)
++++ libksieve.spec	(working copy)
+@@ -54,7 +54,7 @@
+ BuildRequires:  pkgconfig(Qt5Widgets) >= 5.6.0
+ BuildRequires:  pkgconfig(Qt5Xml) >= 5.6.0
+ # It can only build on the same platforms as Qt Webengine
+-ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 mips mips64
++ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 %mips
+ %if 0%{?suse_version} > 1325
+ BuildRequires:  libboost_headers-devel
+ %else

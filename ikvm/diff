@@ -1,0 +1,12 @@
+Index: ikvm.spec
+===================================================================
+--- ikvm.spec	(revision 1)
++++ ikvm.spec	(working copy)
+@@ -28,6 +28,7 @@
+ Group:          Development/Tools/Other
+ Requires:       mono-ikvm
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
++ExcludeArch:    %mips
+ 
+ %description
+ This package provides IKVM.NET, an open source Java compatibility layer

@@ -1,0 +1,98 @@
+Index: ceph.spec
+===================================================================
+--- ceph.spec	(revision 1)
++++ ceph.spec	(working copy)
+@@ -118,7 +118,7 @@
+ Source0:	%{?_remote_tarball_prefix}ceph-14.2.0-300-gacd2f2b9e1.tar.bz2
+ %if 0%{?suse_version}
+ # _insert_obs_source_lines_here
+-ExclusiveArch:  x86_64 aarch64 ppc64le s390x
++ExclusiveArch:  x86_64 aarch64 ppc64le s390x %mips
+ %endif
+ #################################################################################
+ # dependencies that apply across all distro families
+Index: _constraints
+===================================================================
+--- _constraints	(revision 1)
++++ _constraints	(working copy)
+@@ -1,80 +0,0 @@
+-<?xml version="1.0"?>
+-<constraints>
+-
+-  <sandbox>kvm</sandbox>
+-
+-  <overwrite>
+-    <conditions>
+-      <package>ceph</package>
+-    </conditions>
+-    <hardware>
+-      <disk>
+-         <size unit="G">28</size>
+-      </disk>
+-      <memory>
+-         <size unit="M">9000</size>
+-      </memory>
+-    </hardware>
+-  </overwrite>
+-
+-  <overwrite>
+-    <conditions>
+-      <arch>x86_64</arch>
+-      <package>ceph-test</package>
+-    </conditions>
+-    <hardware>
+-      <disk>
+-         <size unit="G">28</size>
+-      </disk>
+-      <memory>
+-         <size unit="G">12</size>
+-      </memory>
+-    </hardware>
+-  </overwrite>
+-
+-  <overwrite>
+-    <conditions>
+-      <arch>aarch64</arch>
+-      <package>ceph-test</package>
+-    </conditions>
+-    <hardware>
+-      <disk>
+-         <size unit="G">42</size>
+-      </disk>
+-      <memory>
+-         <size unit="G">9</size>
+-      </memory>
+-    </hardware>
+-  </overwrite>
+-
+-  <overwrite>
+-    <conditions>
+-      <arch>ppc64le</arch>
+-      <package>ceph-test</package>
+-    </conditions>
+-    <hardware>
+-      <disk>
+-         <size unit="G">28</size>
+-      </disk>
+-      <memory>
+-         <size unit="G">8</size>
+-      </memory>
+-    </hardware>
+-  </overwrite>
+-
+-  <overwrite>
+-    <conditions>
+-      <arch>s390x</arch>
+-      <package>ceph-test</package>
+-    </conditions>
+-    <hardware>
+-      <disk>
+-         <size unit="G">28</size>
+-      </disk>
+-      <memory>
+-         <size unit="G">8</size>
+-      </memory>
+-    </hardware>
+-  </overwrite>
+-
+-</constraints>

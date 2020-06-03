@@ -1,0 +1,14 @@
+Index: libayatana-appindicator.spec
+===================================================================
+--- libayatana-appindicator.spec	(revision 1)
++++ libayatana-appindicator.spec	(working copy)
+@@ -18,7 +18,9 @@
+ 
+ %define sover 1
+ %if %{undefined with_mono}
++%ifnarch %mips64
+ %bcond_without mono
++%endif
+ %endif
+ %bcond_with mono
+ Name:           libayatana-appindicator

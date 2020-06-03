@@ -1,0 +1,14 @@
+Index: zlib.spec
+===================================================================
+--- zlib.spec	(revision 1)
++++ zlib.spec	(working copy)
+@@ -120,7 +120,9 @@
+ %patch0
+ %patch1
+ %patch2 -p1
++%ifnarch %mips
+ %patch3 -p1
++%endif
+ 
+ %build
+ export LDFLAGS="-Wl,-z,relro,-z,now"

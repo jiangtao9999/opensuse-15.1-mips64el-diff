@@ -1,0 +1,12 @@
+Index: at-spi-sharp.spec
+===================================================================
+--- at-spi-sharp.spec	(revision 1)
++++ at-spi-sharp.spec	(working copy)
+@@ -31,6 +31,7 @@
+ Summary:        Mono bindings for AT-SPI
+ License:        MIT
+ Group:          System/Libraries
++ExcludeArch:    %mips64
+ 
+ %description
+ C-Sharp/Mono bindings for Assistive Technology Service Provider Interface

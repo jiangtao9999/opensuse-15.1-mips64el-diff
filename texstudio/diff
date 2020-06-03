@@ -1,0 +1,26 @@
+Index: texstudio.spec
+===================================================================
+--- texstudio.spec	(revision 1)
++++ texstudio.spec	(working copy)
+@@ -48,7 +48,7 @@
+ %setup -q
+ 
+ %build
+-%ifarch aarch64 %{arm}
++%ifarch aarch64 %{arm} %mips
+ %define crashhandler NO_CRASH_HANDLER=true
+ %endif
+ 
+Index: _constraints
+===================================================================
+--- _constraints	(revision 1)
++++ _constraints	(working copy)
+@@ -1,8 +0,0 @@
+-<?xml version="1.0"?>
+-<constraints>
+-  <hardware>
+-    <memory>
+-      <size unit="M">2500</size>
+-    </memory>
+-  </hardware>
+-</constraints>

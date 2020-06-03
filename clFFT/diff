@@ -1,0 +1,13 @@
+Index: clFFT.spec
+===================================================================
+--- clFFT.spec	(revision 1)
++++ clFFT.spec	(working copy)
+@@ -109,7 +109,7 @@
+ %prep
+ %setup -q
+ %patch0 -p1
+-%ifarch aarch64
++%ifarch aarch64 %mips
+ %patch1 -p1
+ %endif
+ 

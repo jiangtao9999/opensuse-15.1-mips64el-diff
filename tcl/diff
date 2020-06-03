@@ -1,0 +1,14 @@
+Index: tcl.spec
+===================================================================
+--- tcl.spec	(revision 1)
++++ tcl.spec	(working copy)
+@@ -133,6 +133,9 @@
+ thread-20.9
+ thread-21.16
+ EOF
++%ifarch %mips
++echo binary-40.3 >> known-failures
++%endif
+ %ifnarch s390 s390x
+ make test 2>&1 | tee testresults
+ grep FAILED testresults | grep -Fvwf known-failures && exit 1

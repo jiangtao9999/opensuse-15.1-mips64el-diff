@@ -1,0 +1,294 @@
+Index: Mesa-drivers.spec
+===================================================================
+--- Mesa-drivers.spec	(revision 1)
++++ Mesa-drivers.spec	(working copy)
+@@ -1,7 +1,7 @@
+ #
+ # spec file for package Mesa-drivers
+ #
+-# Copyright (c) 2019 SUSE LINUX GmbH, Nuernberg, Germany.
++# Copyright (c) 2020 SUSE LINUX GmbH, Nuernberg, Germany.
+ #
+ # All modifications and additions to the file contributed by third parties
+ # remain the property of their copyright owners, unless otherwise agreed
+@@ -12,7 +12,7 @@
+ # license that conforms to the Open Source Definition (Version 1.9)
+ # published by the Open Source Initiative.
+ 
+-# Please submit bugfixes or comments via http://bugs.opensuse.org/
++# Please submit bugfixes or comments via https://bugs.opensuse.org/
+ #
+ 
+ 
+@@ -47,7 +47,7 @@
+ %define with_vulkan 0
+ %define with_llvm 0
+ 
+-%ifarch %{ix86} x86_64 %{arm} aarch64 ppc ppc64 ppc64le s390x
++%ifarch %{ix86} x86_64 %{arm} aarch64 ppc ppc64 ppc64le s390x %mips
+   %define gallium_loader 1
+ %else
+   %define gallium_loader 0
+@@ -57,7 +57,7 @@
+ %define vdpau_nouveau 0
+ %define vdpau_radeon 0
+ 
+-%ifarch %{ix86} x86_64 aarch64 %{arm} ppc64 ppc64le
++%ifarch %{ix86} x86_64 aarch64 %{arm} ppc64 ppc64le %mips
+   %define xvmc_support 1
+   %define vdpau_nouveau 1
+   %define vdpau_radeon 1
+@@ -71,12 +71,12 @@
+   %ifnarch ppc
+     %define with_opencl 1
+   %endif
+-  %ifarch %{ix86} x86_64
++  %ifarch %{ix86} x86_64 %mips
+     %define with_vulkan 1
+   %endif
+ %endif
+ 
+-%ifarch aarch64 %{arm} ppc64 ppc64le s390x %{ix86} x86_64
++%ifarch aarch64 %{arm} ppc64 ppc64le s390x %{ix86} x86_64 %mips
+   %define with_llvm 1
+ %endif
+ 
+@@ -809,13 +809,22 @@
+            --enable-va \
+            --enable-xvmc \
+ %if 0%{with_vulkan}
++%ifarch %mips
++           --with-vulkan-drivers=radeon \
++%else
+            --with-vulkan-drivers=intel,radeon \
++%endif
+ %endif
+ %if %{drivers}
+   %ifarch %{ix86} x86_64
+            --enable-xa \
+            --with-dri-drivers=i915,i965,nouveau,r200,radeon \
+            --with-gallium-drivers=r300,r600,radeonsi,nouveau,swrast,svga,virgl \
++  %endif
++  %ifarch %mips
++           --enable-xa \
++           --with-dri-drivers=nouveau,r200,radeon \
++           --with-gallium-drivers=r300,r600,radeonsi,nouveau,swrast,virgl \
+   %endif
+   %ifarch %{arm} aarch64
+            --enable-xa \
+@@ -1036,7 +1045,7 @@
+ %endif
+ 
+ %if %{drivers}
+-%ifarch aarch64 %{ix86} x86_64 %{arm} ppc64 ppc64le
++%ifarch aarch64 %{ix86} x86_64 %{arm} ppc64 ppc64le %mips
+ %files -n libxatracker2
+ %{_libdir}/libxatracker.so.2*
+ 
+@@ -1082,7 +1091,7 @@
+ %{_libdir}/vdpau/libvdpau_r600.so.1.0.0
+ %endif
+ 
+-%ifarch %{ix86} x86_64
++%ifarch %{ix86} x86_64 %mips
+ %files -n libvdpau_radeonsi
+ %{_libdir}/vdpau/libvdpau_radeonsi.so
+ %{_libdir}/vdpau/libvdpau_radeonsi.so.1
+@@ -1103,7 +1112,7 @@
+ %files -n Mesa-dri
+ %dir %{_libdir}/dri
+ %{_libdir}/dri/*_dri.so
+-%ifarch %{ix86} x86_64 aarch64 %{arm} ppc64 ppc64le
++%ifarch %{ix86} x86_64 aarch64 %{arm} ppc64 ppc64le %mips
+ %exclude %{_libdir}/dri/nouveau_dri.so
+ %exclude %{_libdir}/dri/nouveau_vieux_dri.so
+ %endif
+@@ -1118,7 +1127,7 @@
+ %{_libdir}/gallium-pipe/pipe_*.so
+ %endif
+ 
+-%ifarch %{ix86} x86_64 aarch64 %{arm} ppc64 ppc64le
++%ifarch %{ix86} x86_64 aarch64 %{arm} ppc64 ppc64le %mips
+ %files -n Mesa-dri-nouveau
+ %{_libdir}/dri/nouveau_dri.so
+ %{_libdir}/dri/nouveau_vieux_dri.so
+@@ -1164,18 +1173,20 @@
+ %endif
+ 
+ %if %{drivers}
+-%ifarch %{ix86} x86_64 aarch64 %{arm} ppc64 ppc64le
++%ifarch %{ix86} x86_64 aarch64 %{arm} ppc64 ppc64le %mips
+ %files -n Mesa-libva
+ %{_libdir}/dri/*_drv_video.so
+ %endif
+ %endif
+ 
+ %if 0%{with_vulkan}
++%ifnarch %mips
+ %files -n libvulkan_intel
+ %dir %{_datadir}/vulkan
+ %dir %{_datadir}/vulkan/icd.d
+ %{_datadir}/vulkan/icd.d/intel_icd.*.json
+ %{_libdir}/libvulkan_intel.so
++%endif
+ 
+ %files -n libvulkan_radeon
+ %{_libdir}/libvulkan_radeon.so
+@@ -1184,8 +1195,10 @@
+ %{_datadir}/vulkan/icd.d/radeon_icd.*.json
+ 
+ %files -n Mesa-libVulkan-devel
++%ifnarch %mips
+ %dir %{_includedir}/vulkan
+ %{_includedir}/vulkan/*
+ %endif
++%endif
+ 
+ %changelog
+Index: Mesa.spec
+===================================================================
+--- Mesa.spec	(revision 1)
++++ Mesa.spec	(working copy)
+@@ -1,7 +1,7 @@
+ #
+ # spec file for package Mesa
+ #
+-# Copyright (c) 2019 SUSE LINUX GmbH, Nuernberg, Germany.
++# Copyright (c) 2020 SUSE LINUX GmbH, Nuernberg, Germany.
+ #
+ # All modifications and additions to the file contributed by third parties
+ # remain the property of their copyright owners, unless otherwise agreed
+@@ -12,7 +12,7 @@
+ # license that conforms to the Open Source Definition (Version 1.9)
+ # published by the Open Source Initiative.
+ 
+-# Please submit bugfixes or comments via http://bugs.opensuse.org/
++# Please submit bugfixes or comments via https://bugs.opensuse.org/
+ #
+ 
+ 
+@@ -46,7 +46,7 @@
+ %define with_vulkan 0
+ %define with_llvm 0
+ 
+-%ifarch %{ix86} x86_64 %{arm} aarch64 ppc ppc64 ppc64le s390x
++%ifarch %{ix86} x86_64 %{arm} aarch64 ppc ppc64 ppc64le s390x %mips
+   %define gallium_loader 1
+ %else
+   %define gallium_loader 0
+@@ -56,7 +56,7 @@
+ %define vdpau_nouveau 0
+ %define vdpau_radeon 0
+ 
+-%ifarch %{ix86} x86_64 aarch64 %{arm} ppc64 ppc64le
++%ifarch %{ix86} x86_64 aarch64 %{arm} ppc64 ppc64le %mips
+   %define xvmc_support 1
+   %define vdpau_nouveau 1
+   %define vdpau_radeon 1
+@@ -70,12 +70,12 @@
+   %ifnarch ppc
+     %define with_opencl 1
+   %endif
+-  %ifarch %{ix86} x86_64
++  %ifarch %{ix86} x86_64 %mips
+     %define with_vulkan 1
+   %endif
+ %endif
+ 
+-%ifarch aarch64 %{arm} ppc64 ppc64le s390x %{ix86} x86_64
++%ifarch aarch64 %{arm} ppc64 ppc64le s390x %{ix86} x86_64 %mips
+   %define with_llvm 1
+ %endif
+ 
+@@ -808,13 +808,22 @@
+            --enable-va \
+            --enable-xvmc \
+ %if 0%{with_vulkan}
++%ifarch %mips
++           --with-vulkan-drivers=radeon \
++%else
+            --with-vulkan-drivers=intel,radeon \
++%endif
+ %endif
+ %if %{drivers}
+   %ifarch %{ix86} x86_64
+            --enable-xa \
+            --with-dri-drivers=i915,i965,nouveau,r200,radeon \
+            --with-gallium-drivers=r300,r600,radeonsi,nouveau,swrast,svga,virgl \
++  %endif
++  %ifarch %mips
++           --enable-xa \
++           --with-dri-drivers=nouveau,r200,radeon \
++           --with-gallium-drivers=r300,r600,radeonsi,nouveau,swrast,virgl \
+   %endif
+   %ifarch %{arm} aarch64
+            --enable-xa \
+@@ -1035,7 +1044,7 @@
+ %endif
+ 
+ %if %{drivers}
+-%ifarch aarch64 %{ix86} x86_64 %{arm} ppc64 ppc64le
++%ifarch aarch64 %{ix86} x86_64 %{arm} ppc64 ppc64le %mips
+ %files -n libxatracker2
+ %{_libdir}/libxatracker.so.2*
+ 
+@@ -1081,7 +1090,7 @@
+ %{_libdir}/vdpau/libvdpau_r600.so.1.0.0
+ %endif
+ 
+-%ifarch %{ix86} x86_64
++%ifarch %{ix86} x86_64 %mips
+ %files -n libvdpau_radeonsi
+ %{_libdir}/vdpau/libvdpau_radeonsi.so
+ %{_libdir}/vdpau/libvdpau_radeonsi.so.1
+@@ -1102,7 +1111,7 @@
+ %files -n Mesa-dri
+ %dir %{_libdir}/dri
+ %{_libdir}/dri/*_dri.so
+-%ifarch %{ix86} x86_64 aarch64 %{arm} ppc64 ppc64le
++%ifarch %{ix86} x86_64 aarch64 %{arm} ppc64 ppc64le %mips
+ %exclude %{_libdir}/dri/nouveau_dri.so
+ %exclude %{_libdir}/dri/nouveau_vieux_dri.so
+ %endif
+@@ -1117,7 +1126,7 @@
+ %{_libdir}/gallium-pipe/pipe_*.so
+ %endif
+ 
+-%ifarch %{ix86} x86_64 aarch64 %{arm} ppc64 ppc64le
++%ifarch %{ix86} x86_64 aarch64 %{arm} ppc64 ppc64le %mips
+ %files -n Mesa-dri-nouveau
+ %{_libdir}/dri/nouveau_dri.so
+ %{_libdir}/dri/nouveau_vieux_dri.so
+@@ -1163,18 +1172,20 @@
+ %endif
+ 
+ %if %{drivers}
+-%ifarch %{ix86} x86_64 aarch64 %{arm} ppc64 ppc64le
++%ifarch %{ix86} x86_64 aarch64 %{arm} ppc64 ppc64le %mips
+ %files -n Mesa-libva
+ %{_libdir}/dri/*_drv_video.so
+ %endif
+ %endif
+ 
+ %if 0%{with_vulkan}
++%ifnarch %mips
+ %files -n libvulkan_intel
+ %dir %{_datadir}/vulkan
+ %dir %{_datadir}/vulkan/icd.d
+ %{_datadir}/vulkan/icd.d/intel_icd.*.json
+ %{_libdir}/libvulkan_intel.so
++%endif
+ 
+ %files -n libvulkan_radeon
+ %{_libdir}/libvulkan_radeon.so
+@@ -1183,8 +1194,10 @@
+ %{_datadir}/vulkan/icd.d/radeon_icd.*.json
+ 
+ %files -n Mesa-libVulkan-devel
++%ifnarch %mips
+ %dir %{_includedir}/vulkan
+ %{_includedir}/vulkan/*
+ %endif
++%endif
+ 
+ %changelog

@@ -1,0 +1,13 @@
+Index: ndctl.spec
+===================================================================
+--- ndctl.spec	(revision 1)
++++ ndctl.spec	(working copy)
+@@ -42,7 +42,7 @@
+ BuildRequires:  pkgconfig(libudev)
+ BuildRequires:  pkgconfig(systemd)
+ BuildRequires:  pkgconfig(uuid)
+-ExclusiveArch:  x86_64 ppc64le
++ExclusiveArch:  x86_64 ppc64le %mips
+ %{?systemd_requires}
+ # required for documentation
+ #if 0%{?suse_version} >= 1330

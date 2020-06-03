@@ -1,0 +1,13 @@
+Index: mcelog.spec
+===================================================================
+--- mcelog.spec	(revision 1)
++++ mcelog.spec	(working copy)
+@@ -50,7 +50,7 @@
+ Requires:       logrotate
+ Requires(pre):  %fillup_prereq
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+-ExclusiveArch:  %ix86 x86_64
++ExclusiveArch:  %ix86 x86_64 %mips
+ %{?systemd_requires}
+ 
+ %description

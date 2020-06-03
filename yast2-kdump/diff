@@ -1,0 +1,13 @@
+Index: yast2-kdump.spec
+===================================================================
+--- yast2-kdump.spec	(revision 1)
++++ yast2-kdump.spec	(working copy)
+@@ -45,7 +45,7 @@
+ Conflicts:      yast2-installation < 3.1.198
+ Recommends:     makedumpfile
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+-%ifarch ppc
++%ifarch ppc %mips
+ Recommends:     kdump
+ %else
+ Requires:       kdump

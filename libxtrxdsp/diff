@@ -1,0 +1,37 @@
+Index: libxtrxdsp.spec
+===================================================================
+--- libxtrxdsp.spec	(revision 1)
++++ libxtrxdsp.spec	(working copy)
+@@ -28,6 +28,7 @@
+ URL:            http://xtrx.io
+ Source:         %{name}-%{version}.tar.xz
+ Patch1:         0001-Make-xtrxdsp-compile-with-older-gcc-versions.patch
++Patch2:         0001-forgotten-semicolon.patch
+ BuildRequires:  cmake
+ BuildRequires:  git-core
+ BuildRequires:  pkgconfig
+@@ -63,6 +64,7 @@
+ %prep
+ %setup -q
+ %patch1 -p1
++%patch2 -p1
+ 
+ %build
+ # FIXME: Architecture detection in the used CMake is br0ken, use FORCE_ARCH for now
+Index: 0001-forgotten-semicolon.patch
+===================================================================
+--- 0001-forgotten-semicolon.patch	(revision 0)
++++ 0001-forgotten-semicolon.patch	(working copy)
+@@ -0,0 +1,12 @@
++Added semicolon, forgotten by the upstream author.
++--- a/xtrxdsp.c
+++++ b/xtrxdsp.c
++@@ -95,7 +95,7 @@
++ 
++ typedef struct cpu_features {
++ 	bool _nothing
++-} cpu_features_t
+++} cpu_features_t;
++ 
++ static void cpu_features_init(cpu_features_t* features)
++ {

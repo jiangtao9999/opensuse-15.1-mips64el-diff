@@ -1,0 +1,12 @@
+Index: acbuild.spec
+===================================================================
+--- acbuild.spec	(revision 1)
++++ acbuild.spec	(working copy)
+@@ -30,6 +30,7 @@
+ 
+ BuildRequires:  golang-packaging
+ BuildRequires:  xz
++ExcludeArch: %mips
+ 
+ Requires:       gpg2
+ %{go_provides}

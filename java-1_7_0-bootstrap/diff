@@ -1,0 +1,43 @@
+Index: java-1_7_0-bootstrap.spec
+===================================================================
+--- java-1_7_0-bootstrap.spec	(revision 1)
++++ java-1_7_0-bootstrap.spec	(working copy)
+@@ -62,6 +62,9 @@
+ %endif
+ %ifarch ppc64le
+ %global archinstall ppc64le
++%endif
++%ifarch %mips64
++%global archinstall mips64
+ %endif
+ # bnc#542545
+ # 32-bit versus 64-bit specific provides:
+@@ -106,6 +109,9 @@
+ Source21:       java-1_7_0-openjdk.aarch64.rpm
+ Source22:       java-1_7_0-openjdk-devel.aarch64.rpm
+ Source23:       java-1_7_0-openjdk-headless.aarch64.rpm
++Source24:       java-1_7_0-openjdk.mips64el.rpm
++Source25:       java-1_7_0-openjdk-devel.mips64el.rpm
++Source26:       java-1_7_0-openjdk-headless.mips64el.rpm
+ NoSource:       0
+ NoSource:       1
+ NoSource:       2
+@@ -130,6 +136,9 @@
+ NoSource:       21
+ NoSource:       22
+ NoSource:       23
++NoSource:       24
++NoSource:       25
++NoSource:       26
+ BuildRequires:  jpackage-utils >= 1.7.5
+ # mozilla-nss has to be installed to prevent
+ # java.security.ProviderException: Could not initialize NSS
+Index: java-1_7_0-openjdk-devel.mips64el.rpm
+===================================================================
+Binary file 'java-1_7_0-openjdk-devel.mips64el.rpm' added.
+Index: java-1_7_0-openjdk-headless.mips64el.rpm
+===================================================================
+Binary file 'java-1_7_0-openjdk-headless.mips64el.rpm' added.
+Index: java-1_7_0-openjdk.mips64el.rpm
+===================================================================
+Binary file 'java-1_7_0-openjdk.mips64el.rpm' added.

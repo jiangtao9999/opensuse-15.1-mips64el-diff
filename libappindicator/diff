@@ -1,0 +1,14 @@
+Index: libappindicator.spec
+===================================================================
+--- libappindicator.spec	(revision 1)
++++ libappindicator.spec	(working copy)
+@@ -19,7 +19,9 @@
+ %define sover 1
+ %define _version 12.10.1+17.04.20170215
+ %if %{undefined with_mono}
++%ifnarch %mips64
+ %bcond_without mono
++%endif
+ %endif
+ %bcond_with mono
+ Name:           libappindicator

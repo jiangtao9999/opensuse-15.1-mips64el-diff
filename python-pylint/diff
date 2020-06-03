@@ -1,0 +1,12 @@
+Index: python-pylint.spec
+===================================================================
+--- python-pylint.spec	(revision 1)
++++ python-pylint.spec	(working copy)
+@@ -106,6 +106,7 @@
+ %check
+ %if 0%{?have_python3}
+ export PYTHONPATH=$PWD
++export PYTHONWARNINGS="ignore::DeprecationWarning"
+ python3 %{_bindir}/py.test pylint/test/ || :
+ %endif
+ 

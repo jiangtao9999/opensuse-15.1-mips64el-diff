@@ -1,0 +1,13 @@
+Index: llvm.spec
+===================================================================
+--- llvm.spec	(revision 1)
++++ llvm.spec	(working copy)
+@@ -16,7 +16,7 @@
+ #
+ 
+ 
+-%ifarch ppc
++%ifarch ppc %mips
+ %bcond_with gold
+ %else
+ %bcond_without gold

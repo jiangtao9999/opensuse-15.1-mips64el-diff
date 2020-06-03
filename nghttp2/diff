@@ -1,0 +1,49 @@
+Index: nghttp2.spec
+===================================================================
+--- nghttp2.spec	(revision 1)
++++ nghttp2.spec	(working copy)
+@@ -31,6 +31,7 @@
+ Source1:        baselibs.conf
+ # PATCH-FIX-OPENSUSE nghttp2-remove-python-build.patch
+ Patch0:         %{name}-remove-python-build.patch
++Patch1:         nghttp2-1.31.1-fix-mips64-boost-libdir.patch
+ BuildRequires:  autoconf
+ BuildRequires:  automake
+ BuildRequires:  gcc-c++
+@@ -121,6 +122,7 @@
+ %prep
+ %setup -q
+ %patch0 -p1
++%patch1 -p1
+ # fix python shebang
+ sed -i -e 's:#!%{_bindir}/env python:#!%{_bindir}/python3:g' script/fetch-ocsp-response
+ 
+Index: nghttp2-1.31.1-fix-mips64-boost-libdir.patch
+===================================================================
+--- nghttp2-1.31.1-fix-mips64-boost-libdir.patch	(revision 0)
++++ nghttp2-1.31.1-fix-mips64-boost-libdir.patch	(working copy)
+@@ -0,0 +1,24 @@
++diff -Nrui nghttp2-1.31.1-orig/configure nghttp2-1.31.1/configure
++--- nghttp2-1.31.1-orig/configure	2020-01-01 00:07:47.799642384 +0800
+++++ nghttp2-1.31.1/configure	2020-01-01 00:08:37.711332311 +0800
++@@ -19786,7 +19786,7 @@
++       x86_64)
++         libsubdirs="lib64 libx32 lib lib64"
++         ;;
++-      ppc64|s390x|sparc64|aarch64|ppc64le)
+++      ppc64|s390x|sparc64|aarch64|ppc64le|mips64)
++         libsubdirs="lib64 lib lib64 ppc64le"
++         ;;
++     esac
++diff -Nrui nghttp2-1.31.1-orig/m4/ax_boost_base.m4 nghttp2-1.31.1/m4/ax_boost_base.m4
++--- nghttp2-1.31.1-orig/m4/ax_boost_base.m4	2020-01-01 00:07:47.823642235 +0800
+++++ nghttp2-1.31.1/m4/ax_boost_base.m4	2020-01-01 00:08:58.119205527 +0800
++@@ -95,7 +95,7 @@
++       x86_64)
++         libsubdirs="lib64 libx32 lib lib64"
++         ;;
++-      ppc64|s390x|sparc64|aarch64|ppc64le)
+++      ppc64|s390x|sparc64|aarch64|ppc64le|mips64)
++         libsubdirs="lib64 lib lib64 ppc64le"
++         ;;
++     esac

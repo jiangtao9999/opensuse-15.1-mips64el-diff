@@ -1,0 +1,13 @@
+Index: rdma-core.spec
+===================================================================
+--- rdma-core.spec	(revision 1)
++++ rdma-core.spec	(working copy)
+@@ -41,7 +41,7 @@
+ %define  mlx4_lname   libmlx4-%{mlx4_so_major}
+ %define  mlx5_lname   libmlx5-%{mlx5_so_major}
+ 
+-%ifnarch s390 %arm
++%ifnarch s390 %arm %mips
+ %define dma_coherent 1
+ %endif
+ 

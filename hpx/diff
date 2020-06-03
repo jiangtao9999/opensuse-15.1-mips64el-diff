@@ -1,0 +1,67 @@
+Index: hpx.spec
+===================================================================
+--- hpx.spec	(revision 1)
++++ hpx.spec	(working copy)
+@@ -38,6 +38,7 @@
+ Source0:        http://stellar.cct.lsu.edu/files/%{name}_%{version}.tar.gz
+ #PATCH-FIX-UPSTREAM boo#1100677 avoid compile-time CPU-detection https://github.com/STEllAR-GROUP/hpx/pull/3585
+ Patch2:         reproducible.patch
++Patch3:         hpx_1.2.1-fix-mips.patch
+ 
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ 
+@@ -99,6 +100,7 @@
+ %prep
+ %setup -n %{name}_%{version} -q
+ %patch2 -p1
++%patch3 -p1
+ 
+ %build
+ %ifarch aarch64 %arm
+Index: hpx_1.2.1-fix-mips.patch
+===================================================================
+--- hpx_1.2.1-fix-mips.patch	(revision 0)
++++ hpx_1.2.1-fix-mips.patch	(working copy)
+@@ -0,0 +1,24 @@
++diff -Nrui hpx_1.2.1-orig/hpx/util/hardware/timestamp.hpp hpx_1.2.1/hpx/util/hardware/timestamp.hpp
++--- hpx_1.2.1-orig/hpx/util/hardware/timestamp.hpp	2020-05-07 11:06:24.735180195 +0800
+++++ hpx_1.2.1/hpx/util/hardware/timestamp.hpp	2020-05-07 11:06:32.897470372 +0800
++@@ -37,6 +37,8 @@
++     #include <hpx/util/hardware/timestamp/linux_generic.hpp>
++ #elif defined(__s390x__)
++     #include <hpx/util/hardware/timestamp/linux_generic.hpp>
+++#elif defined(__mips__)
+++    #include <hpx/util/hardware/timestamp/linux_generic.hpp>
++ #elif defined(__bgq__)
++     #include <hpx/util/hardware/timestamp/bgq.hpp>
++ #else
++diff -Nrui hpx_1.2.1-orig/src/runtime/threads/coroutines/swapcontext.cpp hpx_1.2.1/src/runtime/threads/coroutines/swapcontext.cpp
++--- hpx_1.2.1-orig/src/runtime/threads/coroutines/swapcontext.cpp	2020-05-07 11:06:24.911077266 +0800
+++++ hpx_1.2.1/src/runtime/threads/coroutines/swapcontext.cpp	2020-05-07 11:07:00.590209915 +0800
++@@ -9,7 +9,7 @@
++ #if !defined(HPX_HAVE_GENERIC_CONTEXT_COROUTINES)
++ 
++ #if (defined(__linux) || defined(linux) || defined(__linux__)) &&              \
++-    !defined(__bgq__) && !defined(__powerpc__) && !defined(__s390x__)
+++    !defined(__bgq__) && !defined(__powerpc__) && !defined(__s390x__) && !defined(__mips__)
++ 
++ #if defined(__x86_64__) || defined(__amd64__)
++ #include "swapcontext64.ipp"
+Index: _constraints
+===================================================================
+--- _constraints	(revision 1)
++++ _constraints	(working copy)
+@@ -1,13 +0,0 @@
+-<?xml version="1.0"?>
+-<constraints>
+-  <hardware>
+-    <physicalmemory>
+-      <size unit="G">5</size>
+-    </physicalmemory>
+-    <disk>
+-      <size unit="G">13</size>
+-    </disk>
+-  </hardware>
+-  <sandbox>kvm</sandbox>
+-  <hostlabel exclude="true">SLOW_CPU</hostlabel>
+-</constraints>

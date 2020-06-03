@@ -1,0 +1,321 @@
+Index: buildah.spec
+===================================================================
+--- buildah.spec	(revision 1)
++++ buildah.spec	(working copy)
+@@ -30,6 +30,7 @@
+ URL:            https://github.com/containers/buildah
+ Source0:        %{name}-%{version}.tar.xz
+ Source1:        %{name}-rpmlintrc
++Patch1:         buildah-1.7.1-fix-mips.patch
+ BuildRequires:  bash-completion
+ BuildRequires:  device-mapper-devel
+ BuildRequires:  fdupes
+@@ -69,6 +70,7 @@
+ 
+ %prep
+ %setup -q
++%patch1 -p1
+ 
+ %build
+ # We can't use symlinks here because go-list gets confused by symlinks, so we
+@@ -90,7 +92,11 @@
+ export CNIVersion=`sed -e '\,github.com/containernetworking/cni, !d' -e 's,.* ,,g' vendor.conf`
+ # Build buildah
+ go build -tags "$BUILDTAGS" \
++%ifnarch %mips
+          -buildmode=pie \
++%else
++         -buildmode=exe \
++%endif
+          -ldflags '-s -w -X main.buildInfo='$SOURCE_DATE_EPOCH' -X main.cniVersion='$CNIVersion'' \
+          -o bin/buildah \
+          %{project}/cmd/buildah
+Index: buildah-1.7.1-fix-mips.patch
+===================================================================
+--- buildah-1.7.1-fix-mips.patch	(revision 0)
++++ buildah-1.7.1-fix-mips.patch	(working copy)
+@@ -0,0 +1,284 @@
++diff -Nuir buildah-1.7.1-orig/bind/mount.go buildah-1.7.1/bind/mount.go
++--- buildah-1.7.1-orig/bind/mount.go	2020-04-30 10:18:30.594762743 +0800
+++++ buildah-1.7.1/bind/mount.go	2020-04-30 10:18:37.257142589 +0800
++@@ -266,7 +266,7 @@
++ 		if err := unix.Lstat(mount.Mountpoint, &st); err != nil {
++ 			return errors.Wrapf(err, "error checking if %q is mounted", mount.Mountpoint)
++ 		}
++-		if mount.Major != int(unix.Major(st.Dev)) || mount.Minor != int(unix.Minor(st.Dev)) {
+++		if mount.Major != int(unix.Major(uint64(st.Dev))) || mount.Minor != int(unix.Minor(uint64(st.Dev))) {
++ 			logrus.Debugf("%q is apparently not really mounted, skipping", mount.Mountpoint)
++ 			continue
++ 		}
++diff -Nuir buildah-1.7.1-orig/vendor/github.com/boltdb/bolt/bolt_mips64x.go buildah-1.7.1/vendor/github.com/boltdb/bolt/bolt_mips64x.go
++--- buildah-1.7.1-orig/vendor/github.com/boltdb/bolt/bolt_mips64x.go	1970-01-01 08:00:00.000000000 +0800
+++++ buildah-1.7.1/vendor/github.com/boltdb/bolt/bolt_mips64x.go	2020-04-30 10:18:37.245358145 +0800
++@@ -0,0 +1,12 @@
+++// +build mips64 mips64le
+++
+++package bolt
+++
+++// maxMapSize represents the largest mmap size supported by Bolt.
+++const maxMapSize = 0x8000000000 // 512GB
+++
+++// maxAllocSize is the size used when creating array pointers.
+++const maxAllocSize = 0x7FFFFFFF
+++
+++// Are unaligned load/stores broken on this arch?
+++var brokenUnaligned = false
++diff -Nuir buildah-1.7.1-orig/vendor/github.com/boltdb/bolt/bolt_mipsx.go buildah-1.7.1/vendor/github.com/boltdb/bolt/bolt_mipsx.go
++--- buildah-1.7.1-orig/vendor/github.com/boltdb/bolt/bolt_mipsx.go	1970-01-01 08:00:00.000000000 +0800
+++++ buildah-1.7.1/vendor/github.com/boltdb/bolt/bolt_mipsx.go	2020-04-30 10:18:37.249286293 +0800
++@@ -0,0 +1,12 @@
+++// +build mips mipsle
+++
+++package bolt
+++
+++// maxMapSize represents the largest mmap size supported by Bolt.
+++const maxMapSize = 0x40000000 // 1GB
+++
+++// maxAllocSize is the size used when creating array pointers.
+++const maxAllocSize = 0xFFFFFFF
+++
+++// Are unaligned load/stores broken on this arch?
+++var brokenUnaligned = false
++diff -Nuir buildah-1.7.1-orig/vendor/github.com/containers/storage/drivers/copy/copy.go buildah-1.7.1/vendor/github.com/containers/storage/drivers/copy/copy.go
++--- buildah-1.7.1-orig/vendor/github.com/containers/storage/drivers/copy/copy.go	2020-04-30 10:18:30.669032280 +0800
+++++ buildah-1.7.1/vendor/github.com/containers/storage/drivers/copy/copy.go	2020-04-30 10:18:37.249286293 +0800
++@@ -154,7 +154,7 @@
++ 
++ 		switch f.Mode() & os.ModeType {
++ 		case 0: // Regular file
++-			id := fileID{dev: stat.Dev, ino: stat.Ino}
+++			id := fileID{dev: uint64(stat.Dev), ino: stat.Ino}
++ 			if copyMode == Hardlink {
++ 				isHardlink = true
++ 				if err2 := os.Link(srcPath, dstPath); err2 != nil {
++diff -Nuir buildah-1.7.1-orig/vendor/github.com/containers/storage/drivers/devmapper/deviceset.go buildah-1.7.1/vendor/github.com/containers/storage/drivers/devmapper/deviceset.go
++--- buildah-1.7.1-orig/vendor/github.com/containers/storage/drivers/devmapper/deviceset.go	2020-04-30 10:18:30.669032280 +0800
+++++ buildah-1.7.1/vendor/github.com/containers/storage/drivers/devmapper/deviceset.go	2020-04-30 10:18:37.253214441 +0800
++@@ -1539,8 +1539,8 @@
++ 	}
++ 
++ 	dev := stat.Rdev
++-	majorNum := major(dev)
++-	minorNum := minor(dev)
+++	majorNum := major(uint64(dev))
+++	minorNum := minor(uint64(dev))
++ 
++ 	logrus.Debugf("devmapper: Major:Minor for device: %s is:%v:%v", file.Name(), majorNum, minorNum)
++ 	return majorNum, minorNum, nil
++@@ -1743,7 +1743,7 @@
++ 	//	- Managed by container storage
++ 	//	- The target of this device is at major <maj> and minor <min>
++ 	//	- If <inode> is defined, use that file inside the device as a loopback image. Otherwise use the device itself.
++-	devices.devicePrefix = fmt.Sprintf("container-%d:%d-%d", major(st.Dev), minor(st.Dev), st.Ino)
+++	devices.devicePrefix = fmt.Sprintf("container-%d:%d-%d", major(uint64(st.Dev)), minor(uint64(st.Dev)), st.Ino)
++ 	logrus.Debugf("devmapper: Generated prefix: %s", devices.devicePrefix)
++ 
++ 	// Check for the existence of the thin-pool device
++diff -Nuir buildah-1.7.1-orig/vendor/github.com/containers/storage/pkg/archive/archive_linux.go buildah-1.7.1/vendor/github.com/containers/storage/pkg/archive/archive_linux.go
++--- buildah-1.7.1-orig/vendor/github.com/containers/storage/pkg/archive/archive_linux.go	2020-04-30 10:18:30.676850126 +0800
+++++ buildah-1.7.1/vendor/github.com/containers/storage/pkg/archive/archive_linux.go	2020-04-30 10:18:37.249286293 +0800
++@@ -63,7 +63,7 @@
++ 						// It's a whiteout for this directory, so it can't have been
++ 						// both deleted and recreated in the layer we're diffing.
++ 						s := stat.Sys().(*syscall.Stat_t)
++-						if major(s.Rdev) == 0 && minor(s.Rdev) == 0 {
+++						if major(uint64(s.Rdev)) == 0 && minor(uint64(s.Rdev)) == 0 {
++ 							return nil, nil
++ 						}
++ 					}
++@@ -98,7 +98,7 @@
++ 							// original directory wasn't inherited into this layer,
++ 							// so we don't need to emit whiteout for it.
++ 							s := stat.Sys().(*syscall.Stat_t)
++-							if major(s.Rdev) == 0 && minor(s.Rdev) == 0 {
+++							if major(uint64(s.Rdev)) == 0 && minor(uint64(s.Rdev)) == 0 {
++ 								return nil, nil
++ 							}
++ 						}
++diff -Nuir buildah-1.7.1-orig/vendor/github.com/containers/storage/pkg/archive/changes_linux.go buildah-1.7.1/vendor/github.com/containers/storage/pkg/archive/changes_linux.go
++--- buildah-1.7.1-orig/vendor/github.com/containers/storage/pkg/archive/changes_linux.go	2020-04-30 10:18:30.676850126 +0800
+++++ buildah-1.7.1/vendor/github.com/containers/storage/pkg/archive/changes_linux.go	2020-04-30 10:18:37.249286293 +0800
++@@ -309,7 +309,7 @@
++ 	if err == nil && stat.Mode()&os.ModeCharDevice != 0 {
++ 		// Check if there's whiteout for the specified item in the specified layer.
++ 		s := stat.Sys().(*syscall.Stat_t)
++-		if major(s.Rdev) == 0 && minor(s.Rdev) == 0 {
+++		if major(uint64(s.Rdev)) == 0 && minor(uint64(s.Rdev)) == 0 {
++ 			return true, nil
++ 		}
++ 	}
++@@ -320,7 +320,7 @@
++ 	// If it's a whiteout item, then a file or directory with that name is removed by this layer.
++ 	if fi.Mode()&os.ModeCharDevice != 0 {
++ 		s := fi.Sys().(*syscall.Stat_t)
++-		if major(s.Rdev) == 0 && minor(s.Rdev) == 0 {
+++		if major(uint64(s.Rdev)) == 0 && minor(uint64(s.Rdev)) == 0 {
++ 			return path, nil
++ 		}
++ 	}
++@@ -353,7 +353,7 @@
++ 				// It's a whiteout for this directory, so it can't have been
++ 				// deleted in this layer.
++ 				s := stat.Sys().(*syscall.Stat_t)
++-				if major(s.Rdev) == 0 && minor(s.Rdev) == 0 {
+++				if major(uint64(s.Rdev)) == 0 && minor(uint64(s.Rdev)) == 0 {
++ 					return "", nil
++ 				}
++ 			}
++@@ -373,7 +373,7 @@
++ 					// If it's whiteout for a parent directory, then the
++ 					// original directory wasn't inherited into the top layer.
++ 					s := stat.Sys().(*syscall.Stat_t)
++-					if major(s.Rdev) == 0 && minor(s.Rdev) == 0 {
+++					if major(uint64(s.Rdev)) == 0 && minor(uint64(s.Rdev)) == 0 {
++ 						return "", nil
++ 					}
++ 				}
++diff -Nuir buildah-1.7.1-orig/vendor/github.com/containers/storage/pkg/loopback/attach_loopback.go buildah-1.7.1/vendor/github.com/containers/storage/pkg/loopback/attach_loopback.go
++--- buildah-1.7.1-orig/vendor/github.com/containers/storage/pkg/loopback/attach_loopback.go	2020-04-30 10:18:30.680759049 +0800
+++++ buildah-1.7.1/vendor/github.com/containers/storage/pkg/loopback/attach_loopback.go	2020-04-30 10:18:37.249286293 +0800
++@@ -93,7 +93,7 @@
++ 			logrus.Errorf("Error getting loopback backing file: %s", err)
++ 			return nil, ErrGetLoopbackBackingFile
++ 		}
++-		if dev != st.Dev || ino != st.Ino {
+++		if dev != uint64(st.Dev) || ino != st.Ino {
++ 			logrus.Errorf("Loopback device and filesystem disagree on device/inode for %q: %#x(%d):%#x(%d) vs %#x(%d):%#x(%d)", sparseName, dev, dev, ino, ino, st.Dev, st.Dev, st.Ino, st.Ino)
++ 		}
++ 
++diff -Nuir buildah-1.7.1-orig/vendor/github.com/containers/storage/pkg/loopback/loopback.go buildah-1.7.1/vendor/github.com/containers/storage/pkg/loopback/loopback.go
++--- buildah-1.7.1-orig/vendor/github.com/containers/storage/pkg/loopback/loopback.go	2020-04-30 10:18:30.684667972 +0800
+++++ buildah-1.7.1/vendor/github.com/containers/storage/pkg/loopback/loopback.go	2020-04-30 10:18:37.249286293 +0800
++@@ -53,7 +53,7 @@
++ 		}
++ 
++ 		dev, inode, err := getLoopbackBackingFile(file)
++-		if err == nil && dev == targetDevice && inode == targetInode {
+++		if err == nil && dev == uint64(targetDevice) && inode == targetInode {
++ 			return file
++ 		}
++ 		file.Close()
++diff -Nuir buildah-1.7.1-orig/vendor/github.com/containers/storage/pkg/system/stat_linux.go buildah-1.7.1/vendor/github.com/containers/storage/pkg/system/stat_linux.go
++--- buildah-1.7.1-orig/vendor/github.com/containers/storage/pkg/system/stat_linux.go	2020-04-30 10:18:30.688576895 +0800
+++++ buildah-1.7.1/vendor/github.com/containers/storage/pkg/system/stat_linux.go	2020-04-30 10:18:37.253214441 +0800
++@@ -8,7 +8,7 @@
++ 		mode: s.Mode,
++ 		uid:  s.Uid,
++ 		gid:  s.Gid,
++-		rdev: s.Rdev,
+++		rdev: uint64(s.Rdev),
++ 		mtim: s.Mtim}, nil
++ }
++ 
++diff -Nuir buildah-1.7.1-orig/vendor/github.com/docker/docker/pkg/signal/signal_linux.go buildah-1.7.1/vendor/github.com/docker/docker/pkg/signal/signal_linux.go
++--- buildah-1.7.1-orig/vendor/github.com/docker/docker/pkg/signal/signal_linux.go	2020-04-30 10:18:30.719848279 +0800
+++++ buildah-1.7.1/vendor/github.com/docker/docker/pkg/signal/signal_linux.go	2020-04-30 10:18:37.253214441 +0800
++@@ -1,3 +1,5 @@
+++// +build !mips,!mipsle,!mips64,!mips64le
+++
++ package signal
++ 
++ import (
++diff -Nuir buildah-1.7.1-orig/vendor/github.com/docker/docker/pkg/signal/signal_linux_mipsx.go buildah-1.7.1/vendor/github.com/docker/docker/pkg/signal/signal_linux_mipsx.go
++--- buildah-1.7.1-orig/vendor/github.com/docker/docker/pkg/signal/signal_linux_mipsx.go	1970-01-01 08:00:00.000000000 +0800
+++++ buildah-1.7.1/vendor/github.com/docker/docker/pkg/signal/signal_linux_mipsx.go	2020-04-30 10:18:37.253214441 +0800
++@@ -0,0 +1,84 @@
+++// +build linux
+++// +build mips mipsle mips64 mips64le
+++
+++package signal // import "github.com/docker/docker/pkg/signal"
+++
+++import (
+++	"syscall"
+++
+++	"golang.org/x/sys/unix"
+++)
+++
+++const (
+++	sigrtmin = 34
+++	sigrtmax = 127
+++)
+++
+++// SignalMap is a map of Linux signals.
+++var SignalMap = map[string]syscall.Signal{
+++	"ABRT":     unix.SIGABRT,
+++	"ALRM":     unix.SIGALRM,
+++	"BUS":      unix.SIGBUS,
+++	"CHLD":     unix.SIGCHLD,
+++	"CLD":      unix.SIGCLD,
+++	"CONT":     unix.SIGCONT,
+++	"FPE":      unix.SIGFPE,
+++	"HUP":      unix.SIGHUP,
+++	"ILL":      unix.SIGILL,
+++	"INT":      unix.SIGINT,
+++	"IO":       unix.SIGIO,
+++	"IOT":      unix.SIGIOT,
+++	"KILL":     unix.SIGKILL,
+++	"PIPE":     unix.SIGPIPE,
+++	"POLL":     unix.SIGPOLL,
+++	"PROF":     unix.SIGPROF,
+++	"PWR":      unix.SIGPWR,
+++	"QUIT":     unix.SIGQUIT,
+++	"SEGV":     unix.SIGSEGV,
+++	"SIGEMT":   unix.SIGEMT,
+++	"STOP":     unix.SIGSTOP,
+++	"SYS":      unix.SIGSYS,
+++	"TERM":     unix.SIGTERM,
+++	"TRAP":     unix.SIGTRAP,
+++	"TSTP":     unix.SIGTSTP,
+++	"TTIN":     unix.SIGTTIN,
+++	"TTOU":     unix.SIGTTOU,
+++	"URG":      unix.SIGURG,
+++	"USR1":     unix.SIGUSR1,
+++	"USR2":     unix.SIGUSR2,
+++	"VTALRM":   unix.SIGVTALRM,
+++	"WINCH":    unix.SIGWINCH,
+++	"XCPU":     unix.SIGXCPU,
+++	"XFSZ":     unix.SIGXFSZ,
+++	"RTMIN":    sigrtmin,
+++	"RTMIN+1":  sigrtmin + 1,
+++	"RTMIN+2":  sigrtmin + 2,
+++	"RTMIN+3":  sigrtmin + 3,
+++	"RTMIN+4":  sigrtmin + 4,
+++	"RTMIN+5":  sigrtmin + 5,
+++	"RTMIN+6":  sigrtmin + 6,
+++	"RTMIN+7":  sigrtmin + 7,
+++	"RTMIN+8":  sigrtmin + 8,
+++	"RTMIN+9":  sigrtmin + 9,
+++	"RTMIN+10": sigrtmin + 10,
+++	"RTMIN+11": sigrtmin + 11,
+++	"RTMIN+12": sigrtmin + 12,
+++	"RTMIN+13": sigrtmin + 13,
+++	"RTMIN+14": sigrtmin + 14,
+++	"RTMIN+15": sigrtmin + 15,
+++	"RTMAX-14": sigrtmax - 14,
+++	"RTMAX-13": sigrtmax - 13,
+++	"RTMAX-12": sigrtmax - 12,
+++	"RTMAX-11": sigrtmax - 11,
+++	"RTMAX-10": sigrtmax - 10,
+++	"RTMAX-9":  sigrtmax - 9,
+++	"RTMAX-8":  sigrtmax - 8,
+++	"RTMAX-7":  sigrtmax - 7,
+++	"RTMAX-6":  sigrtmax - 6,
+++	"RTMAX-5":  sigrtmax - 5,
+++	"RTMAX-4":  sigrtmax - 4,
+++	"RTMAX-3":  sigrtmax - 3,
+++	"RTMAX-2":  sigrtmax - 2,
+++	"RTMAX-1":  sigrtmax - 1,
+++	"RTMAX":    sigrtmax,
+++}
++diff -Nuir buildah-1.7.1-orig/vendor/github.com/docker/docker/pkg/system/stat_linux.go buildah-1.7.1/vendor/github.com/docker/docker/pkg/system/stat_linux.go
++--- buildah-1.7.1-orig/vendor/github.com/docker/docker/pkg/system/stat_linux.go	2020-04-30 10:18:30.723757202 +0800
+++++ buildah-1.7.1/vendor/github.com/docker/docker/pkg/system/stat_linux.go	2020-04-30 10:18:37.253214441 +0800
++@@ -8,7 +8,7 @@
++ 		mode: s.Mode,
++ 		uid:  s.Uid,
++ 		gid:  s.Gid,
++-		rdev: s.Rdev,
+++		rdev: uint64(s.Rdev),
++ 		mtim: s.Mtim}, nil
++ }
++ 

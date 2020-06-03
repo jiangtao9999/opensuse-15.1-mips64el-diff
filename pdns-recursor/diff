@@ -1,0 +1,26 @@
+Index: pdns-recursor.spec
+===================================================================
+--- pdns-recursor.spec	(revision 1)
++++ pdns-recursor.spec	(working copy)
+@@ -42,7 +42,7 @@
+ BuildRequires:  libtool
+ 
+ %if 0%{?suse_version} > 1325
+-%ifnarch s390x
++%ifnarch s390x %mips64
+ BuildRequires:  libboost_context-devel
+ %endif
+ BuildRequires:  libboost_system-devel
+Index: _constraints
+===================================================================
+--- _constraints	(revision 1)
++++ _constraints	(working copy)
+@@ -1,8 +0,0 @@
+-<constraints>
+-  <hardware>
+-    <memory>
+-      <size unit="G">8</size>
+-    </memory>
+-  </hardware>
+-</constraints>
+-

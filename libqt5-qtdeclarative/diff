@@ -1,0 +1,37 @@
+Index: libqt5-qtdeclarative.spec
+===================================================================
+--- libqt5-qtdeclarative.spec	(revision 1)
++++ libqt5-qtdeclarative.spec	(working copy)
+@@ -41,6 +41,7 @@
+ Patch101:       revert-delay-deletion-of-qsgtextures.patch
+ # PATCH-FIX-OPENSUSE Switch to use python3 at build time
+ Patch102:       qtdeclarative-switch-to-python3.patch
++Patch201:       disable_jit_on_mips.patch
+ BuildRequires:  fdupes
+ BuildRequires:  libQt5Core-private-headers-devel >= %{version}
+ BuildRequires:  libQt5Gui-private-headers-devel >= %{version}
+@@ -83,6 +84,7 @@
+ %endif
+ %patch101 -p1
+ %patch102 -p1
++%patch201 -p1
+ 
+ %package -n %libname
+ Summary:        Qt 5 Declarative Library
+Index: disable_jit_on_mips.patch
+===================================================================
+--- disable_jit_on_mips.patch	(revision 0)
++++ disable_jit_on_mips.patch	(working copy)
+@@ -0,0 +1,12 @@
++diff -Nrui qtdeclarative-opensource-src-5.9.7-orig/src/qml/jsruntime/qv4global_p.h qtdeclarative-opensource-src-5.9.7/src/qml/jsruntime/qv4global_p.h
++--- qtdeclarative-opensource-src-5.9.7-orig/src/qml/jsruntime/qv4global_p.h	2020-01-21 14:06:11.359561730 +0800
+++++ qtdeclarative-opensource-src-5.9.7/src/qml/jsruntime/qv4global_p.h	2020-01-21 14:07:46.367413779 +0800
++@@ -107,7 +107,7 @@
++ #  if defined(Q_OS_LINUX) || defined(Q_OS_QNX)
++ #    define V4_ENABLE_JIT
++ #  endif
++-#elif defined(Q_PROCESSOR_MIPS_32) && defined(Q_OS_LINUX)
+++#elif defined(Q_PROCESSOR_MIPS_32) && 0
++ #  define V4_ENABLE_JIT
++ #endif
++ 

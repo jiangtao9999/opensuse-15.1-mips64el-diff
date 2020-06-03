@@ -1,0 +1,12 @@
+Index: gio-sharp.spec
+===================================================================
+--- gio-sharp.spec	(revision 1)
++++ gio-sharp.spec	(working copy)
+@@ -25,6 +25,7 @@
+ Url:            https://github.com/mono/gio-sharp
+ Source:         %{name}-%{version}.tar.bz2
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
++ExcludeArch:    %mips
+ 
+ BuildRequires:  glib-sharp2
+ BuildRequires:  glib2-devel >= 2.22

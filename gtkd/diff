@@ -1,0 +1,12 @@
+Index: gtkd.spec
+===================================================================
+--- gtkd.spec	(revision 1)
++++ gtkd.spec	(working copy)
+@@ -61,6 +61,7 @@
+ BuildRequires:  ldc
+ BuildRequires:  ldc-phobos-devel
+ %endif
++ExcludeArch:    %mips
+ 
+ %description
+ GTK+ is a highly usable, feature rich toolkit for creating graphical user

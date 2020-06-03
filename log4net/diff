@@ -1,0 +1,12 @@
+Index: log4net.spec
+===================================================================
+--- log4net.spec	(revision 1)
++++ log4net.spec	(working copy)
+@@ -32,6 +32,7 @@
+ BuildRequires:  unzip
+ BuildRequires:  update-desktop-files
+ BuildArch:      noarch
++ExcludeArch:    %mips64
+ #=============================================================================
+ 
+ %description

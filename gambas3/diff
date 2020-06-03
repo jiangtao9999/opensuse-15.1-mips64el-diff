@@ -1,0 +1,41 @@
+Index: gambas3.spec
+===================================================================
+--- gambas3.spec	(revision 1)
++++ gambas3.spec	(working copy)
+@@ -50,6 +50,7 @@
+ Patch2:         gambas3-adapt-to-poppler-058.patch
+ # PATCH-FIX-UPSTREAM disable-qt4.patch bnc#1072031 -- Fix build if the QtWebkit removed
+ Patch3:         gambas3-3.10.0-disable-qt4.patch
++Patch4:         gambas3-fix-mips-undeclared-CMSPAR.patch
+ BuildRequires:  SDL_image
+ BuildRequires:  aalib-devel
+ BuildRequires:  atk-devel
+@@ -1154,6 +1155,7 @@
+ %if 0%{?suse_version} >= 1500
+ %patch3 -p1
+ %endif
++%patch4 -p1
+ 
+ # don't compile in DATE and TIME
+ BUILDTIME=$(LC_ALL=C date -ur %{_sourcedir}/%{name}.changes +'%H:%M')
+Index: gambas3-fix-mips-undeclared-CMSPAR.patch
+===================================================================
+--- gambas3-fix-mips-undeclared-CMSPAR.patch	(revision 0)
++++ gambas3-fix-mips-undeclared-CMSPAR.patch	(working copy)
+@@ -0,0 +1,16 @@
++diff -Nrui gambas3-3.10.0-orig/main/lib/term/cterm.c gambas3-3.10.0/main/lib/term/cterm.c
++--- gambas3-3.10.0-orig/main/lib/term/cterm.c	2020-05-29 16:47:17.909162791 +0800
+++++ gambas3-3.10.0/main/lib/term/cterm.c	2020-05-29 16:58:58.995190728 +0800
++@@ -32,6 +32,12 @@
++ #define THIS_SETTINGS ((CTERMINALSETTINGS *)_object)
++ #define SETTINGS THIS_SETTINGS->settings
++ 
+++#if defined __mips__
+++#if !defined CMSPAR
+++#define CMSPAR    010000000000  /* mark or space (stick) parity */
+++#endif
+++#endif
+++
++ static bool check_error(int ret)
++ {
++ 	if (ret)

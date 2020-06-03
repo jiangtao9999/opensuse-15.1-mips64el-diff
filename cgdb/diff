@@ -1,0 +1,79 @@
+Index: cgdb.spec
+===================================================================
+--- cgdb.spec	(revision 1)
++++ cgdb.spec	(working copy)
+@@ -24,6 +24,7 @@
+ Group:          Development/Tools/Debuggers
+ Url:            https://cgdb.github.io/
+ Source0:        https://cgdb.me/files/%{name}-%{version}.tar.gz
++Patch1:         cgdb-fix-mips.patch
+ BuildRequires:  bison
+ BuildRequires:  flex
+ BuildRequires:  gcc-c++
+@@ -45,6 +46,7 @@
+ 
+ %prep
+ %setup -q
++%patch1 -p1
+ 
+ %build
+ %configure
+Index: cgdb-fix-mips.patch
+===================================================================
+--- cgdb-fix-mips.patch	(revision 0)
++++ cgdb-fix-mips.patch	(working copy)
+@@ -0,0 +1,54 @@
++diff -Nrui cgdb-0.7.0-orig/lib/tgdb/gdbwire.c cgdb-0.7.0/lib/tgdb/gdbwire.c
++--- cgdb-0.7.0-orig/lib/tgdb/gdbwire.c	2020-04-30 14:05:17.365985967 +0800
+++++ cgdb-0.7.0/lib/tgdb/gdbwire.c	2020-04-30 14:06:17.347204002 +0800
++@@ -1669,7 +1669,7 @@
++     /* The GDB/MI lexer state */
++     yyscan_t mils;
++     /* The GDB/MI push parser state */
++-    gdbwire_mi_pstate *mips;
+++    gdbwire_mi_pstate *v_mips;
++     /* The client parser callbacks */
++     struct gdbwire_mi_parser_callbacks callbacks;
++ };
++@@ -1700,8 +1700,8 @@
++     }
++ 
++     /* Create a new push parser state instance */
++-    parser->mips = gdbwire_mi_pstate_new();
++-    if (!parser->mips) {
+++    parser->v_mips = gdbwire_mi_pstate_new();
+++    if (!parser->v_mips) {
++         gdbwire_mi_lex_destroy(parser->mils);
++         gdbwire_string_destroy(parser->buffer);
++         free(parser);
++@@ -1710,7 +1710,7 @@
++ 
++     /* Ensure that the callbacks are non null */
++     if (!callbacks.gdbwire_mi_output_callback) {
++-        gdbwire_mi_pstate_delete(parser->mips);
+++        gdbwire_mi_pstate_delete(parser->v_mips);
++         gdbwire_mi_lex_destroy(parser->mils);
++         gdbwire_string_destroy(parser->buffer);
++         free(parser);
++@@ -1738,9 +1738,9 @@
++         }
++ 
++         /* Free the push parser instance */
++-        if (parser->mips) {
++-            gdbwire_mi_pstate_delete(parser->mips);
++-            parser->mips = NULL;
+++        if (parser->v_mips) {
+++            gdbwire_mi_pstate_delete(parser->v_mips);
+++            parser->v_mips = NULL;
++         }
++ 
++         free(parser);
++@@ -1791,7 +1791,7 @@
++         pattern = gdbwire_mi_lex(parser->mils);
++         if (pattern == 0)
++             break;
++-        mi_status = gdbwire_mi_push_parse(parser->mips, pattern, NULL,
+++        mi_status = gdbwire_mi_push_parse(parser->v_mips, pattern, NULL,
++             parser->mils, &output);
++     } while (mi_status == YYPUSH_MORE);
++ 

@@ -1,0 +1,16 @@
+Index: restic.spec
+===================================================================
+--- restic.spec	(revision 1)
++++ restic.spec	(working copy)
+@@ -71,7 +71,11 @@
+ # Build restic. We don't use build.go because it builds statically, uses go
+ # modules, and also restricts the Go version in cases where it's not actually
+ # necessary. We disable go modules because restic still provides a vendor/.
++%ifnarch %mips
+ GO111MODULE=off go build -o %{name} -buildmode=pie \
++%else
++GO111MODULE=off go build -o %{name} -buildmode=exe \
++%endif
+ 	-ldflags "-s -w -X main.version=%{version}" \
+ 	%{import_path}/cmd/restic
+ 

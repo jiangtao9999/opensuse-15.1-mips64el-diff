@@ -1,0 +1,58 @@
+Index: openmw.spec
+===================================================================
+--- openmw.spec	(revision 1)
++++ openmw.spec	(working copy)
+@@ -26,6 +26,7 @@
+ Url:            http://www.openmw.org
+ Source:         https://github.com/OpenMW/%{name}/archive/%{name}-%{version}.tar.gz
+ Source2:        %{name}.rpmlintrc
++Patch1:         fix_mips.patch
+ BuildRequires:  MyGUI-devel >= 3.2.1
+ BuildRequires:  cmake
+ BuildRequires:  doxygen
+@@ -86,6 +87,7 @@
+ 
+ %prep
+ %setup -q -n %{name}-%{name}-%{version}
++%patch1 -p1
+ 
+ ## fix __DATE__ and __TIME__
+ STATIC_BUILDTIME=$(LC_ALL=C date -u -r %{_sourcedir}/%{name}.changes '+%%H:%%M')
+Index: fix_mips.patch
+===================================================================
+--- fix_mips.patch	(revision 0)
++++ fix_mips.patch	(working copy)
+@@ -0,0 +1,33 @@
++Fixes building on MIPS arches.
++diff --git a/components/nif/data.cpp b/components/nif/data.cpp
++index a6721fde1..d19c8321e 100644
++--- a/components/nif/data.cpp
+++++ b/components/nif/data.cpp
++@@ -153,12 +153,12 @@ void NiPixelData::read(NIFStream *nif)
++     // Unknown
++     nif->skip(12);
++ 
++-    mips = nif->getInt();
+++    numberOfMipmaps = nif->getInt();
++ 
++     // Bytes per pixel, should be bpp * 8
++     /* int bytes = */ nif->getInt();
++ 
++-    for(int i=0; i<mips; i++)
+++    for(int i=0; i<numberOfMipmaps; i++)
++     {
++         // Image size and offset in the following data field
++         Mipmap m;
++diff --git a/components/nif/data.hpp b/components/nif/data.hpp
++index e6227b52a..9b4a3a67c 100644
++--- a/components/nif/data.hpp
+++++ b/components/nif/data.hpp
++@@ -115,7 +115,7 @@ public:
++     Format fmt;
++ 
++     unsigned int rmask, gmask, bmask, amask;
++-    int bpp, mips;
+++    int bpp, numberOfMipmaps;
++ 
++     struct Mipmap
++     {

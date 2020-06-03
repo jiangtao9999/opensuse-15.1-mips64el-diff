@@ -1,0 +1,16 @@
+Index: vgrep.spec
+===================================================================
+--- vgrep.spec	(revision 1)
++++ vgrep.spec	(working copy)
+@@ -55,7 +55,11 @@
+ 
+ # Build the binary.
+ cd $HOME/go/src/%{project}
++%ifnarch %mips
+ go build -o ./build/vgrep -buildmode=pie -ldflags "-s -w -X main.version=%{version}"
++%else
++go build -o ./build/vgrep -buildmode=exe -ldflags "-s -w -X main.version=%{version}"
++%endif
+ 
+ %install
+ # Install the binary.

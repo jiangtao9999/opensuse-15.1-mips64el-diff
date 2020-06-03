@@ -1,0 +1,78 @@
+Index: tanukiwrapper.spec
+===================================================================
+--- tanukiwrapper.spec	(revision 1)
++++ tanukiwrapper.spec	(working copy)
+@@ -28,6 +28,7 @@
+ Source1:        wrapper.1
+ Patch0:         %{name}-additional-makefiles.patch
+ Patch1:         %{name}-nojavah.patch
++Patch2:         tanukiwrapper-add-mips64el-64.patch
+ BuildRequires:  ant >= 1.6.1
+ BuildRequires:  ant-junit
+ BuildRequires:  ant-nodeps >= 1.6.1
+@@ -72,6 +73,7 @@
+ %if %{?pkg_vcmp:%pkg_vcmp java-devel >= 10}%{!?pkg_vcmp:0}
+ %patch1 -p1
+ %endif
++%patch2 -p1
+ 
+ find . -name "*.jar" -exec rm -f {} \;
+ perl -p -i -e 's|-O3|%{optflags}|' src/c/Makefile*
+Index: tanukiwrapper-add-mips64el-64.patch
+===================================================================
+--- tanukiwrapper-add-mips64el-64.patch	(revision 0)
++++ tanukiwrapper-add-mips64el-64.patch	(working copy)
+@@ -0,0 +1,53 @@
++diff -Nrui wrapper_3.5.35_src-orig/src/c/Makefile-linux-mips64el-64.make wrapper_3.5.35_src/src/c/Makefile-linux-mips64el-64.make
++--- wrapper_3.5.35_src-orig/src/c/Makefile-linux-mips64el-64.make	1970-01-01 08:00:00.000000000 +0800
+++++ wrapper_3.5.35_src/src/c/Makefile-linux-mips64el-64.make	2020-05-19 11:50:25.442864430 +0800
++@@ -0,0 +1,49 @@
+++
+++# Copyright (c) 1999, 2013 Tanuki Software, Ltd.
+++# http://www.tanukisoftware.com
+++# All rights reserved.
+++#
+++# This software is the proprietary information of Tanuki Software.
+++# You shall use it only in accordance with the terms of the
+++# license agreement you entered into with Tanuki Software.
+++# http://wrapper.tanukisoftware.com/doc/english/licenseOverview.html
+++
+++COMPILE = gcc -O3 -fPIC -Wall --pedantic -DLINUX -DJSW64 -D_FILE_OFFSET_BITS=64 -fpic -D_GNU_SOURCE -DUNICODE -D_UNICODE
+++
+++INCLUDE=$(JAVA_HOME)/include
+++
+++DEFS = -I$(INCLUDE) -I$(INCLUDE)/linux
+++
+++wrapper_SOURCE = wrapper.c wrapperinfo.c wrappereventloop.c wrapper_unix.c property.c logger.c logger_file.c wrapper_file.c wrapper_i18n.c wrapper_hashmap.c wrapper_ulimit.c wrapper_encoding.c wrapper_jvminfo.c
+++
+++libwrapper_so_OBJECTS = wrapper_i18n.o wrapperjni_unix.o wrapperinfo.o wrapperjni.o loggerjni.o
+++
+++BIN = ../../bin
+++LIB = ../../lib
+++
+++all: init wrapper libwrapper.so
+++
+++clean:
+++	rm -f *.o
+++
+++cleanall: clean
+++	rm -rf *~ .deps
+++	rm -f $(BIN)/wrapper $(LIB)/libwrapper.so
+++
+++init:
+++	if test ! -d .deps; then mkdir .deps; fi
+++
+++wrapper: $(wrapper_SOURCE)
+++	$(COMPILE) -pthread $(wrapper_SOURCE) -lm $(LDFLAGS) -o $(BIN)/wrapper
+++
+++libwrapper.so: $(libwrapper_so_OBJECTS)
+++	${COMPILE} -shared $(libwrapper_so_OBJECTS) $(LDFLAGS) -o $(LIB)/libwrapper.so
+++
+++%.o: %.c
+++	@echo '$(COMPILE) -c $<'; \
+++	$(COMPILE) $(DEFS) -Wp,-MD,.deps/$(*F).pp -c $<
+++	@-cp .deps/$(*F).pp .deps/$(*F).P; \
+++	tr ' ' '\012' < .deps/$(*F).pp \
+++	| sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+++	>> .deps/$(*F).P; \
+++	rm .deps/$(*F).pp

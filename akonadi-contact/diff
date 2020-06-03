@@ -1,0 +1,13 @@
+Index: akonadi-contact.spec
+===================================================================
+--- akonadi-contact.spec	(revision 1)
++++ akonadi-contact.spec	(working copy)
+@@ -52,7 +52,7 @@
+ Provides:       akonadi-contacts = %{version}
+ Obsoletes:      akonadi-contacts < %{version}
+ # It can only build on the same platforms as Qt Webengine
+-ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 mips mips64
++ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 %mips
+ 
+ %description
+ This package provides a library used for handling personal contacts,

@@ -1,0 +1,13 @@
+Index: python-selenium.spec
+===================================================================
+--- python-selenium.spec	(revision 1)
++++ python-selenium.spec	(working copy)
+@@ -31,7 +31,7 @@
+ BuildRequires:  fdupes
+ BuildRequires:  python-rpm-macros
+ Requires:       python-rdflib
+-ExclusiveArch:  %{ix86} x86_64
++ExclusiveArch:  %{ix86} x86_64 %mips
+ %python_subpackages
+ 
+ %description

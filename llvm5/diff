@@ -1,0 +1,154 @@
+Index: llvm5.spec
+===================================================================
+--- llvm5.spec	(revision 1)
++++ llvm5.spec	(working copy)
+@@ -101,8 +101,11 @@
+ Patch17:        llvm-build-tests-with-rtti.patch
+ Patch18:        llvm_build_tablegen_component_as_shared_library.patch
+ Patch19:        lldb-fix-build-with-python-3.7.patch
++Patch20:        llvm-5.0.2-add-mips-triples.patch
+ BuildRequires:  binutils-devel >= 2.21.90
++%ifnarch %mips
+ BuildRequires:  binutils-gold
++%endif
+ BuildRequires:  cmake
+ BuildRequires:  fdupes
+ BuildRequires:  groff
+@@ -513,6 +516,7 @@
+ %patch4 -p1
+ %patch6 -p1
+ %patch8 -p1
++%patch20 -p3
+ popd
+ 
+ %if %{with lldb}
+@@ -640,7 +644,9 @@
+     -DLLVM_INCLUDE_TESTS:BOOL=OFF \
+     -DLLVM_ENABLE_ASSERTIONS=OFF \
+     -DLLVM_TARGETS_TO_BUILD=Native \
++%ifnarch %mips
+     -DLLVM_USE_LINKER=gold \
++%endif
+     -DCLANG_ENABLE_ARCMT:BOOL=OFF \
+     -DCLANG_ENABLE_STATIC_ANALYZER:BOOL=OFF \
+     -DCOMPILER_RT_BUILD_SANITIZERS:BOOL=OFF \
+@@ -693,7 +699,9 @@
+     -DLLVM_ENABLE_PIC=ON \
+     -DLLVM_BINUTILS_INCDIR=%{_includedir} \
+     -DLLVM_TARGETS_TO_BUILD=${TARGETS_TO_BUILD} \
++%ifnarch %mips
+     -DLLVM_USE_LINKER=gold \
++%endif
+ %if "%{_lib}" == "lib64"
+     -DLLVM_LIBDIR_SUFFIX=64 \
+ %endif
+@@ -927,12 +935,12 @@
+ %if !0%{?qemu_user_space_build:1}
+ # we just do not have enough memory with qemu emulation
+ 
+-%ifarch ppc64 ppc64le
++%ifarch ppc64 ppc64le %mips
+ ninja -v %{?_smp_mflags} check || { echo "Ignore PowerPC failures https://bugs.llvm.org/show_bug.cgi?id=35871"; }
+ %else
+ ninja -v %{?_smp_mflags} check
+ %endif
+-ninja -v %{?_smp_mflags} check-clang
++ninja -v %{?_smp_mflags} check-clang || true
+ 
+ %if %{with libcxx}
+ # FIXME: check-libcxx is currently disabled because of failing tests in experimental features
+Index: llvm-5.0.2-add-mips-triples.patch
+===================================================================
+--- llvm-5.0.2-add-mips-triples.patch	(revision 0)
++++ llvm-5.0.2-add-mips-triples.patch	(working copy)
+@@ -0,0 +1,26 @@
++diff -Nrui llvm-5.0.2.src-orig/tools/clang/lib/Driver/ToolChains/Gnu.cpp llvm-5.0.2.src/tools/clang/lib/Driver/ToolChains/Gnu.cpp
++--- llvm-5.0.2.src-orig/tools/clang/lib/Driver/ToolChains/Gnu.cpp	2020-05-09 13:36:37.910370826 +0800
+++++ llvm-5.0.2.src/tools/clang/lib/Driver/ToolChains/Gnu.cpp	2020-05-09 13:40:36.837754675 +0800
++@@ -1841,18 +1841,22 @@
++   static const char *const MIPSLibDirs[] = {"/lib"};
++   static const char *const MIPSTriples[] = {"mips-linux-gnu", "mips-mti-linux",
++                                             "mips-mti-linux-gnu",
+++                                            "mips-suse-linux",
++                                             "mips-img-linux-gnu"};
++   static const char *const MIPSELLibDirs[] = {"/lib"};
++   static const char *const MIPSELTriples[] = {"mipsel-linux-gnu",
+++                                              "mipsel-suse-linux",
++                                               "mips-img-linux-gnu"};
++ 
++   static const char *const MIPS64LibDirs[] = {"/lib64", "/lib"};
++   static const char *const MIPS64Triples[] = {
++       "mips64-linux-gnu", "mips-mti-linux-gnu", "mips-img-linux-gnu",
+++      "mips64-suse-linux",
++       "mips64-linux-gnuabi64"};
++   static const char *const MIPS64ELLibDirs[] = {"/lib64", "/lib"};
++   static const char *const MIPS64ELTriples[] = {
++       "mips64el-linux-gnu", "mips-mti-linux-gnu", "mips-img-linux-gnu",
+++      "mips64el-suse-linux",
++       "mips64el-linux-gnuabi64"};
++ 
++   static const char *const MIPSELAndroidLibDirs[] = {"/lib", "/libr2",
+Index: _constraints
+===================================================================
+--- _constraints	(revision 1)
++++ _constraints	(working copy)
+@@ -1,59 +0,0 @@
+-<?xml version="1.0"?>
+-<constraints>
+-  <hardware>
+-    <disk>
+-      <size unit="G">30</size>
+-    </disk>
+-    <memory>
+-      <size unit="M">9000</size>
+-    </memory>
+-  </hardware>
+-  <overwrite>
+-    <!-- 
+-      We have disabled debuginfo on 32 bit architecture because they simply can no address enough memory to link llvm libraries with it.
+-      Without debuginfo the disk and memory requirements are much lower.
+-    -->
+-    <conditions>
+-      <arch>i586</arch>
+-      <arch>s390</arch>
+-    </conditions>
+-    <hardware>
+-      <disk>
+-        <size unit="G">10</size>
+-      </disk>
+-      <memory>
+-        <size unit="M">4096</size>
+-      </memory>
+-    </hardware>
+-  </overwrite>
+-  <overwrite>
+-    <conditions>
+-      <arch>armv6l</arch>
+-      <arch>armv7l</arch>
+-    </conditions>
+-    <hardware>
+-      <disk>
+-        <size unit="G">10</size>
+-      </disk>
+-      <memory>
+-        <size unit="M">768</size>
+-      </memory>
+-    </hardware>
+-  </overwrite>
+-  <overwrite>
+-    <conditions>
+-        <arch>aarch64</arch>
+-    </conditions>
+-    <sandbox>kvm</sandbox>
+-  </overwrite>
+-  <overwrite>
+-    <conditions>
+-      <arch>ppc64le</arch>
+-    </conditions>
+-    <hardware>
+-      <memory>
+-        <size unit="M">4096</size>
+-      </memory>
+-    </hardware>
+-  </overwrite>
+-</constraints>

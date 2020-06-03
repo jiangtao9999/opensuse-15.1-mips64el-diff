@@ -1,0 +1,104 @@
+Index: libreoffice.spec
+===================================================================
+--- libreoffice.spec	(revision 1)
++++ libreoffice.spec	(working copy)
+@@ -24,7 +24,11 @@
+ %define tarball_url  https://dev-builds.libreoffice.org/pre-releases/src/
+ # LTO needs newer toolchain stack only
+ %if 0%{?suse_version} >= 1500
++%ifnarch %mips
+ %bcond_without lto
++%else
++%bcond_with lto
++%endif
+ %else
+ %bcond_with lto
+ %endif
+@@ -107,6 +111,7 @@
+ Patch7:         java112.patch
+ # try to save space by using hardlinks
+ Patch990:       install-with-hardlinks.diff
++Patch1000:      libreoffice-fix-mips64-boost.diff
+ BuildRequires:  %{name}-share-linker
+ BuildRequires:  ant
+ BuildRequires:  autoconf
+@@ -251,7 +256,7 @@
+ Obsoletes:      %{name}-icon-theme-crystal < %{version}
+ Provides:       %{name}-icon-theme-oxygen = %{version}
+ Obsoletes:      %{name}-icon-theme-oxygen < %{version}
+-ExclusiveArch:  aarch64 %{ix86} x86_64
++ExclusiveArch:  aarch64 %{ix86} x86_64 %mips
+ %if 0%{?suse_version} < 1500
+ Requires(post): update-desktop-files
+ Requires(postun): update-desktop-files
+@@ -953,6 +958,7 @@
+ %patch6 -p1
+ %patch7 -p1
+ %patch990 -p1
++%patch1000 -p1
+ 
+ # Disable some of the failing tests (some are random)
+ %if 0%{?suse_version} < 1330
+@@ -1012,6 +1018,9 @@
+         --enable-eot \
+ %if %{with lto}
+         --enable-lto \
++%endif
++%ifarch %mips
++        --with-linker-hash-style=both \
+ %endif
+         --enable-mergelibs \
+         --docdir=%{_docdir}/%{name} \
+Index: libreoffice-fix-mips64-boost.diff
+===================================================================
+--- libreoffice-fix-mips64-boost.diff	(revision 0)
++++ libreoffice-fix-mips64-boost.diff	(working copy)
+@@ -0,0 +1,33 @@
++--- libreoffice-6.1.3.2/aclocal.m4.orig	2020-03-24 11:57:19.216589586 +0800
+++++ libreoffice-6.1.3.2/aclocal.m4	2020-03-24 11:59:35.830675348 +0800
++@@ -704,7 +704,7 @@
++     dnl are found, e.g. when only header-only libraries are installed!
++     libsubdirs="lib"
++     ax_arch=`uname -m`
++-    if test $ax_arch = x86_64 -o $ax_arch = ppc64 -o $ax_arch = ppc64le -o $ax_arch = s390x -o $ax_arch = sparc64 -o $ax_arch = aarch64; then
+++    if test $ax_arch = x86_64 -o $ax_arch = ppc64 -o $ax_arch = ppc64le -o $ax_arch = s390x -o $ax_arch = sparc64 -o $ax_arch = aarch64 -o $ax_arch = mips64; then
++         libsubdirs="lib64 lib lib64"
++     fi
++ 
++--- libreoffice-6.1.3.2/configure.orig	2020-03-24 12:00:06.944810163 +0800
+++++ libreoffice-6.1.3.2/configure	2020-03-24 11:57:26.235760971 +0800
++@@ -27199,7 +27199,7 @@
++ 
++                         libsubdirs="lib"
++     ax_arch=`uname -m`
++-    if test $ax_arch = x86_64 -o $ax_arch = ppc64 -o $ax_arch = ppc64le -o $ax_arch = s390x -o $ax_arch = sparc64 -o $ax_arch = aarch64; then
+++    if test $ax_arch = x86_64 -o $ax_arch = ppc64 -o $ax_arch = ppc64le -o $ax_arch = s390x -o $ax_arch = sparc64 -o $ax_arch = aarch64 -o $ax_arch = mips64; then
++         libsubdirs="lib64 lib lib64"
++     fi
++ 
++--- libreoffice-6.1.3.2/m4/ax_boost_base.m4.orig	2020-03-24 12:00:24.142172057 +0800
+++++ libreoffice-6.1.3.2/m4/ax_boost_base.m4	2020-03-24 11:57:34.067840850 +0800
++@@ -91,7 +91,7 @@
++     dnl are found, e.g. when only header-only libraries are installed!
++     libsubdirs="lib"
++     ax_arch=`uname -m`
++-    if test $ax_arch = x86_64 -o $ax_arch = ppc64 -o $ax_arch = ppc64le -o $ax_arch = s390x -o $ax_arch = sparc64 -o $ax_arch = aarch64; then
+++    if test $ax_arch = x86_64 -o $ax_arch = ppc64 -o $ax_arch = ppc64le -o $ax_arch = s390x -o $ax_arch = sparc64 -o $ax_arch = aarch64 -o $ax_arch = mips64; then
++         libsubdirs="lib64 lib lib64"
++     fi
++ 
+Index: _constraints
+===================================================================
+--- _constraints	(revision 1)
++++ _constraints	(working copy)
+@@ -1,10 +0,0 @@
+-<constraints>
+-  <hardware>
+-    <physicalmemory>
+-      <size unit="M">4000</size>
+-    </physicalmemory>
+-    <disk>
+-      <size unit="G">50</size>
+-    </disk>
+-  </hardware>
+-</constraints>

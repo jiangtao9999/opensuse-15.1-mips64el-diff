@@ -1,0 +1,37 @@
+Index: gource.spec
+===================================================================
+--- gource.spec	(revision 1)
++++ gource.spec	(working copy)
+@@ -24,6 +24,7 @@
+ Group:          Productivity/Graphics/Visualization/Graph
+ Url:            http://gource.io/
+ Source:         https://github.com/acaudwell/Gource/releases/download/%{name}-%{version}/%{name}-%{version}.tar.gz
++Patch1:         gource-fix-mips64el-boost-lib64.patch
+ BuildRequires:  gcc-c++
+ BuildRequires:  glew-devel
+ BuildRequires:  glm-devel >= 0.9.3
+@@ -54,6 +55,7 @@
+ 
+ %prep
+ %setup -q
++%patch1 -p1
+ 
+ %build
+ 
+Index: gource-fix-mips64el-boost-lib64.patch
+===================================================================
+--- gource-fix-mips64el-boost-lib64.patch	(revision 0)
++++ gource-fix-mips64el-boost-lib64.patch	(working copy)
+@@ -0,0 +1,12 @@
++diff -Nuir gource-0.47-orig/configure gource-0.47/configure
++--- gource-0.47-orig/configure	2020-05-04 14:12:55.865402097 +0800
+++++ gource-0.47/configure	2020-05-04 14:13:53.933079701 +0800
++@@ -6960,7 +6960,7 @@
++                         libsubdirs="lib"
++     ax_arch=`uname -m`
++     case $ax_arch in
++-      x86_64|ppc64|s390x|sparc64|aarch64)
+++      x86_64|ppc64|s390x|sparc64|aarch64|mips64)
++         libsubdirs="lib64 lib lib64"
++         ;;
++     esac

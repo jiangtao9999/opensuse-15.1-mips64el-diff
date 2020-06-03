@@ -1,0 +1,42 @@
+Index: mysql-workbench.spec
+===================================================================
+--- mysql-workbench.spec	(revision 1)
++++ mysql-workbench.spec	(working copy)
+@@ -52,7 +52,9 @@
+ Patch14:        fix_aarch64_build.patch
+ BuildRequires:  Mesa-devel
+ BuildRequires:  ant
++%ifnarch %mips
+ BuildRequires:  binutils-gold
++%endif
+ BuildRequires:  cmake
+ BuildRequires:  dos2unix
+ BuildRequires:  fdupes
+@@ -163,9 +165,15 @@
+ # fix building on Leap
+ truncate -s0 library/base/boost_fix.cpp
+ %cmake \
++%ifnarch %mips
+   -DCMAKE_EXE_LINKER_FLAGS="-Wl,--as-needed -Wl,-z,now -Wl,-fuse-ld=gold -pie" \
+   -DCMAKE_MODULE_LINKER_FLAGS="-Wl,--as-needed -Wl,-z,now -Wl,-fuse-ld=gold -pie" \
+   -DCMAKE_SHARED_LINKER_FLAGS="-Wl,--as-needed -Wl,-z,now -Wl,-fuse-ld=gold -pie" \
++%else
++  -DCMAKE_EXE_LINKER_FLAGS="-Wl,--as-needed -Wl,-z,now -pie" \
++  -DCMAKE_MODULE_LINKER_FLAGS="-Wl,--as-needed -Wl,-z,now -pie" \
++  -DCMAKE_SHARED_LINKER_FLAGS="-Wl,--as-needed -Wl,-z,now -pie" \
++%endif
+   -DMYSQL_CONFIG_PATH=%{_bindir}/mysql_config \
+   -DCMAKE_BUILD_TYPE=%{edition} \
+   -DREAL_EXECUTABLE_DIR=%{_libdir}/%{name} \
+Index: _constraints
+===================================================================
+--- _constraints	(revision 1)
++++ _constraints	(working copy)
+@@ -1,7 +0,0 @@
+-<constraints>
+-  <hardware>
+-    <memory>
+-      <size unit="G">8</size>
+-    </memory>
+-  </hardware>
+-</constraints>

@@ -1,0 +1,41 @@
+Index: perl-Fuse.spec
+===================================================================
+--- perl-Fuse.spec	(revision 1)
++++ perl-Fuse.spec	(working copy)
+@@ -24,6 +24,7 @@
+ Release:        0.1
+ Url:            http://search.cpan.org/dist/Fuse/
+ Source:         http://www.cpan.org/modules/by-module/Fuse/DPATES/Fuse-%{version}.tar.gz
++Patch1:         Fuse-0.16.1-fix-IOC_IN_OUT-undeclared.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ BuildRequires:  fuse-devel
+ BuildRequires:  fuse-devel-static
+@@ -41,6 +42,7 @@
+ 
+ %prep
+ %setup -q -n Fuse-%{version}
++%patch1 -p1
+ 
+ find . -type f -name '*.pm' -exec %__chmod 0644 {} \;
+ 
+Index: Fuse-0.16.1-fix-IOC_IN_OUT-undeclared.patch
+===================================================================
+--- Fuse-0.16.1-fix-IOC_IN_OUT-undeclared.patch	(revision 0)
++++ Fuse-0.16.1-fix-IOC_IN_OUT-undeclared.patch	(working copy)
+@@ -0,0 +1,16 @@
++--- Fuse-0.16.1-orig/Fuse.xs	2020-05-16 11:34:43.400635806 +0800
+++++ Fuse-0.16.1/Fuse.xs	2020-05-16 11:44:33.353475071 +0800
++@@ -1500,6 +1500,13 @@
++ #  define _IOC_SIZE(n) IOCPARM_LEN(n)
++ # endif
++ 
+++# ifndef IOC_IN
+++#  define IOC_IN       (_IOC_WRITE << _IOC_DIRSHIFT)
+++# endif
+++# ifndef IOC_OUT
+++#  define IOC_OUT      (_IOC_READ << _IOC_DIRSHIFT)
+++# endif
+++
++ int _PLfuse_ioctl(const char *file, int cmd, void *arg,
++                   struct fuse_file_info *fi, unsigned int flags, void *data) {
++ 	int rv;

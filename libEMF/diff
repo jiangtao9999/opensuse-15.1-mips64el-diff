@@ -1,0 +1,54 @@
+Index: libEMF.spec
+===================================================================
+--- libEMF.spec	(revision 1)
++++ libEMF.spec	(working copy)
+@@ -26,10 +26,11 @@
+ Source:         http://downloads.sourceforge.net/project/libemf/libemf/%{version}/%{name}-%{version}.tar.gz
+ Patch0:         aarch64-support.patch
+ Patch2:         ppc64le-support.patch
++Patch3:         libEMF-1.0.7-add-mipsel.patch
+ BuildRequires:  gcc-c++
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ # taken from includes/wine/winnt.h
+-ExclusiveArch:  alpha %arm aarch64 %ix86 mips ppc ppc64 ppc64le sparc s390 s390x x86_64
++ExclusiveArch:  alpha %arm aarch64 %ix86 %mips ppc ppc64 ppc64le sparc s390 s390x x86_64
+ 
+ %description
+ LibEMF is a C/C++ library that provides a drawing toolkit based on
+@@ -94,6 +95,7 @@
+ %setup -q
+ %patch0 -p1
+ %patch2 -p1
++%patch3 -p1
+ 
+ %build
+ %configure\
+Index: libEMF-1.0.7-add-mipsel.patch
+===================================================================
+--- libEMF-1.0.7-add-mipsel.patch	(revision 0)
++++ libEMF-1.0.7-add-mipsel.patch	(working copy)
+@@ -0,0 +1,24 @@
++diff -Nrui libEMF-1.0.7-orig/include/libEMF/wine/winnt.h libEMF-1.0.7/include/libEMF/wine/winnt.h
++--- libEMF-1.0.7-orig/include/libEMF/wine/winnt.h	2019-02-23 21:39:57.505777500 +0800
+++++ libEMF-1.0.7/include/libEMF/wine/winnt.h	2019-02-23 21:41:52.899429200 +0800
++@@ -66,6 +66,10 @@
++ # undef  WORDS_BIGENDIAN
++ # undef  BITFIELDS_BIGENDIAN
++ # undef  ALLOW_UNALIGNED_ACCESS
+++#elif defined(__MIPSEL__)
+++# undef  WORDS_BIGENDIAN
+++# undef  BITFIELDS_BIGENDIAN
+++# define ALLOW_UNALIGNED_ACCESS
++ #elif !defined(RC_INVOKED)
++ # error Unknown CPU architecture!
++ #endif
++@@ -1014,7 +1018,7 @@
++ #endif  /* _ALPHA_ */
++ 
++ /* Mips context definitions */
++-#ifdef _MIPS_
+++#if defined(_MIPS_) || defined(__MIPSEL__)
++ 
++ #define CONTEXT_R4000   0x00010000
++ 
++

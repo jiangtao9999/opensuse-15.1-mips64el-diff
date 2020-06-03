@@ -1,0 +1,16 @@
+Index: libgpod.spec
+===================================================================
+--- libgpod.spec	(revision 1)
++++ libgpod.spec	(working copy)
+@@ -18,7 +18,11 @@
+ 
+ %define libsoname  %{name}4
+ %define _udevdir %(pkg-config --variable udevdir udev)
++%ifarch %mips64
++%bcond_with mono
++%else
+ %bcond_without mono
++%endif
+ %bcond_without python2
+ Name:           libgpod
+ Version:        0.8.3

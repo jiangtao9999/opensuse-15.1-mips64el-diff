@@ -1,0 +1,37 @@
+Index: mkvtoolnix.spec
+===================================================================
+--- mkvtoolnix.spec	(revision 1)
++++ mkvtoolnix.spec	(working copy)
+@@ -30,6 +30,7 @@
+ Source2:        mkvtoolnix.keyring
+ # PATCH-OPENSUSE-FIX mkvtoolnix-use-system-boost.patch -- Fix includes to use boost from system
+ Patch0:         mkvtoolnix-use-system-boost.patch
++Patch1:         mkvtoolnix-28.2.0-fix-mips64-boost-lib.patch
+ BuildRequires:  desktop-file-utils
+ BuildRequires:  docbook-xsl-stylesheets
+ BuildRequires:  fdupes
+@@ -80,6 +81,7 @@
+ %prep
+ %setup -q
+ %patch0 -p1
++%patch1 -p1
+ # Make sure to use system libs:
+ rm -rf lib/{boost,libebml,libmatroskas,pugixml}
+ 
+Index: mkvtoolnix-28.2.0-fix-mips64-boost-lib.patch
+===================================================================
+--- mkvtoolnix-28.2.0-fix-mips64-boost-lib.patch	(revision 0)
++++ mkvtoolnix-28.2.0-fix-mips64-boost-lib.patch	(working copy)
+@@ -0,0 +1,12 @@
++diff -Nrui mkvtoolnix-28.2.0-orig/configure mkvtoolnix-28.2.0/configure
++--- mkvtoolnix-28.2.0-orig/configure	2020-05-12 18:20:36.119560848 +0800
+++++ mkvtoolnix-28.2.0/configure	2020-05-12 18:22:18.310918638 +0800
++@@ -9935,7 +9935,7 @@
++       x86_64)
++         libsubdirs="lib64 libx32 lib lib64"
++         ;;
++-      ppc64|s390x|sparc64|aarch64|ppc64le)
+++      ppc64|s390x|sparc64|aarch64|ppc64le|mips64)
++         libsubdirs="lib64 lib lib64 ppc64le"
++         ;;
++     esac

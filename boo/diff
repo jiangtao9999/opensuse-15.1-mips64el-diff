@@ -1,0 +1,12 @@
+Index: boo.spec
+===================================================================
+--- boo.spec	(revision 1)
++++ boo.spec	(working copy)
+@@ -38,6 +38,7 @@
+ Requires:       %{name}-%{_version} = %{version}
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ BuildArch:      noarch
++ExcludeArch:    %mips
+ 
+ %description
+ Boo is a new object oriented statically typed programming language for

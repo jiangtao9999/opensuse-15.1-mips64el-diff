@@ -1,0 +1,13 @@
+Index: filesystem.spec
+===================================================================
+--- filesystem.spec	(revision 1)
++++ filesystem.spec	(working copy)
+@@ -72,7 +72,7 @@
+ echo "%%defattr(-,root,root)" > filesystem.list
+ {
+     cat %{SOURCE0}
+-%ifarch s390x %sparc x86_64 ppc64 ppc aarch64 ppc64le riscv64
++%ifarch s390x %sparc x86_64 ppc64 ppc aarch64 ppc64le riscv64 %mips64
+     cat %{SOURCE64}
+ %endif
+ } | while read MOD OWN GRP NAME ; do

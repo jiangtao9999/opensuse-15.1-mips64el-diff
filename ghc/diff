@@ -1,0 +1,197 @@
+Index: ghc.spec
+===================================================================
+--- ghc.spec	(revision 1)
++++ ghc.spec	(working copy)
+@@ -35,7 +35,7 @@
+ Summary:        The Glorious Glasgow Haskell Compiler
+ License:        BSD-3-Clause
+ Group:          Development/Languages/Other
+-ExclusiveArch:  aarch64 %{arm} %{ix86} x86_64 ppc64 ppc64le s390x
++ExclusiveArch:  aarch64 %{arm} %{ix86} x86_64 ppc64 ppc64le s390x %mips
+ # hard to port to PIE, some prebuilt static libraries are non-PIC ...
+ #!BuildIgnore:  gcc-PIE
+ BuildRequires:  binutils-devel
+@@ -99,6 +99,8 @@
+ Patch100:       ghc-8.0.2-Cabal-dynlibdir.patch
+ # PATCH-FIX-UPSTREAM buildpath-abi-stability.patch -- debian patch for more stable abi-1
+ Patch110:       buildpath-abi-stability.patch
++Patch120:       fix-build-using-unregisterized-v8.4.patch
++Patch121:       PprC-Add-support-for-adjacent-floats.patch
+ 
+ %description
+ Haskell is the standard purely functional programming language; the
+@@ -210,6 +212,8 @@
+ %patch35 -p1
+ %patch100 -p1
+ %patch110 -p1
++%patch120 -p1
++%patch121 -p1
+ 
+ %build
+ # patch 1 modifies build system, we need to recreate configure
+@@ -253,6 +257,9 @@
+ %endif
+ %if %{defined without_hscolour}
+ HSCOLOUR_SRCS = NO
++%endif
++%ifarch %mips
++compiler/hsSyn/HsInstances_HC_OPTS += -optc-mxgot
+ %endif
+ EOF
+ 
+@@ -409,7 +416,7 @@
+ %{ghclibdir}/bin/hp2ps
+ %{ghclibdir}/bin/hpc
+ %{ghclibdir}/bin/hsc2hs
+-%ifnarch %{unregisterised_archs}
++%ifnarch %{unregisterised_archs} %mips
+ %{ghclibdir}/bin/ghc-split
+ %endif
+ %{ghclibdir}/ghc-usage.txt
+Index: PprC-Add-support-for-adjacent-floats.patch
+===================================================================
+--- PprC-Add-support-for-adjacent-floats.patch	(revision 0)
++++ PprC-Add-support-for-adjacent-floats.patch	(working copy)
+@@ -0,0 +1,64 @@
++commit 35a897782b6b0a252da7fdcf4921198ad4e1d96c
++Author: James Clarke <jrtc27@jrtc27.com>
++Date:   Thu Nov 22 11:55:17 2018 -0500
++
++    UNREG: PprC: Add support for adjacent floats
++    
++    When two 32-bit floats are adjacent for a 64-bit target, there is no
++    padding between them to force alignment, so we must combine their bit
++    representations into a single word.
++    
++    Reviewers: bgamari, simonmar
++    
++    Reviewed By: simonmar
++    
++    Subscribers: rwbarton, carter
++    
++    GHC Trac Issues: #15853
++    
++    Differential Revision: https://phabricator.haskell.org/D5306
++
++Index: b/compiler/cmm/PprC.hs
++===================================================================
++--- a/compiler/cmm/PprC.hs
+++++ b/compiler/cmm/PprC.hs
++@@ -512,9 +512,12 @@ pprLit1 other = pprLit other
++ pprStatics :: DynFlags -> [CmmStatic] -> [SDoc]
++ pprStatics _ [] = []
++ pprStatics dflags (CmmStaticLit (CmmFloat f W32) : rest)
++-  -- floats are padded to a word by padLitToWord, see #1852
+++  -- odd numbers of floats are padded to a word by mkVirtHeapOffsetsWithPadding
++   | wORD_SIZE dflags == 8, CmmStaticLit (CmmInt 0 W32) : rest' <- rest
++   = pprLit1 (floatToWord dflags f) : pprStatics dflags rest'
+++  -- adjacent floats aren't padded but combined into a single word
+++  | wORD_SIZE dflags == 8, CmmStaticLit (CmmFloat g W32) : rest' <- rest
+++  = pprLit1 (floatPairToWord dflags f g) : pprStatics dflags rest'
++   | wORD_SIZE dflags == 4
++   = pprLit1 (floatToWord dflags f) : pprStatics dflags rest
++   | otherwise
++@@ -1261,6 +1264,25 @@ floatToWord dflags r
++              , wORDS_BIGENDIAN dflags    = 32
++              | otherwise                 = 0
++ 
+++floatPairToWord :: DynFlags -> Rational -> Rational -> CmmLit
+++floatPairToWord dflags r1 r2
+++  = runST (do
+++        arr <- newArray_ ((0::Int),1)
+++        writeArray arr 0 (fromRational r1)
+++        writeArray arr 1 (fromRational r2)
+++        arr' <- castFloatToWord32Array arr
+++        w32_1 <- readArray arr' 0
+++        w32_2 <- readArray arr' 1
+++        return (pprWord32Pair w32_1 w32_2)
+++    )
+++    where pprWord32Pair w32_1 w32_2
+++              | wORDS_BIGENDIAN dflags =
+++                  CmmInt ((shiftL i1 32) .|. i2) W64
+++              | otherwise =
+++                  CmmInt ((shiftL i2 32) .|. i1) W64
+++              where i1 = toInteger w32_1
+++                    i2 = toInteger w32_2
+++
++ doubleToWords :: DynFlags -> Rational -> [CmmLit]
++ doubleToWords dflags r
++   = runST (do
+Index: fix-build-using-unregisterized-v8.4.patch
+===================================================================
+--- fix-build-using-unregisterized-v8.4.patch	(revision 0)
++++ fix-build-using-unregisterized-v8.4.patch	(working copy)
+@@ -0,0 +1,58 @@
++Description: Allow unregisterised ghc-8.4 to build newer GHC
++ Commit 4075656e8bb introduced a regression stopping existing unregisteristed
++ compilers from being able to compile newer versions of GHC. The problem is
++ that the bootstrap compiler uses the newer `rts/storage/ClosureTypes.h` file
++ where some defines have been renamed, resulting in the following error:
++.
++  error: ‘stg_MUT_ARR_PTRS_FROZEN0_info’ undeclared (first use in this function); did you mean ‘stg_MUT_ARR_PTRS_FROZEN_DIRTY_info’?
++.
++ For more information, see https://gitlab.haskell.org/ghc/ghc/issues/15913.
++.
++ This patch can be removed, once ghc-8.4 is no longer the bootstrap compiler.
++Author: Ilias Tsitsimpis <iliastsi@debian.org>
++Bug: https://gitlab.haskell.org/ghc/ghc/issues/15913
++Bug-Debian: https://bugs.debian.org/932941
++
++Index: b/includes/rts/storage/ClosureTypes.h
++===================================================================
++--- a/includes/rts/storage/ClosureTypes.h
+++++ b/includes/rts/storage/ClosureTypes.h
++@@ -82,5 +82,11 @@
++ #define SMALL_MUT_ARR_PTRS_DIRTY      60
++ #define SMALL_MUT_ARR_PTRS_FROZEN_DIRTY 61
++ #define SMALL_MUT_ARR_PTRS_FROZEN_CLEAN 62
+++#if __GLASGOW_HASKELL__ < 806
+++#define SMALL_MUT_ARR_PTRS_FROZEN0 SMALL_MUT_ARR_PTRS_FROZEN_DIRTY
+++#define SMALL_MUT_ARR_PTRS_FROZEN SMALL_MUT_ARR_PTRS_FROZEN_CLEAN
+++#define MUT_ARR_PTRS_FROZEN0 MUT_ARR_PTRS_FROZEN_DIRTY
+++#define MUT_ARR_PTRS_FROZEN MUT_ARR_PTRS_FROZEN_CLEAN
+++#endif
++ #define COMPACT_NFDATA                63
++ #define N_CLOSURE_TYPES               64
++Index: b/includes/stg/MiscClosures.h
++===================================================================
++--- a/includes/stg/MiscClosures.h
+++++ b/includes/stg/MiscClosures.h
++@@ -116,12 +116,22 @@ RTS_ENTRY(stg_ARR_WORDS);
++ RTS_ENTRY(stg_MUT_ARR_WORDS);
++ RTS_ENTRY(stg_MUT_ARR_PTRS_CLEAN);
++ RTS_ENTRY(stg_MUT_ARR_PTRS_DIRTY);
+++#if __GLASGOW_HASKELL__ < 806
+++RTS_ENTRY(stg_MUT_ARR_PTRS_FROZEN);
+++RTS_ENTRY(stg_MUT_ARR_PTRS_FROZEN0);
+++#else
++ RTS_ENTRY(stg_MUT_ARR_PTRS_FROZEN_CLEAN);
++ RTS_ENTRY(stg_MUT_ARR_PTRS_FROZEN_DIRTY);
+++#endif
++ RTS_ENTRY(stg_SMALL_MUT_ARR_PTRS_CLEAN);
++ RTS_ENTRY(stg_SMALL_MUT_ARR_PTRS_DIRTY);
+++#if __GLASGOW_HASKELL__ < 806
+++RTS_ENTRY(stg_SMALL_MUT_ARR_PTRS_FROZEN);
+++RTS_ENTRY(stg_SMALL_MUT_ARR_PTRS_FROZEN0);
+++#else
++ RTS_ENTRY(stg_SMALL_MUT_ARR_PTRS_FROZEN_CLEAN);
++ RTS_ENTRY(stg_SMALL_MUT_ARR_PTRS_FROZEN_DIRTY);
+++#endif
++ RTS_ENTRY(stg_MUT_VAR_CLEAN);
++ RTS_ENTRY(stg_MUT_VAR_DIRTY);
++ RTS_ENTRY(stg_END_TSO_QUEUE);
+Index: _constraints
+===================================================================
+--- _constraints	(revision 1)
++++ _constraints	(working copy)
+@@ -1,10 +0,0 @@
+-<constraints>
+-  <hardware>
+-    <disk>
+-      <size unit="G">12</size>
+-    </disk> 
+-    <physicalmemory>
+-      <size unit="G">4</size>
+-    </physicalmemory>
+-  </hardware>
+-</constraints>

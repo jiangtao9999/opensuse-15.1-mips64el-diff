@@ -1,0 +1,50 @@
+Index: ekiga.spec
+===================================================================
+--- ekiga.spec	(revision 1)
++++ ekiga.spec	(working copy)
+@@ -36,6 +36,8 @@
+ Patch3:		ekiga-4.0.1-libresolv.patch
+ # PATCH-FIX-UPSTREAM ekiga-dont-require-gnome-icon-theme.patch badshah400@opensuse.org -- Patch configure.ac to not check for gnome-icon-theme; all required icons are already in hicolor-icon-theme.
+ Patch4:         ekiga-dont-require-gnome-icon-theme.patch
++
++Patch5:         ekiga-4.0.1-fix-boost-mips64.patch
+ 
+ %if 0%{?suse_version} > 1325
+ BuildRequires:  libboost_signals-devel
+@@ -116,6 +118,7 @@
+ %patch2 -p1
+ %patch3 -p1
+ %patch4 -p1
++%patch5 -p1
+ translation-update-upstream
+ 
+ %build
+Index: ekiga-4.0.1-fix-boost-mips64.patch
+===================================================================
+--- ekiga-4.0.1-fix-boost-mips64.patch	(revision 0)
++++ ekiga-4.0.1-fix-boost-mips64.patch	(working copy)
+@@ -0,0 +1,24 @@
++diff -Nrui ekiga-4.0.1-orig/configure ekiga-4.0.1/configure
++--- ekiga-4.0.1-orig/configure	2020-03-02 10:53:35.404215700 +0800
+++++ ekiga-4.0.1/configure	2020-03-02 10:54:54.176723329 +0800
++@@ -17800,7 +17800,7 @@
++ 
++                         libsubdirs="lib"
++     ax_arch=`uname -m`
++-    if test $ax_arch = x86_64 -o $ax_arch = ppc64 -o $ax_arch = s390x -o $ax_arch = sparc64 -o $ax_arch = aarch64 -o $ax_arch = ppc64le ; then
+++    if test $ax_arch = x86_64 -o $ax_arch = ppc64 -o $ax_arch = s390x -o $ax_arch = sparc64 -o $ax_arch = aarch64 -o $ax_arch = ppc64le -o $ax_arch = mips64 -o $ax_arch = mips64el ; then
++         libsubdirs="lib64 lib lib64"
++     fi
++ 
++diff -Nrui ekiga-4.0.1-orig/m4/ax_boost_base.m4 ekiga-4.0.1/m4/ax_boost_base.m4
++--- ekiga-4.0.1-orig/m4/ax_boost_base.m4	2020-03-02 10:53:35.576200158 +0800
+++++ ekiga-4.0.1/m4/ax_boost_base.m4	2020-03-02 10:54:54.176723329 +0800
++@@ -91,7 +91,7 @@
++     dnl are found, e.g. when only header-only libraries are installed!
++     libsubdirs="lib"
++     ax_arch=`uname -m`
++-    if test $ax_arch = x86_64 -o $ax_arch = ppc64 -o $ax_arch = s390x -o $ax_arch = sparc64 -o $ax_arch = aarch64 -o $ax_arch = ppc64le ; then
+++    if test $ax_arch = x86_64 -o $ax_arch = ppc64 -o $ax_arch = s390x -o $ax_arch = sparc64 -o $ax_arch = aarch64 -o $ax_arch = ppc64le -o $ax_arch = mips64 -o $ax_arch = mips64el ; then
++         libsubdirs="lib64 lib lib64"
++     fi
++ 

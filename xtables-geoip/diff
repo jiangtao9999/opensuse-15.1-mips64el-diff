@@ -1,0 +1,12 @@
+Index: xtables-geoip.spec
+===================================================================
+--- xtables-geoip.spec	(revision 1)
++++ xtables-geoip.spec	(working copy)
+@@ -35,6 +35,7 @@
+ BuildRequires:  xz
+ #db format changed at that time
+ Conflicts:      xtables-addons < 1.33
++ExcludeArch:    %mips
+ 
+ %description
+ The package contains the GeoIP definition files (which IP addresses

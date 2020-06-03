@@ -1,0 +1,12 @@
+Index: mono-core.spec
+===================================================================
+--- mono-core.spec	(revision 1)
++++ mono-core.spec	(working copy)
+@@ -185,6 +185,7 @@
+ Provides:       mono(Mono.Configuration.Crypto) = 4.0.0.0
+ # mono-core provides System.DateTime functions, which rely on timezone information
+ Requires:       timezone
++ExcludeArch:    %mips64
+ 
+ %define _use_internal_dependency_generator 0
+ 

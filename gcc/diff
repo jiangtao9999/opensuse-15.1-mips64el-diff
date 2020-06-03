@@ -1,0 +1,13 @@
+Index: gcc.spec
+===================================================================
+--- gcc.spec	(revision 1)
++++ gcc.spec	(working copy)
+@@ -28,7 +28,7 @@
+ # Ada currently fails to build on a few platforms, enable it only
+ # on those that work
+ # Note that AdaCore only supports %ix86, x86_64 and ia64
+-%ifarch %ix86 x86_64 ppc ppc64 ppc64le s390 s390x ia64 aarch64
++%ifarch %ix86 x86_64 ppc ppc64 ppc64le s390 s390x ia64 aarch64 %mips
+ %define build_ada 1
+ %else
+ # alpha hppa arm

@@ -1,0 +1,58 @@
+Index: libguestfs.spec
+===================================================================
+--- libguestfs.spec	(revision 1)
++++ libguestfs.spec	(working copy)
+@@ -68,7 +68,7 @@
+ #
+ Name:           libguestfs
+ %if "%{?_ignore_exclusive_arch}" == ""
+-ExclusiveArch:  x86_64 ppc64 ppc64le s390x aarch64
++ExclusiveArch:  x86_64 ppc64 ppc64le s390x aarch64 %mips
+ %endif
+ BuildRequires:  aaa_base
+ BuildRequires:  attr-devel
+@@ -150,6 +150,7 @@
+ Patch52:        0003-inspector-rpm-summary-and-description-may-not-be-utf.patch
+ # Our patches
+ Patch100:       appliance.patch
++Patch110:       libguestfs-1.38.0-fix-ocaml.patch
+ 
+ Source0:        http://download.libguestfs.org/1.38-stable/libguestfs-%{version}.tar.gz
+ Source1:        libguestfs.rpmlintrc
+@@ -565,6 +566,7 @@
+ %patch51 -p1
+ %patch52 -p1
+ %patch100 -p1
++%patch110 -p1
+ 
+ %build
+ bison --version
+Index: libguestfs-1.38.0-fix-ocaml.patch
+===================================================================
+--- libguestfs-1.38.0-fix-ocaml.patch	(revision 0)
++++ libguestfs-1.38.0-fix-ocaml.patch	(working copy)
+@@ -0,0 +1,24 @@
++diff -Nrui libguestfs-1.38.0-orig/daemon/Makefile.am libguestfs-1.38.0/daemon/Makefile.am
++--- libguestfs-1.38.0-orig/daemon/Makefile.am	2020-05-31 17:18:16.837635038 +0800
+++++ libguestfs-1.38.0/daemon/Makefile.am	2020-05-31 17:19:36.941350698 +0800
++@@ -341,7 +341,7 @@
++ 	-lmlhivex \
++ 	-lcamlstr \
++ 	-lunix \
++-	-l$(CAMLRUN) -ldl -lm
+++	-l$(CAMLRUN) -ldl -lm -lncurses
++ 
++ CLEANFILES += camldaemon.o
++ 
++diff -Nrui libguestfs-1.38.0-orig/daemon/Makefile.in libguestfs-1.38.0/daemon/Makefile.in
++--- libguestfs-1.38.0-orig/daemon/Makefile.in	2020-05-31 17:18:16.837635038 +0800
+++++ libguestfs-1.38.0/daemon/Makefile.in	2020-05-31 17:20:16.140617679 +0800
++@@ -2292,7 +2292,7 @@
++ 	-lmlhivex \
++ 	-lcamlstr \
++ 	-lunix \
++-	-l$(CAMLRUN) -ldl -lm
+++	-l$(CAMLRUN) -ldl -lm -lncurses
++ 
++ TESTS_ENVIRONMENT = $(top_builddir)/run --test
++ daemon_utils_tests_SOURCES = \

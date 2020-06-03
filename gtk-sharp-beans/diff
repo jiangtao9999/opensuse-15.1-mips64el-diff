@@ -1,0 +1,12 @@
+Index: gtk-sharp-beans.spec
+===================================================================
+--- gtk-sharp-beans.spec	(revision 1)
++++ gtk-sharp-beans.spec	(working copy)
+@@ -37,6 +37,7 @@
+ Requires:       gio-sharp
+ Requires:       gtk-sharp2 >= 2.12
+ Requires:       mono-core
++ExcludeArch:    %mips
+ 
+ %description
+ Gtk# Beans aims to fill the gap between the current Gtk# packages state and all the blings and desktop integration stuffs anyone would want to use.

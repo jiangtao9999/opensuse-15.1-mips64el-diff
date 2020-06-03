@@ -1,0 +1,37 @@
+Index: libsecprog.spec
+===================================================================
+--- libsecprog.spec	(revision 1)
++++ libsecprog.spec	(working copy)
+@@ -28,6 +28,7 @@
+ Source:         %{name}-%{version}.tar.bz2
+ Patch1:         %{name}-%{version}_str-with-n-equal-zero.diff
+ Patch2:         %{name}-%{version}_strliteralcmp.diff
++Patch3:         libsecprog-0.8-fix_open_missing_mode.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ BuildRequires:  libtool
+ 
+@@ -68,6 +69,7 @@
+ %setup -q -n libsecprog
+ %patch1 -p1
+ %patch2 -p0
++%patch3 -p1
+ 
+ %build
+ autoreconf --install
+Index: libsecprog-0.8-fix_open_missing_mode.patch
+===================================================================
+--- libsecprog-0.8-fix_open_missing_mode.patch	(revision 0)
++++ libsecprog-0.8-fix_open_missing_mode.patch	(working copy)
+@@ -0,0 +1,12 @@
++diff -Nrui libsecprog-orig/libsecprog.c libsecprog/libsecprog.c
++--- libsecprog-orig/libsecprog.c	2020-05-09 10:11:27.064724649 +0800
+++++ libsecprog/libsecprog.c	2020-05-09 10:21:30.415299022 +0800
++@@ -63,7 +63,7 @@
++ 
++ 	while(fd < 2)
++ 	{
++-		if( (fd = open("/dev/null", 0600)) < 0)
+++		if( (fd = open("/dev/null", O_CREAT, 0600)) < 0)
++ 			return(-1);
++ 	}
++ 	return(0);

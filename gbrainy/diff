@@ -1,0 +1,12 @@
+Index: gbrainy.spec
+===================================================================
+--- gbrainy.spec	(revision 1)
++++ gbrainy.spec	(working copy)
+@@ -39,6 +39,7 @@
+ # For the help system to work, we require a ghelp:// URI handler.
+ Recommends:     mimehandler(x-scheme-handler/ghelp)
+ BuildArch:      noarch
++ExcludeArch:    %mips
+ %if !0%{?is_opensuse}
+ BuildRequires:  translation-update-upstream
+ %endif

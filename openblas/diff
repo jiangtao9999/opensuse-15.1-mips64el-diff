@@ -1,0 +1,29 @@
+Index: openblas.spec
+===================================================================
+--- openblas.spec	(revision 1)
++++ openblas.spec	(working copy)
+@@ -274,6 +274,9 @@
+ %ifarch ppc64
+ %define addopt -mvsx
+ %endif
++%ifarch %mips
++%define openblas_target TARGET=SICORTEX
++%endif
+ # Make serial, threaded and OpenMP versions
+ make  %{?_smp_mflags} %{?openblas_target} %{?build_flags} \
+     COMMON_OPT="%{optflags} %{?addopt}" \
+Index: _constraints
+===================================================================
+--- _constraints	(revision 1)
++++ _constraints	(working copy)
+@@ -1,10 +0,0 @@
+-<constraints>
+-  <hardware>
+-    <disk>
+-      <size unit="G">20</size>
+-    </disk>
+-    <memory>
+-      <size unit="M">8000</size>
+-    </memory>
+-  </hardware>
+-</constraints> 

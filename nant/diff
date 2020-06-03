@@ -1,0 +1,12 @@
+Index: nant.spec
+===================================================================
+--- nant.spec	(revision 1)
++++ nant.spec	(working copy)
+@@ -20,6 +20,7 @@
+ Version:        0.92+git20130131
+ Release:        0
+ BuildArch:      noarch
++ExcludeArch:    %mips64
+ Url:            http://nant.sourceforge.net
+ # git clone //github.com/letiemble/nant.git
+ Source0:        %{name}.tar.xz

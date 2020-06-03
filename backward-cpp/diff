@@ -1,0 +1,51 @@
+Index: backward-cpp.spec
+===================================================================
+--- backward-cpp.spec	(revision 1)
++++ backward-cpp.spec	(working copy)
+@@ -25,6 +25,7 @@
+ Url:            https://github.com/bombela/backward-cpp
+ Source:         https://github.com/bombela/backward-cpp/archive/v%{version}.tar.gz#/backward-cpp-%{version}.tar.gz
+ Patch0:         GNUInstallDirs.patch
++Patch1:         backward-cpp-1.4-fix-mips.patch
+ BuildRequires:  cmake
+ BuildRequires:  gcc-c++
+ 
+@@ -42,6 +43,7 @@
+ %prep
+ %setup -q -n backward-cpp-%{version}
+ %patch0 -p1
++%patch1 -p1
+ 
+ %build
+ %cmake -DCMAKE_INSTALL_LIBDIR=%{_libdir}
+Index: backward-cpp-1.4-fix-mips.patch
+===================================================================
+--- backward-cpp-1.4-fix-mips.patch	(revision 0)
++++ backward-cpp-1.4-fix-mips.patch	(working copy)
+@@ -0,0 +1,26 @@
++diff -Nrui backward-cpp-1.4-orig/backward.hpp backward-cpp-1.4/backward.hpp
++--- backward-cpp-1.4-orig/backward.hpp	2020-04-28 15:27:54.375688756 +0800
+++++ backward-cpp-1.4/backward.hpp	2020-04-28 15:31:40.267618803 +0800
++@@ -3731,6 +3731,8 @@
++ 		error_addr = reinterpret_cast<void*>(uctx->uc_mcontext.arm_pc);
++ #elif defined(__aarch64__)
++ 		error_addr = reinterpret_cast<void*>(uctx->uc_mcontext.pc);
+++#elif defined(__mips__)
+++		error_addr = reinterpret_cast<void*>(reinterpret_cast<struct sigcontext*>(&uctx->uc_mcontext)->sc_pc);
++ #elif defined(__ppc__) || defined(__powerpc) || defined(__powerpc__) || defined(__POWERPC__)
++ 		error_addr = reinterpret_cast<void*>(uctx->uc_mcontext.regs->nip);
++ #elif defined(__s390x__)
++diff -Nrui backward-cpp-1.4-orig/test/suicide.cpp backward-cpp-1.4/test/suicide.cpp
++--- backward-cpp-1.4-orig/test/suicide.cpp	2020-04-28 15:27:54.379608328 +0800
+++++ backward-cpp-1.4/test/suicide.cpp	2020-04-28 15:32:31.535648261 +0800
++@@ -64,8 +64,8 @@
++ 	abort_abort_I_repeat_abort_abort();
++ }
++ 
++-// aarch64 does not trap Division by zero
++-#ifndef __aarch64__
+++// aarch64 and mips does not trap Division by zero
+++#if !defined(__aarch64__) || !defined(__mips__)
++ volatile int zero = 0;
++ 
++ int divide_by_zero()

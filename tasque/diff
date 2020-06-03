@@ -1,0 +1,12 @@
+Index: tasque.spec
+===================================================================
+--- tasque.spec	(revision 1)
++++ tasque.spec	(working copy)
+@@ -46,6 +46,7 @@
+ Recommends:     %{name}-lang
+ Provides:       tasky = %{version}
+ Obsoletes:      tasky < %{version}
++ExcludeArch:    %mips64
+ 
+ %description
+ Tasky is a simple task management app (TODO list) for the Linux

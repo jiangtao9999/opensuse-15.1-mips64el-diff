@@ -1,0 +1,12 @@
+Index: apache2-mod_mono.spec
+===================================================================
+--- apache2-mod_mono.spec	(revision 1)
++++ apache2-mod_mono.spec	(working copy)
+@@ -41,6 +41,7 @@
+ Requires:       %{apache_mmn}
+ Requires:       apache2
+ BuildRequires:  libapr-util1-devel
++ExcludeArch:    %mips64
+ 
+ %description
+ mod_mono is a module that interfaces Apache with Mono and allows

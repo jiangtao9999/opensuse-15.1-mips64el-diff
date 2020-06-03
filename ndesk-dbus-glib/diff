@@ -1,0 +1,12 @@
+Index: ndesk-dbus-glib.spec
+===================================================================
+--- ndesk-dbus-glib.spec	(revision 1)
++++ ndesk-dbus-glib.spec	(working copy)
+@@ -29,6 +29,7 @@
+ BuildRequires:  mono-devel
+ BuildRequires:  ndesk-dbus
+ Requires:       ndesk-dbus
++ExcludeArch:    %mips64
+ 
+ %description
+ Ndesk-dbus-glibl provides glib integration for NDesk.DBus

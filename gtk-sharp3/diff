@@ -1,0 +1,12 @@
+Index: gtk-sharp3.spec
+===================================================================
+--- gtk-sharp3.spec	(revision 1)
++++ gtk-sharp3.spec	(working copy)
+@@ -40,6 +40,7 @@
+ BuildRequires:  pkgconfig(vte)
+ Requires:       mono-core
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
++ExcludeArch:    %mips
+ 
+ %description
+ This package contains C-Sharp bindings for Gtk+, Gdk, Atk, and Pango.

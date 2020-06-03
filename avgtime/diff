@@ -1,0 +1,12 @@
+Index: avgtime.spec
+===================================================================
+--- avgtime.spec	(revision 1)
++++ avgtime.spec	(working copy)
+@@ -56,6 +56,7 @@
+ %endif
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ #ExcludeArch:    i586
++ExcludeArch:    %mips
+ 
+ %description
+ avgtime works like the "time" command, except it accepts an "-r"

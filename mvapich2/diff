@@ -1,0 +1,40 @@
+Index: mvapich2.spec
+===================================================================
+--- mvapich2.spec	(revision 1)
++++ mvapich2.spec	(working copy)
+@@ -168,6 +168,7 @@
+ # It's been merged upstream, should be removed with the next release
+ Patch3:         0001-Drop-GCC-check.patch
+ Patch4:         mvapich2-fix-double-free.patch
++Patch5:         hdf5-fix-mips-cycles_t.patch
+ Url:            http://mvapich.cse.ohio-state.edu/overview/mvapich2/
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ 
+@@ -299,6 +300,7 @@
+ %patch2
+ %patch3
+ %patch4
++%patch5 -p1
+ cp /usr/share/automake*/config.* .
+ 
+ %build
+Index: hdf5-fix-mips-cycles_t.patch
+===================================================================
+--- hdf5-fix-mips-cycles_t.patch	(revision 0)
++++ hdf5-fix-mips-cycles_t.patch	(working copy)
+@@ -0,0 +1,15 @@
++--- mvapich2-2.2/src/mpid/ch3/channels/common/include/mv2_clock.h.orig	2020-05-05 12:48:10.090269681 +0800
+++++ mvapich2-2.2/src/mpid/ch3/channels/common/include/mv2_clock.h	2020-05-05 12:48:46.337908978 +0800
++@@ -107,6 +107,12 @@
++     asm volatile("stck %0" : "=Q" (clk) : : "cc");
++     return clk >> 2;
++ }
+++#elif defined(__mips__)
+++typedef unsigned long cycles_t;
+++static inline cycles_t get_cycles()
+++{
+++    return 0;
+++}
++ #else
++ #warning get_cycles not implemented for this architecture: attempt asm/timex.h
++ #include <asm/timex.h>

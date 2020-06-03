@@ -1,0 +1,30 @@
+Index: scilab.spec
+===================================================================
+--- scilab.spec	(revision 1)
++++ scilab.spec	(working copy)
+@@ -152,8 +152,10 @@
+ Requires:       tk
+ 
+ # Modelica
++%ifnarch %mips
+ BuildRequires:  ocaml
+ BuildRequires:  ocaml(ocaml.opt)
++%endif
+ 
+ # Documentation
+ BuildRequires:  saxon9
+@@ -328,9 +330,14 @@
+     --disable-static-system-lib \
+     --without-umfpack \
+     --without-emf \
++%ifarch %mips
++    --without-modelica \
++%endif
+     --with-xcos
+ 
++%ifnarch %mips
+ make -C modules/scicos modelicac modelicat XML2Modelica
++%endif
+ make %{?_smp_mflags}
+ 
+ # SECTION SED HACK TO FRONTLOAD ALL NECESSARY JARS WHEN STARTING SCILAB

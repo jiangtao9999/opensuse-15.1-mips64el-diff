@@ -1,0 +1,481 @@
+Index: openlibm.spec
+===================================================================
+--- openlibm.spec	(revision 1)
++++ openlibm.spec	(working copy)
+@@ -26,6 +26,7 @@
+ Group:          Development/Libraries/C and C++
+ Url:            https://github.com/JuliaLang/openlibm/
+ Source0:        https://github.com/JuliaLang/openlibm/archive/v%{version}.tar.gz#/%{name}-%{version}.tar.gz
++Patch1:         openlibm-0.5.5-add-mips.patch
+ BuildRequires:  pkg-config
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ ExcludeArch:    ppc s390 s390x
+@@ -64,6 +65,7 @@
+ 
+ %prep
+ %setup -q
++%patch1 -p1
+ 
+ %build
+ make %{?_smp_mflags} \
+Index: openlibm-0.5.5-add-mips.patch
+===================================================================
+--- openlibm-0.5.5-add-mips.patch	(revision 0)
++++ openlibm-0.5.5-add-mips.patch	(working copy)
+@@ -0,0 +1,456 @@
++diff -Nuir openlibm-0.5.5-orig/Make.inc openlibm-0.5.5/Make.inc
++--- openlibm-0.5.5-orig/Make.inc	2020-05-15 13:40:31.339786841 +0800
+++++ openlibm-0.5.5/Make.inc	2020-05-15 13:43:01.125124510 +0800
++@@ -73,6 +73,10 @@
++ override ARCH := amd64
++ endif
++ 
+++ifeq ($(findstring mips,$(ARCH)),mips)
+++override ARCH := mips
+++endif
+++
++ # If CFLAGS does not contain a -O optimization flag, default to -O3
++ ifeq ($(findstring -O,$(CFLAGS)),)
++ CFLAGS_add += -O3
++diff -Nuir openlibm-0.5.5-orig/include/openlibm_fenv.h openlibm-0.5.5/include/openlibm_fenv.h
++--- openlibm-0.5.5-orig/include/openlibm_fenv.h	2020-05-15 13:40:31.347609414 +0800
+++++ openlibm-0.5.5/include/openlibm_fenv.h	2020-05-15 13:45:25.570496594 +0800
++@@ -10,6 +10,8 @@
++ #include <openlibm_fenv_i387.h>
++ #elif defined(__powerpc__)
++ #include <openlibm_fenv_powerpc.h>
+++#elif defined(__mips__)
+++#include <openlibm_fenv_mips.h>
++ #else
++ #error "Unsupported platform"
++ #endif
++diff -Nuir openlibm-0.5.5-orig/include/openlibm_fenv_mips.h openlibm-0.5.5/include/openlibm_fenv_mips.h
++--- openlibm-0.5.5-orig/include/openlibm_fenv_mips.h	1970-01-01 08:00:00.000000000 +0800
+++++ openlibm-0.5.5/include/openlibm_fenv_mips.h	2020-05-15 13:46:46.331253789 +0800
++@@ -0,0 +1,277 @@
+++/*-
+++ * Copyright (c) 2004-2005 David Schultz <das@FreeBSD.ORG>
+++ * All rights reserved.
+++ *
+++ * Redistribution and use in source and binary forms, with or without
+++ * modification, are permitted provided that the following conditions
+++ * are met:
+++ * 1. Redistributions of source code must retain the above copyright
+++ *    notice, this list of conditions and the following disclaimer.
+++ * 2. Redistributions in binary form must reproduce the above copyright
+++ *    notice, this list of conditions and the following disclaimer in the
+++ *    documentation and/or other materials provided with the distribution.
+++ *
+++ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+++ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+++ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+++ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+++ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+++ * SUCH DAMAGE.
+++ *
+++ * $FreeBSD$
+++ */
+++
+++#ifndef	_FENV_H_
+++#define	_FENV_H_
+++
+++#include <sys/types.h>
+++
+++#ifndef	__fenv_static
+++#define	__fenv_static	static
+++#endif
+++
+++typedef	__uint32_t	fenv_t;
+++typedef	__uint32_t	fexcept_t;
+++
+++/* Exception flags */
+++#ifdef SOFTFLOAT
+++#define	_FPUSW_SHIFT	16
+++#define	FE_INVALID	0x0001
+++#define	FE_DIVBYZERO	0x0002
+++#define	FE_OVERFLOW	0x0004
+++#define	FE_UNDERFLOW	0x0008
+++#define	FE_INEXACT	0x0010
+++#else
+++#define	_FCSR_CAUSE_SHIFT	10
+++#define	FE_INVALID	0x0040
+++#define	FE_DIVBYZERO	0x0020
+++#define	FE_OVERFLOW	0x0010
+++#define	FE_UNDERFLOW	0x0008
+++#define	FE_INEXACT	0x0004
+++#endif
+++#define	FE_ALL_EXCEPT	(FE_DIVBYZERO | FE_INEXACT | \
+++			 FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW)
+++
+++/* Rounding modes */
+++#define	FE_TONEAREST	0x0000
+++#define	FE_TOWARDZERO	0x0001
+++#define	FE_UPWARD	0x0002
+++#define	FE_DOWNWARD	0x0003
+++#define	_ROUND_MASK	(FE_TONEAREST | FE_DOWNWARD | \
+++			 FE_UPWARD | FE_TOWARDZERO)
+++__BEGIN_DECLS
+++
+++/* Default floating-point environment */
+++extern const fenv_t	__fe_dfl_env;
+++#define	FE_DFL_ENV	(&__fe_dfl_env)
+++
+++/* We need to be able to map status flag positions to mask flag positions */
+++#define	_ENABLE_SHIFT	5
+++#define	_ENABLE_MASK	(FE_ALL_EXCEPT << _ENABLE_SHIFT)
+++
+++#ifndef	SOFTFLOAT
+++#define	__cfc1(__fcsr)	__asm __volatile("cfc1 %0, $31" : "=r" (__fcsr))
+++#define	__ctc1(__fcsr)	__asm __volatile("ctc1 %0, $31" :: "r" (__fcsr))
+++#endif
+++
+++#ifdef SOFTFLOAT
+++int feclearexcept(int __excepts);
+++int fegetexceptflag(fexcept_t *__flagp, int __excepts);
+++int fesetexceptflag(const fexcept_t *__flagp, int __excepts);
+++int feraiseexcept(int __excepts);
+++int fetestexcept(int __excepts);
+++int fegetround(void);
+++int fesetround(int __round);
+++int fegetenv(fenv_t *__envp);
+++int feholdexcept(fenv_t *__envp);
+++int fesetenv(const fenv_t *__envp);
+++int feupdateenv(const fenv_t *__envp);
+++#else
+++__fenv_static inline int
+++feclearexcept(int __excepts)
+++{
+++	fexcept_t fcsr;
+++
+++	__excepts &= FE_ALL_EXCEPT;
+++	__cfc1(fcsr);
+++	fcsr &= ~(__excepts | (__excepts << _FCSR_CAUSE_SHIFT));
+++	__ctc1(fcsr);
+++
+++	return (0);
+++}
+++
+++__fenv_static inline int
+++fegetexceptflag(fexcept_t *__flagp, int __excepts)
+++{
+++	fexcept_t fcsr;
+++
+++	__excepts &= FE_ALL_EXCEPT;
+++	__cfc1(fcsr);
+++	*__flagp = fcsr & __excepts;
+++
+++	return (0);
+++}
+++
+++__fenv_static inline int
+++fesetexceptflag(const fexcept_t *__flagp, int __excepts)
+++{
+++	fexcept_t fcsr;
+++
+++	__excepts &= FE_ALL_EXCEPT;
+++	__cfc1(fcsr);
+++	fcsr &= ~__excepts;
+++	fcsr |= *__flagp & __excepts;
+++	__ctc1(fcsr);
+++
+++	return (0);
+++}
+++
+++__fenv_static inline int
+++feraiseexcept(int __excepts)
+++{
+++	fexcept_t fcsr;
+++
+++	__excepts &= FE_ALL_EXCEPT;
+++	__cfc1(fcsr);
+++	fcsr |= __excepts | (__excepts << _FCSR_CAUSE_SHIFT);
+++	__ctc1(fcsr);
+++
+++	return (0);
+++}
+++
+++__fenv_static inline int
+++fetestexcept(int __excepts)
+++{
+++	fexcept_t fcsr;
+++
+++	__excepts &= FE_ALL_EXCEPT;
+++	__cfc1(fcsr);
+++
+++	return (fcsr & __excepts);
+++}
+++
+++__fenv_static inline int
+++fegetround(void)
+++{
+++	fexcept_t fcsr;
+++
+++	__cfc1(fcsr);
+++
+++	return (fcsr & _ROUND_MASK);
+++}
+++
+++__fenv_static inline int
+++fesetround(int __round)
+++{
+++	fexcept_t fcsr;
+++
+++	if (__round & ~_ROUND_MASK)
+++		return (-1);
+++
+++	__cfc1(fcsr);
+++	fcsr &= ~_ROUND_MASK;
+++	fcsr |= __round;
+++	__ctc1(fcsr);
+++
+++	return (0);
+++}
+++
+++__fenv_static inline int
+++fegetenv(fenv_t *__envp)
+++{
+++
+++	__cfc1(*__envp);
+++
+++	return (0);
+++}
+++
+++__fenv_static inline int
+++feholdexcept(fenv_t *__envp)
+++{
+++	fexcept_t fcsr;
+++
+++	__cfc1(fcsr);
+++	*__envp = fcsr;
+++	fcsr &= ~(FE_ALL_EXCEPT | _ENABLE_MASK);
+++	__ctc1(fcsr);
+++
+++	return (0);
+++}
+++
+++__fenv_static inline int
+++fesetenv(const fenv_t *__envp)
+++{
+++
+++	__ctc1(*__envp);
+++
+++	return (0);
+++}
+++
+++__fenv_static inline int
+++feupdateenv(const fenv_t *__envp)
+++{
+++	fexcept_t fcsr;
+++
+++	__cfc1(fcsr);
+++	fesetenv(__envp);
+++	feraiseexcept(fcsr);
+++
+++	return (0);
+++}
+++#endif /* !SOFTFLOAT */
+++
+++#if __BSD_VISIBLE
+++
+++/* We currently provide no external definitions of the functions below. */
+++
+++#ifdef SOFTFLOAT
+++int feenableexcept(int __mask);
+++int fedisableexcept(int __mask);
+++int fegetexcept(void);
+++#else
+++static inline int
+++feenableexcept(int __mask)
+++{
+++	fenv_t __old_fcsr, __new_fcsr;
+++
+++	__cfc1(__old_fcsr);
+++	__new_fcsr = __old_fcsr | (__mask & FE_ALL_EXCEPT) << _ENABLE_SHIFT;
+++	__ctc1(__new_fcsr);
+++
+++	return ((__old_fcsr >> _ENABLE_SHIFT) & FE_ALL_EXCEPT);
+++}
+++
+++static inline int
+++fedisableexcept(int __mask)
+++{
+++	fenv_t __old_fcsr, __new_fcsr;
+++
+++	__cfc1(__old_fcsr);
+++	__new_fcsr = __old_fcsr & ~((__mask & FE_ALL_EXCEPT) << _ENABLE_SHIFT);
+++	__ctc1(__new_fcsr);
+++
+++	return ((__old_fcsr >> _ENABLE_SHIFT) & FE_ALL_EXCEPT);
+++}
+++
+++static inline int
+++fegetexcept(void)
+++{
+++	fexcept_t fcsr;
+++
+++	__cfc1(fcsr);
+++
+++	return ((fcsr & _ENABLE_MASK) >> _ENABLE_SHIFT);
+++}
+++
+++#endif /* !SOFTFLOAT */
+++
+++#endif /* __BSD_VISIBLE */
+++
+++__END_DECLS
+++
+++#endif	/* !_FENV_H_ */
++diff -Nuir openlibm-0.5.5-orig/mips/Make.files openlibm-0.5.5/mips/Make.files
++--- openlibm-0.5.5-orig/mips/Make.files	1970-01-01 08:00:00.000000000 +0800
+++++ openlibm-0.5.5/mips/Make.files	2020-05-15 13:47:28.662119842 +0800
++@@ -0,0 +1 @@
+++$(CUR_SRCS) = fenv.c
++diff -Nuir openlibm-0.5.5-orig/mips/fenv.c openlibm-0.5.5/mips/fenv.c
++--- openlibm-0.5.5-orig/mips/fenv.c	1970-01-01 08:00:00.000000000 +0800
+++++ openlibm-0.5.5/mips/fenv.c	2020-05-15 13:48:08.882533905 +0800
++@@ -0,0 +1,67 @@
+++/*-
+++ * Copyright (c) 2004 David Schultz <das@FreeBSD.ORG>
+++ * All rights reserved.
+++ *
+++ * Redistribution and use in source and binary forms, with or without
+++ * modification, are permitted provided that the following conditions
+++ * are met:
+++ * 1. Redistributions of source code must retain the above copyright
+++ *    notice, this list of conditions and the following disclaimer.
+++ * 2. Redistributions in binary form must reproduce the above copyright
+++ *    notice, this list of conditions and the following disclaimer in the
+++ *    documentation and/or other materials provided with the distribution.
+++ *
+++ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+++ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+++ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+++ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+++ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+++ * SUCH DAMAGE.
+++ *
+++ * $FreeBSD$
+++ */
+++
+++#define	__fenv_static
+++#include "openlibm_fenv.h"
+++
+++#ifdef __GNUC_GNU_INLINE__
+++#error "This file must be compiled with C99 'inline' semantics"
+++#endif
+++
+++/*
+++ * Hopefully the system ID byte is immutable, so it's valid to use
+++ * this as a default environment.
+++ */
+++const fenv_t __fe_dfl_env = 0;
+++
+++#ifdef	SOFTFLOAT
+++#define __set_env(env, flags, mask, rnd) env = ((flags)                 \
+++                                                | (mask)<<_FPUSW_SHIFT  \
+++                                                | (rnd) << 24)
+++#define __env_flags(env)                ((env) & FE_ALL_EXCEPT)
+++#define __env_mask(env)                 (((env) >> _FPUSW_SHIFT)        \
+++                                                & FE_ALL_EXCEPT)
+++#define __env_round(env)                (((env) >> 24) & _ROUND_MASK)
+++#include "fenv-softfloat.h"
+++#endif
+++
+++extern inline int feclearexcept(int __excepts);
+++extern inline int fegetexceptflag(fexcept_t *__flagp, int __excepts);
+++extern inline int fesetexceptflag(const fexcept_t *__flagp, int __excepts);
+++extern inline int feraiseexcept(int __excepts);
+++extern inline int fetestexcept(int __excepts);
+++extern inline int fegetround(void);
+++extern inline int fesetround(int __round);
+++extern inline int fegetenv(fenv_t *__envp);
+++extern inline int feholdexcept(fenv_t *__envp);
+++extern inline int fesetenv(const fenv_t *__envp);
+++extern inline int feupdateenv(const fenv_t *__envp);
+++extern inline int feenableexcept(int __mask);
+++extern inline int fedisableexcept(int __mask);
+++extern inline int fegetexcept(void);
+++
++diff -Nuir openlibm-0.5.5-orig/src/fpmath.h openlibm-0.5.5/src/fpmath.h
++--- openlibm-0.5.5-orig/src/fpmath.h	2020-05-15 13:40:31.359343273 +0800
+++++ openlibm-0.5.5/src/fpmath.h	2020-05-15 13:49:59.746257812 +0800
++@@ -39,6 +39,8 @@
++ #endif
++ #elif defined(__powerpc__)
++ #include "powerpc_fpmath.h"
+++#elif defined(__mips__)
+++#include "mips_fpmath.h"
++ #endif
++ 
++ /* Definitions provided directly by GCC and Clang. */
++diff -Nuir openlibm-0.5.5-orig/src/mips_fpmath.h openlibm-0.5.5/src/mips_fpmath.h
++--- openlibm-0.5.5-orig/src/mips_fpmath.h	1970-01-01 08:00:00.000000000 +0800
+++++ openlibm-0.5.5/src/mips_fpmath.h	2020-05-15 13:50:33.868837201 +0800
++@@ -0,0 +1,57 @@
+++/*-
+++ * Copyright (c) 2002, 2003 David Schultz <das@FreeBSD.ORG>
+++ * All rights reserved.
+++ *
+++ * Redistribution and use in source and binary forms, with or without
+++ * modification, are permitted provided that the following conditions
+++ * are met:
+++ * 1. Redistributions of source code must retain the above copyright
+++ *    notice, this list of conditions and the following disclaimer.
+++ * 2. Redistributions in binary form must reproduce the above copyright
+++ *    notice, this list of conditions and the following disclaimer in the
+++ *    documentation and/or other materials provided with the distribution.
+++ *
+++ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+++ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+++ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+++ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+++ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+++ * SUCH DAMAGE.
+++ *
+++ * $FreeBSD$
+++ */
+++
+++union IEEEl2bits {
+++	long double	e;
+++	struct {
+++#ifndef __MIPSEB__
+++		unsigned int	manl	:32;
+++		unsigned int	manh	:20;
+++		unsigned int	exp	:11;
+++		unsigned int	sign	:1;
+++#else
+++		unsigned int		sign	:1;
+++		unsigned int		exp	:11;
+++		unsigned int		manh	:20;
+++		unsigned int		manl	:32;
+++#endif
+++	} bits;
+++};
+++
+++#define	LDBL_NBIT	0
+++#define	mask_nbit_l(u)	((void)0)
+++#define	LDBL_IMPLICIT_NBIT
+++
+++#define	LDBL_MANH_SIZE	20
+++#define	LDBL_MANL_SIZE	32
+++
+++#define	LDBL_TO_ARRAY32(u, a) do {			\
+++	(a)[0] = (uint32_t)(u).bits.manl;		\
+++	(a)[1] = (uint32_t)(u).bits.manh;		\
+++} while(0)
+++

@@ -1,0 +1,49 @@
+Index: qore.spec
+===================================================================
+--- qore.spec	(revision 1)
++++ qore.spec	(working copy)
+@@ -28,6 +28,7 @@
+ Url:            http://qore.org
+ Source:         https://github.com/qorelanguage/qore/releases/download/release-%{version}/qore-%{version}.tar.bz2
+ Patch:          qore-libtool-2.4.6.patch
++Patch1:         qore-0.8.13-fix-mips64-m64.patch
+ BuildRequires:  automake
+ BuildRequires:  bison
+ BuildRequires:  bzip2
+@@ -171,6 +172,7 @@
+ %prep
+ %setup -q
+ %patch -p1
++%patch1 -p1
+ # silence the executable warning for examples
+ find examples -type f|xargs chmod 644
+ 
+Index: qore-0.8.13-fix-mips64-m64.patch
+===================================================================
+--- qore-0.8.13-fix-mips64-m64.patch	(revision 0)
++++ qore-0.8.13-fix-mips64-m64.patch	(working copy)
+@@ -0,0 +1,24 @@
++diff -Nrui qore-0.8.13-orig/configure qore-0.8.13/configure
++--- qore-0.8.13-orig/configure	2020-05-17 21:49:44.808958554 +0800
+++++ qore-0.8.13/configure	2020-05-17 21:49:49.748202389 +0800
++@@ -18912,7 +18912,7 @@
++ # FIXME: add test on HP-UX if the compiler can generate the appropriate binaries
++ if test "$enable_64bit" = "yes"; then
++    case "${host_os}" in
++-      *linux*)	if test "$GXX" = "yes" -a "$ARCH" != "aarch64"; then
+++      *linux*)	if test "$GXX" = "yes" -a "$ARCH" != "aarch64" -a "$ARCH" != "mips64" ; then
++ 		   CXXFLAGS="$CXXFLAGS -m64"
++ 		fi
++ 		# only set LIBSUFFIX=64 if /usr/lib64 exists
++diff -Nrui qore-0.8.13-orig/configure.ac qore-0.8.13/configure.ac
++--- qore-0.8.13-orig/configure.ac	2020-05-17 21:49:44.808958554 +0800
+++++ qore-0.8.13/configure.ac	2020-05-17 21:49:49.732544110 +0800
++@@ -313,7 +313,7 @@
++ # FIXME: add test on HP-UX if the compiler can generate the appropriate binaries
++ if test "$enable_64bit" = "yes"; then
++    case "${host_os}" in
++-      *linux*)	if test "$GXX" = "yes" -a "$ARCH" != "aarch64"; then
+++      *linux*)	if test "$GXX" = "yes" -a "$ARCH" != "aarch64" -a "$ARCH" != "mips64" ; then
++ 		   CXXFLAGS="$CXXFLAGS -m64"
++ 		fi
++ 		# only set LIBSUFFIX=64 if /usr/lib64 exists

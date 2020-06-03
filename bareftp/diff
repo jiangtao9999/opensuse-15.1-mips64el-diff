@@ -1,0 +1,12 @@
+Index: bareftp.spec
+===================================================================
+--- bareftp.spec	(revision 1)
++++ bareftp.spec	(working copy)
+@@ -47,6 +47,7 @@
+ Requires:       gnome-keyring-sharp
+ Requires:       gtk-sharp2
+ Requires:       mono-core
++ExcludeArch:    %mips
+ 
+ %description
+ bareFTP is a file transfer client supporting the FTP, FTP over SSL/TLS (FTPS)

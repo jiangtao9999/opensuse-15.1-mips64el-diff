@@ -1,0 +1,12 @@
+Index: kbfs.spec
+===================================================================
+--- kbfs.spec	(revision 1)
++++ kbfs.spec	(working copy)
+@@ -42,6 +42,7 @@
+ Requires:       keybase-client
+ Supplements:    keybase-client
+ %{go_provides}
++ExcludeArch:    %mips
+ 
+ %description
+ The Keybase filesystem provides encrypted remote storage. Encryption is

@@ -1,0 +1,13 @@
+Index: kalgebra.spec
+===================================================================
+--- kalgebra.spec	(revision 1)
++++ kalgebra.spec	(working copy)
+@@ -53,7 +53,7 @@
+ Obsoletes:      %{name}5 < %{version}
+ Provides:       %{name}5 = %{version}
+ # It can only build on the same platforms as Qt Webengine
+-ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 mips mips64
++ExclusiveArch:  %{ix86} x86_64 %{arm} aarch64 %{mips}
+ %if %{with lang}
+ Recommends:     %{name}-lang
+ %endif

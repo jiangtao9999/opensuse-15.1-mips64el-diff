@@ -1,0 +1,38 @@
+Index: gnustep-libobjc2.spec
+===================================================================
+--- gnustep-libobjc2.spec	(revision 1)
++++ gnustep-libobjc2.spec	(working copy)
+@@ -26,6 +26,7 @@
+ Group:          Development/Languages/C and C++
+ URL:            https://github.com/gnustep/libobjc2
+ Source:         https://github.com/gnustep/libobjc2/archive/%{version}.tar.gz#/%{_oname}-%{version}.tar.gz
++Patch1:         libobjc2-1.9-fix-mips.patch
+ BuildRequires:  cmake >= 3.1
+ BuildRequires:  fdupes
+ BuildRequires:  gnustep-make
+@@ -69,6 +70,7 @@
+ 
+ %prep
+ %setup -q -n %{_oname}-%{version}
++%patch1 -p1
+ 
+ %build
+ mkdir build
+Index: libobjc2-1.9-fix-mips.patch
+===================================================================
+--- libobjc2-1.9-fix-mips.patch	(revision 0)
++++ libobjc2-1.9-fix-mips.patch	(working copy)
+@@ -0,0 +1,13 @@
++diff -Nuir libobjc2-1.9-orig/block_trampolines.S libobjc2-1.9/block_trampolines.S
++--- libobjc2-1.9-orig/block_trampolines.S	2020-05-04 12:13:33.340300273 +0800
+++++ libobjc2-1.9/block_trampolines.S	2020-05-04 12:19:14.006663007 +0800
++@@ -83,7 +83,8 @@
++ #	endif
++ #define ARG0 $a0
++ #define ARG1 $a1
++-#define ARG2 $a2
+++#define SARG0 $a0
+++#define SARG1 $a1
++ 
++ #elif defined(__ARM_ARCH_ISA_A64)
++ ////////////////////////////////////////////////////////////////////////////////

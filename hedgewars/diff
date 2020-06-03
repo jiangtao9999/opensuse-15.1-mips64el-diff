@@ -1,0 +1,12 @@
+Index: hedgewars.spec
+===================================================================
+--- hedgewars.spec	(revision 1)
++++ hedgewars.spec	(working copy)
+@@ -59,6 +59,7 @@
+ BuildRequires:  zlib-devel
+ Requires:       %{name}-data = %{version}
+ Recommends:     %{name}-server = %{version}
++ExcludeArch:    %mips64
+ 
+ # to build server
+ %if %{_no_server} == 0

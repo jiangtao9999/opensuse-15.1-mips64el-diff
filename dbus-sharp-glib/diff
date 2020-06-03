@@ -1,0 +1,12 @@
+Index: dbus-sharp-glib.spec
+===================================================================
+--- dbus-sharp-glib.spec	(revision 1)
++++ dbus-sharp-glib.spec	(working copy)
+@@ -40,6 +40,7 @@
+ BuildRequires:  dbus-sharp-devel
+ %endif
+ Requires:       dbus-sharp
++ExcludeArch:    %mips
+ 
+ %description
+ This package provides glib integration for Mono.DBus.

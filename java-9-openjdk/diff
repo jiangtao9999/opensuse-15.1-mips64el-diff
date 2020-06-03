@@ -1,0 +1,184 @@
+Index: java-9-openjdk.spec
+===================================================================
+--- java-9-openjdk.spec	(revision 1)
++++ java-9-openjdk.spec	(working copy)
+@@ -201,6 +201,7 @@
+ Patch400:       jaw-misc.patch
+ Patch401:       jaw-jdk9.patch
+ Patch800:       java9-improved-fonts.patch
++Patch900:       jdk9-add-mips64el.patch
+ BuildRequires:  alsa-lib-devel
+ BuildRequires:  autoconf
+ BuildRequires:  automake
+@@ -493,7 +494,9 @@
+ %patch103 -p1
+ %endif
+ 
++%ifnarch %mips
+ %patch200 -p1
++%endif
+ %patch201 -p1
+ 
+ %ifarch %{arm6}
+@@ -509,6 +512,8 @@
+ 
+ %patch400
+ %patch401
++
++%patch900 -p1
+ 
+ # Extract systemtap tapsets
+ 
+@@ -547,7 +552,7 @@
+ 
+ # Build OpenJDK.
+ 
+-%ifarch s390x sparc64 alpha ppc64 ppc64le %{aarch64}
++%ifarch s390x sparc64 alpha ppc64 ppc64le %{aarch64} %{mips64}
+ export ARCH_DATA_MODEL=64
+ %endif
+ 
+Index: jdk9-add-mips64el.patch
+===================================================================
+--- jdk9-add-mips64el.patch	(revision 0)
++++ jdk9-add-mips64el.patch	(working copy)
+@@ -0,0 +1,139 @@
++diff -Nrui jdk9u-2e265b4b8622-orig/common/autoconf/platform.m4 jdk9u-2e265b4b8622/common/autoconf/platform.m4
++--- jdk9u-2e265b4b8622-orig/common/autoconf/platform.m4	2020-02-08 17:54:12.890646688 +0800
+++++ jdk9u-2e265b4b8622/common/autoconf/platform.m4	2020-02-08 18:01:17.738270033 +0800
++@@ -54,6 +54,18 @@
++       VAR_CPU_BITS=64
++       VAR_CPU_ENDIAN=little
++       ;;
+++    mipsel)
+++      VAR_CPU=mipsel
+++      VAR_CPU_ARCH=mipsel
+++      VAR_CPU_BITS=32
+++      VAR_CPU_ENDIAN=little
+++      ;;
+++    mips64el)
+++      VAR_CPU=mips64el
+++      VAR_CPU_ARCH=mips64el
+++      VAR_CPU_BITS=64
+++      VAR_CPU_ENDIAN=little
+++      ;;
++     powerpc)
++       VAR_CPU=ppc
++       VAR_CPU_ARCH=ppc
++diff -Nrui jdk9u-2e265b4b8622-orig/hotspot/src/cpu/zero/vm/cppInterpreter_zero.cpp jdk9u-2e265b4b8622/hotspot/src/cpu/zero/vm/cppInterpreter_zero.cpp
++--- jdk9u-2e265b4b8622-orig/hotspot/src/cpu/zero/vm/cppInterpreter_zero.cpp	2020-02-08 17:54:13.136934602 +0800
+++++ jdk9u-2e265b4b8622/hotspot/src/cpu/zero/vm/cppInterpreter_zero.cpp	2020-02-08 18:06:37.824204750 +0800
++@@ -369,7 +369,7 @@
++   ThreadStateTransition::transition_from_java(thread, _thread_in_native);
++ 
++   // Make the call
++-  intptr_t result[4 - LogBytesPerWord];
+++  intptr_t result[4 - LogBytesPerWord] __attribute__((__aligned__(__alignof__(double))));
++   ffi_call(handler->cif(), (void (*)()) function, result, arguments);
++ 
++   // Change the thread state back to _thread_in_Java.
++diff -Nrui jdk9u-2e265b4b8622-orig/hotspot/src/os/linux/vm/jsig.c jdk9u-2e265b4b8622/hotspot/src/os/linux/vm/jsig.c
++--- jdk9u-2e265b4b8622-orig/hotspot/src/os/linux/vm/jsig.c	2020-02-08 22:47:28.543088417 +0800
+++++ jdk9u-2e265b4b8622/hotspot/src/os/linux/vm/jsig.c	2020-02-08 23:18:36.180765375 +0800
++@@ -41,13 +41,8 @@
++ #define true 1
++ #define false 0
++ 
++-#define MASK(sig) ((uint64_t)1 << (sig-1))  // 0 is not a signal.
++-// Check whether all signals fit into jvmsigs. -1 as MASK shifts by -1.
++-#if (64 < NSIG-1)
++-#error "Not all signals can be encoded in jvmsigs. Adapt its type!"
++-#endif
++ static struct sigaction sact[NSIG]; /* saved signal handlers */
++-static uint64_t jvmsigs = 0; /* signals used by jvm */
+++static sigset_t jvmsigs; /* signals used by jvm */
++ 
++ /* used to synchronize the installation of signal handlers */
++ static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
++@@ -110,7 +105,7 @@
++ 
++   signal_lock();
++ 
++-  sigused = (sig < NSIG) && ((MASK(sig) & jvmsigs) != 0);
+++  sigused = (sig < NSIG) && sigismember(&jvmsigs, sig);
++   if (jvm_signal_installed && sigused) {
++     /* jvm has installed its signal handler for this signal. */
++     /* Save the handler. Don't really install it. */
++@@ -127,7 +122,7 @@
++     save_signal_handler(sig, oldhandler);
++ 
++     /* Record the signals used by jvm */
++-    jvmsigs |= MASK(sig);
+++    sigaddset(&jvmsigs, sig);
++ 
++     signal_unlock();
++     return oldhandler;
++@@ -168,7 +163,7 @@
++ 
++   signal_lock();
++ 
++-  sigused = (sig < NSIG) && ((MASK(sig) & jvmsigs) != 0);
+++  sigused = (sig < NSIG) && sigismember(&jvmsigs, sig);
++   if (jvm_signal_installed && sigused) {
++     /* jvm has installed its signal handler for this signal. */
++     /* Save the handler. Don't really install it. */
++@@ -191,7 +186,7 @@
++     }
++ 
++     /* Record the signals used by jvm */
++-    jvmsigs |= MASK(sig);
+++    sigaddset(&jvmsigs, sig);
++ 
++     signal_unlock();
++     return res;
++@@ -223,7 +218,7 @@
++ 
++ struct sigaction *JVM_get_signal_action(int sig) {
++   /* Does race condition make sense here? */
++-  if ((MASK(sig) & jvmsigs) != 0) {
+++  if (sigismember(&jvmsigs, sig)) {
++     return &sact[sig];
++   }
++   return NULL;
++diff -Nrui jdk9u-2e265b4b8622-orig/hotspot/src/os/linux/vm/os_linux.cpp jdk9u-2e265b4b8622/hotspot/src/os/linux/vm/os_linux.cpp
++--- jdk9u-2e265b4b8622-orig/hotspot/src/os/linux/vm/os_linux.cpp	2020-02-08 22:47:28.543088417 +0800
+++++ jdk9u-2e265b4b8622/hotspot/src/os/linux/vm/os_linux.cpp	2020-02-08 23:20:42.366138418 +0800
++@@ -4237,14 +4237,16 @@
++ 
++ // For signal-chaining
++ struct sigaction sigact[NSIG];
++-uint64_t sigs = 0;
++-#if (64 < NSIG-1)
++-#error "Not all signals can be encoded in sigs. Adapt its type!"
++-#endif
+++sigset_t sigs;
++ bool os::Linux::libjsig_is_loaded = false;
++ typedef struct sigaction *(*get_signal_t)(int);
++ get_signal_t os::Linux::get_signal_action = NULL;
++ 
+++static __attribute__((constructor)) void sigs_init()
+++{
+++    sigemptyset(&sigs);
+++}
+++
++ struct sigaction* os::Linux::get_chained_signal_action(int sig) {
++   struct sigaction *actp = NULL;
++ 
++@@ -4319,7 +4321,7 @@
++ }
++ 
++ struct sigaction* os::Linux::get_preinstalled_handler(int sig) {
++-  if ((((uint64_t)1 << (sig-1)) & sigs) != 0) {
+++  if (sigismember(&sigs, sig)) {
++     return &sigact[sig];
++   }
++   return NULL;
++@@ -4328,7 +4330,7 @@
++ void os::Linux::save_preinstalled_handler(int sig, struct sigaction& oldAct) {
++   assert(sig > 0 && sig < NSIG, "vm signal out of expected range");
++   sigact[sig] = oldAct;
++-  sigs |= (uint64_t)1 << (sig-1);
+++  sigaddset(&sigs, sig);
++ }
++ 
++ // for diagnostic

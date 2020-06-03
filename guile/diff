@@ -1,0 +1,26 @@
+Index: guile.spec
+===================================================================
+--- guile.spec	(revision 1)
++++ guile.spec	(working copy)
+@@ -137,7 +137,9 @@
+ make %{?_smp_mflags}
+ 
+ %check
++%ifnarch %mips
+ LD_LIBRARY_PATH="." make %{?_smp_mflags} check
++%endif
+ 
+ %install
+ %make_install
+Index: _constraints
+===================================================================
+--- _constraints	(revision 1)
++++ _constraints	(working copy)
+@@ -1,7 +0,0 @@
+-<constraints>
+-  <hardware>
+-    <memory>
+-      <size unit="G">2</size>
+-    </memory>
+-  </hardware>
+-</constraints>

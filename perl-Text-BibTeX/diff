@@ -1,0 +1,37 @@
+Index: perl-Text-BibTeX.spec
+===================================================================
+--- perl-Text-BibTeX.spec	(revision 1)
++++ perl-Text-BibTeX.spec	(working copy)
+@@ -27,6 +27,7 @@
+ Source0:        https://cpan.metacpan.org/authors/id/A/AM/AMBS/%{cpan_name}-%{version}.tar.gz
+ Source1:        cpanspec.yml
+ Patch0:         manual-pages-for-libbtparse.patch
++Patch1:         Text-BibTeX-0.80-mips64-lib64.patch
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ BuildRequires:  glibc-devel
+ BuildRequires:  perl
+@@ -76,6 +77,7 @@
+ %prep
+ %setup -q -n %{cpan_name}-%{version}
+ %patch0 -p1
++%patch1 -p1
+ find . -type f ! -name \*.pl -print0 | xargs -0 chmod 644
+ 
+ %build
+Index: Text-BibTeX-0.80-mips64-lib64.patch
+===================================================================
+--- Text-BibTeX-0.80-mips64-lib64.patch	(revision 0)
++++ Text-BibTeX-0.80-mips64-lib64.patch	(working copy)
+@@ -0,0 +1,12 @@
++diff -Nrui Text-BibTeX-0.80-orig/Build.PL Text-BibTeX-0.80/Build.PL
++--- Text-BibTeX-0.80-orig/Build.PL	2019-12-20 13:27:38.430819166 +0800
+++++ Text-BibTeX-0.80/Build.PL	2019-12-20 13:28:06.882563084 +0800
++@@ -86,7 +86,7 @@
++     }
++ }
++ else {
++-    if ( $Config{archname} =~ /^x86_64|^ppc64|^s390x|^aarch64/ ) {
+++    if ( $Config{archname} =~ /^x86_64|^ppc64|^s390x|^aarch64|^mips64/ ) {
++         $libdir =~ s/\bbin\b/lib64/;
++         if ( !-d $libdir ) {
++             my $test = $libdir;

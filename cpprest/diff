@@ -1,0 +1,26 @@
+Index: cpprest.spec
+===================================================================
+--- cpprest.spec	(revision 1)
++++ cpprest.spec	(working copy)
+@@ -80,7 +80,7 @@
+ %build
+ %cmake \
+ 	-DCMAKE_BUILD_TYPE=Release \
+-%ifarch ppc ppc64 ppc64le aarch64 %{arm}
++%ifarch ppc ppc64 ppc64le aarch64 %{arm} %{mips}
+ 	-DCMAKE_CXX_FLAGS:STRING="%{optflags} -Wno-error=attributes -Wno-error=type-limits -Wno-error=cast-align -Wno-error=deprecated-declarations" \
+ %endif
+ 	../Release
+Index: _constraints
+===================================================================
+--- _constraints	(revision 1)
++++ _constraints	(working copy)
+@@ -1,8 +0,0 @@
+-<?xml version="1.0"?>
+-<constraints>
+-  <hardware>
+-    <memory>
+-      <size unit="M">5500</size>
+-    </memory>
+-  </hardware>
+-</constraints>

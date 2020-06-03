@@ -1,0 +1,48 @@
+Index: wyrd.spec
+===================================================================
+--- wyrd.spec	(revision 1)
++++ wyrd.spec	(working copy)
+@@ -26,6 +26,7 @@
+ Source0:        %{name}-%{version}.tar.bz2
+ Patch0:         %{name}-%{version}-ncurses.patch
+ Patch1:         reproducible.patch
++Patch2:         wyrd-1.4.6-fix-byte-only.patch
+ BuildRequires:  autoconf
+ BuildRequires:  automake
+ BuildRequires:  camlp4
+@@ -51,9 +52,13 @@
+ %setup -q
+ %patch0
+ %patch1 -p1
++%patch2 -p1
+ 
+ %build
+ autoreconf -fi
++%ifarch %mips
++export OCAMLBEST=byte
++%endif
+ %configure --enable-utf8
+ make
+ 
+Index: wyrd-1.4.6-fix-byte-only.patch
+===================================================================
+--- wyrd-1.4.6-fix-byte-only.patch	(revision 0)
++++ wyrd-1.4.6-fix-byte-only.patch	(working copy)
+@@ -0,0 +1,17 @@
++diff -Nrui wyrd-1.4.6-orig/Makefile.in wyrd-1.4.6/Makefile.in
++--- wyrd-1.4.6-orig/Makefile.in	2020-05-20 10:35:46.834613790 +0800
+++++ wyrd-1.4.6/Makefile.in	2020-05-20 10:38:47.805526883 +0800
++@@ -97,8 +97,11 @@
++ 	echo "let date = \"$(BUILD_DATE)\"" >> version.ml
++ 
++ 
++-$(CURSES_CMA) $(CURSES_CMXA) .stamp_built_curses:
++-	$(MAKE) -C curses byte opt && touch .stamp_built_curses
+++$(CURSES_CMA) .stamp_built_curses:
+++	$(MAKE) -C curses byte && touch .stamp_built_curses
+++
+++$(CURSES_CMXA) .stamp_built_curses:
+++	$(MAKE) -C curses opt && touch .stamp_built_curses
++ 
++ $(CMO) $(CMX): .stamp_built_curses
++ 

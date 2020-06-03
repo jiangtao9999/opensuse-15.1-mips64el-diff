@@ -1,0 +1,37 @@
+Index: eclipse-swt.spec
+===================================================================
+--- eclipse-swt.spec	(revision 1)
++++ eclipse-swt.spec	(working copy)
+@@ -38,6 +38,7 @@
+ Patch6:         libswt-4.333-libjawt.patch
+ Patch7:         libswt-bootclasspath.patch
+ Patch8:         aarch64.patch
++Patch9:         mips64.patch
+ BuildRequires:  Mesa-devel
+ BuildRequires:  ant
+ BuildRequires:  cairo
+@@ -89,6 +90,7 @@
+ %patch5 -p1
+ %patch6 -p1
+ %patch8
++%patch9 -p1
+ pushd org/eclipse/swt
+ cp %{SOURCE2} .
+ # remove all third party jars
+Index: mips64.patch
+===================================================================
+--- mips64.patch	(revision 0)
++++ mips64.patch	(working copy)
+@@ -0,0 +1,12 @@
++diff -Nrui libswt-4.333-orig/build.sh libswt-4.333/build.sh
++--- libswt-4.333-orig/build.sh	2020-05-01 14:45:20.446450631 +0800
+++++ libswt-4.333/build.sh	2020-05-01 14:50:30.707479468 +0800
++@@ -419,7 +419,7 @@
++ 
++ 
++ # For 64-bit CPUs, we have a switch
++-if [ ${MODEL} = 'x86_64' -o ${MODEL} = 'ppc64' -o ${MODEL} = 'ppc64le' -o ${MODEL} = 'ia64' -o ${MODEL} = 'sparc64'  -o ${MODEL} = 's390x' ]; then
+++if [ ${MODEL} = 'x86_64' -o ${MODEL} = 'ppc64' -o ${MODEL} = 'ppc64le' -o ${MODEL} = 'ia64' -o ${MODEL} = 'sparc64'  -o ${MODEL} = 's390x' -o ${MODEL} = 'mips64' -o ${MODEL} = 'mips64el' ]; then
++ 	SWT_PTR_CFLAGS=-DJNI64
++ 	if [ -d /lib64 ]; then
++ 		XLIB64=-L/usr/X11R6/lib64

@@ -1,0 +1,15 @@
+Index: mbedtls.spec
+===================================================================
+--- mbedtls.spec	(revision 1)
++++ mbedtls.spec	(working copy)
+@@ -107,8 +107,10 @@
+ %cmake_install
+ 
+ %check
++%ifnarch %mips
+ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:%{_builddir}/%{name}-%{version}/build/library
+ %ctest
++%endif
+ 
+ %post -n %{lib_tls}      -p /sbin/ldconfig
+ %post -n %{lib_crypto}   -p /sbin/ldconfig

@@ -1,0 +1,74 @@
+--- projcfg.orig	2020-06-04 11:10:38.755133060 +0800
++++ projcfg	2020-06-04 11:14:59.345586147 +0800
+@@ -6,7 +6,8 @@
+ BuildFlags: genmetaalgo:1
+ 
+ # abort the build if the log file didn't move in an hour (seen in libreoffice builds)
+-BuildFlags: logidlelimit:3600
++# mips64el change to 4 hour.3600x4=14400
++BuildFlags: logidlelimit:14400
+ 
+ PublishFlags: ympdist:openSUSE%20Leap%2015.1
+ 
+@@ -21,6 +22,28 @@
+ # %_with_betatest 1
+ # :Macros
+ 
++%ifarch %mips
++
++# temporary for bootstrap
++#Support: !rpmlint-mini !rpmlint-Factory
++VMinstall: !kernel-obs-build
++
++%define disable_32bit 1
++
++Macros:
++%disable_32bit 1
++:Macros
++
++Substitute: glibc-devel-32bit
++Substitute: glibc-devel-static-32bit
++Substitute: gcc-32bit
++Substitute: gcc5-32bit
++Substitute: gcc-ada-32bit
++Substitute: gcc5-c++-32bit
++Substitute: gcc-c++-32bit
++
++%endif
++
+ # for osc local builds only
+ Substitute: obs:cli_debug_packages gdb vim strace rzsz
+ 
+@@ -963,10 +986,10 @@
+ 
+ # Define the architectures in which Rust (and Rust crates) are available
+ # NOTE: Keep this in sync with rust-srpm-macros!
+-%define rust_arches x86_64 i586 i686 armv6hl armv7hl aarch64 ppc64 powerpc64 ppc64le powerpc64le s390x
++%define rust_arches x86_64 i586 i686 armv6hl armv7hl aarch64 ppc64 powerpc64 ppc64le powerpc64le s390x mips64el mips64 mipsel mips
+ 
+ Macros:
+-%rust_arches x86_64 i586 i686 armv6hl armv7hl aarch64 ppc64 powerpc64 ppc64le powerpc64le s390x
++%rust_arches x86_64 i586 i686 armv6hl armv7hl aarch64 ppc64 powerpc64 ppc64le powerpc64le s390x mips64el mips64 mipsel mips
+ :Macros
+ 
+ # END RUST STUFF
+@@ -1019,6 +1042,10 @@
+ %ifarch s390x
+ Substitute: kernel-binary-packages kernel-default
+ %endif
++%ifarch mips64el
++Substitute: kernel-binary-packages kernel-default
++%endif
++
+ 
+ # until the builds of the packages are fixed...
+ Substitute: yast2-theme-SLED
+@@ -1038,6 +1065,8 @@
+ Optflags: armv6hl -fmessage-length=0 -grecord-gcc-switches
+ Optflags: aarch64 -fmessage-length=0 -grecord-gcc-switches
+ Optflags: ppc64le -fmessage-length=0 -grecord-gcc-switches
++Optflags: mips64el -march=mips64r2 -mabi=64 -fmessage-length=0 -grecord-gcc-switches
++Optflags: mipsel -march=mips32r2 -mabi=32 -fmessage-length=0 -grecord-gcc-switches
+ # need mcpu=ultrasparc to complete sparcv8plus to sparcv9 (adds, for example, atomic ops)
+ Optflags: sparcv9 -fmessage-length=0 -grecord-gcc-switches -mcpu=ultrasparc
+ Optflags: sparc64 -fmessage-length=0 -grecord-gcc-switches -mcpu=ultrasparc

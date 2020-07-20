@@ -1,0 +1,2 @@
+因为依赖 kernel-default ，而我后期重新做的 kernel-default 内核配置有问题，导致本包编译报错。
+故而临时禁止编译，不再修改 git 的数据。

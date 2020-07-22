@@ -5,6 +5,10 @@
 **openSUSE 15.1 for mips64el，只存储修改的差异。**
 
 源代码容量很大，github 这里没法放，需要从 build.opensuse.org 下载。仅仅是 15.1 的正式发布时的版本，除了 binutils 外，没有升级软件包。
+二进制包下载地址：
+https://pan.baidu.com/s/1iYp_TTvt9MeqhBM2OEZBgw
+位于此共享中的 15.1-release 内。
+除了分卷压缩的 RPM 包外，还有一个做好的 rootfs 压缩包（不含内核），以及龙梦源代码编译的 5.4.38 内核压缩包。
 
 ## 说明：
 1. obs 不支持用 mips64el （小端）作为架构的设置调用编译，只能用 mips64 （大端）。而且 obs 在处理 spec 时，也会认为系统是 mips64 而进行处理。所以里面的 32 和 64 的架构区别，必须用宏 %mips64 和 %mips32 进行区别保证 obs 的运行正常，而不能直接写 mips64el 和 mips32el 。但是实际上在 rpmbuild 编译软件包时，他是可以识别的，所以详细到编译过程处理，反而可以用。
